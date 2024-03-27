@@ -1,3 +1,11 @@
 from django.contrib import admin
 
-# Register your models here.
+
+from info_mail.models import WeeklyMails
+
+
+class WeeklyMailsAdmin(admin.ModelAdmin):
+    pass
+
+
+admin.site.register(WeeklyMails, WeeklyMailsAdmin)

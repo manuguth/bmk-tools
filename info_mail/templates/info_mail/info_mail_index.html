@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block page_content %}
+
+<head>
+    <style>
+        body {
+            font-family: Calibri, sans-serif;
+        }
+        #customers {
+            font-family: Calibri, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        #customers td,
+        #customers th {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+
+        #customers tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        #customers tr:hover {
+            background-color: #ddd;
+        }
+
+        #customers th {
+            padding-top: 12px;
+            padding-bottom: 12px;
+            text-align: left;
+            background-color: #04AA6D;
+            color: white;
+        }
+    </style>
+</head>
+
+<h1> Overview Weekly Mails BMK</h1>
+
+<body>
+
+    <table id="customers">
+        <tr>
+            <th>Year</th>
+            <th>Week</th>
+            <th>Reference</th>
+        </tr>
+
+        {% for weekly_mail in weekly_mails %}
+        <tr>
+            <td>{{weekly_mail.year}}</td>
+            <td>{{weekly_mail.week}}</td>
+            <td><a href="details/{{weekly_mail.reference}}">{{weekly_mail.reference}}</a> </td>
+
+        </tr>
+        {% endfor %}
+
+    </table>
+
+</body>
+{% endblock page_content %}
