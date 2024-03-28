@@ -10,7 +10,11 @@ https://docs.djangoproject.com/en/5.0/howto/deployment/wsgi/
 import os
 
 from django.core.wsgi import get_wsgi_application
-
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "bmk_tools.settings")
+settings_module = (
+    "bmk_tools.production"
+    if ("DJANGO_ENV" in os.environ and os.environ["DJANGO_ENV"] == "production")
+    else "bmk_tools.settings"
+)
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", settings_module)
 
 application = get_wsgi_application()
