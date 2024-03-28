@@ -1,7 +1,7 @@
 <!-- templates/registration/login.html -->
 
 {% extends "base.html" %}
-
+{% csrf_token %}
 {% block page_content %}
 <h2>Login</h2>
 <form method="post">

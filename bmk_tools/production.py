@@ -10,10 +10,13 @@ ALLOWED_HOSTS = (
     [
         os.environ["WEBSITE_HOSTNAME"],
         "bmk-tools.azurewebsites.net",
+        "https://bmk-tools.azurewebsites.net",
     ]
     if "WEBSITE_HOSTNAME" in os.environ
     else []
 )
+CSRF_TRUSTED_ORIGINS = ALLOWED_HOSTS
+
 
 # WhiteNoise configuration
 MIDDLEWARE = [
