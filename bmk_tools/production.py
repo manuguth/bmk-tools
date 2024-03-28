@@ -1,4 +1,3 @@
-
 from .settings import *
 import os
 
@@ -46,6 +45,7 @@ DATABASES = {
         "HOST": hostname + ".postgres.database.azure.com",
         "USER": os.environ["DBUSER"] + "@" + hostname,
         "PASSWORD": os.environ["DBPASS"],
+        "OPTIONS": {"sslmode": "require"},
     },
     "users_db": {
         "ENGINE": "django.db.backends.postgresql",
@@ -53,5 +53,6 @@ DATABASES = {
         "HOST": hostname + ".postgres.database.azure.com",
         "USER": os.environ["DBUSER"] + "@" + hostname,
         "PASSWORD": os.environ["DBPASS"],
+        "OPTIONS": {"sslmode": "require"},
     },
 }
