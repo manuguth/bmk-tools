@@ -10,6 +10,7 @@ ADMINS = [("Manuel", "manuel.guth@bmk-buggingen.de")]
 ALLOWED_HOSTS = (
     [
         os.environ["WEBSITE_HOSTNAME"],
+        "bmk-tools.azurewebsites.net",
     ]
     if "WEBSITE_HOSTNAME" in os.environ
     else []
