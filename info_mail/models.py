@@ -1,9 +1,12 @@
 from django.db import models
-import hashlib
-import time
+import random
+import string
 
 def generate_hash_value():
-    return hashlib.md5(str(time.time()).encode()).hexdigest()
+    letters = string.ascii_letters
+    random_letters = ''.join(random.choice(letters) for _ in range(8))
+    return random_letters.lower()
+
 
 class WeeklyMails(models.Model):
     week = models.IntegerField()
