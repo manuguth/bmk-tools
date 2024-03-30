@@ -7,4 +7,4 @@ from .models import WeeklyMails
 class WeeklyMailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = WeeklyMails
-        fields = ["week", "year", "reference", "upload_date", "html_file"]
+        fields = ["week", "year", "upload_date", "html_file"]
