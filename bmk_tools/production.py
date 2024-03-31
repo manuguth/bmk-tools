@@ -8,16 +8,19 @@ ADMINS = [("Manuel", "manuel.guth@bmk-buggingen.de")]
 # that Azure automatically creates for us.
 ALLOWED_HOSTS = (
     [
-        f'https://{os.environ["WEBSITE_HOSTNAME"]}',
-        # "bmk-tools.azurewebsites.net",
-        # "tools.bmk-buggingen.de",
+        os.environ["WEBSITE_HOSTNAME"],
+        "bmk-tools.azurewebsites.net",
+        "tools.bmk-buggingen.de",
         "https://tools.bmk-buggingen.de",
         "https://bmk-tools.azurewebsites.net",
     ]
     if "WEBSITE_HOSTNAME" in os.environ
     else []
 )
-CSRF_TRUSTED_ORIGINS = ALLOWED_HOSTS
+CSRF_TRUSTED_ORIGINS = [
+    "https://tools.bmk-buggingen.de",
+    "https://bmk-tools.azurewebsites.net",
+]
 
 
 # WhiteNoise configuration
