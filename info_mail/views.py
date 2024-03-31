@@ -44,3 +44,17 @@ class FileUploadView(APIView):
             return Response(file_serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(file_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request, *args, **kwargs):
+        try:
+            weekly_mail = WeeklyMails.objects.get(week=request.data['week'], year=request.data['year'])
+        except WeeklyMails.DoesNotExist:
+            return Response({"error": "Object not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = WeeklyMailsSerializer(weekly_mail, data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
