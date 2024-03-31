@@ -11,6 +11,9 @@ def generate_hash_value():
 class WeeklyMails(models.Model):
     week = models.IntegerField()
     year = models.IntegerField()
+
+    class Meta:
+        unique_together = ('week', 'year')
     reference = models.CharField(max_length=255, blank=True)
 
     def save(self, *args, **kwargs):
