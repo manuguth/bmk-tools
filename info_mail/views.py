@@ -1,15 +1,20 @@
+import os
+
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.core.files.storage import default_storage
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from rest_framework import status
-from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.parsers import FileUploadParser, FormParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from info_mail.models import WeeklyMails
 
+from .forms import UploadFileForm
 from .serializers import WeeklyMailsSerializer
 
 
@@ -47,9 +52,13 @@ class FileUploadView(APIView):
 
     def put(self, request, *args, **kwargs):
         try:
-            weekly_mail = WeeklyMails.objects.get(week=request.data['week'], year=request.data['year'])
+            weekly_mail = WeeklyMails.objects.get(
+                week=request.data["week"], year=request.data["year"]
+            )
         except WeeklyMails.DoesNotExist:
-            return Response({"error": "Object not found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "Object not found"}, status=status.HTTP_404_NOT_FOUND
+            )
 
         serializer = WeeklyMailsSerializer(weekly_mail, data=request.data)
 
@@ -58,3 +67,28 @@ class FileUploadView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+@login_required
+def media_upload(request):
+    if request.method == "POST":
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            file = request.FILES["file"]
+            file_name = default_storage.save("mail_media/" + file.name, file)
+            return render(request, "info_mail/upload_success.html")
+    else:
+        form = UploadFileForm()
+    return render(request, "info_mail/media_upload.html", {"form": form})
+
+
+@login_required
+def display_media(request):
+    media_dir = os.path.join(settings.MEDIA_ROOT, "mail_media")
+    media_files = os.listdir(media_dir)
+    media_urls = [
+        os.path.join(settings.MEDIA_URL, "mail_media", file) for file in media_files
+    ]
+    return render(request, "info_mail/display_media.html", {"media_urls": media_urls})

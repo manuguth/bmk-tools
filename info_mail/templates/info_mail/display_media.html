@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block page_content %}
+<h1>Media Files</h1>
+<ul>
+    {% for url in media_urls %}
+    <li><a href="{{ url }}">{{ url }}</a></li>
+    {% endfor %}
+</ul>
+{% endblock page_content %}
