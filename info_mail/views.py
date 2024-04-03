@@ -70,8 +70,6 @@ class FileUploadView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
-
 @login_required
 def media_upload(request):
     if request.method == "POST":
@@ -87,14 +85,7 @@ def media_upload(request):
 
 @login_required
 def display_media(request):
-    if ("DJANGO_ENV" in os.environ and os.environ["DJANGO_ENV"] == "production"):
-        storage = AzureStorage()
-        media_files = storage.listdir('mail_media')[1]  # get list of files in 'mail_media' directory
-        media_urls = [storage.url(file) for file in media_files]  # get URLs for each file
-    else:
-        media_dir = os.path.join(settings.MEDIA_ROOT, "mail_media")
-        media_files = os.listdir(media_dir)
-        media_urls = [
-            os.path.join(settings.MEDIA_URL, "mail_media", file) for file in media_files
-        ]
+    _, filenames = default_storage.listdir("mail_media")
+    media_urls = [default_storage.url("mail_media/" + name) for name in filenames]
+    print(media_urls)
     return render(request, "info_mail/display_media.html", {"media_urls": media_urls})
