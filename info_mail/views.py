@@ -11,6 +11,7 @@ from rest_framework.parsers import FileUploadParser, FormParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from storages.backends.azure_storage import AzureStorage
 
 from info_mail.models import WeeklyMails
 
@@ -86,9 +87,14 @@ def media_upload(request):
 
 @login_required
 def display_media(request):
-    media_dir = os.path.join(settings.MEDIA_ROOT, "mail_media")
-    media_files = os.listdir(media_dir)
-    media_urls = [
-        os.path.join(settings.MEDIA_URL, "mail_media", file) for file in media_files
-    ]
+    if ("DJANGO_ENV" in os.environ and os.environ["DJANGO_ENV"] == "production"):
+        storage = AzureStorage()
+        media_files = storage.listdir('mail_media')[1]  # get list of files in 'mail_media' directory
+        media_urls = [storage.url(file) for file in media_files]  # get URLs for each file
+    else:
+        media_dir = os.path.join(settings.MEDIA_ROOT, "mail_media")
+        media_files = os.listdir(media_dir)
+        media_urls = [
+            os.path.join(settings.MEDIA_URL, "mail_media", file) for file in media_files
+        ]
     return render(request, "info_mail/display_media.html", {"media_urls": media_urls})
