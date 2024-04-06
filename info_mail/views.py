@@ -114,6 +114,7 @@ def display_media(request):
     #     _, filenames = default_storage.listdir("mail_media")
     #     media_urls = [default_storage.url("mail_media/" + name) for name in filenames]
     #     print(media_urls)
+
     _, filenames = default_storage.listdir("mail_media")
     media_urls = [default_storage.url("mail_media/" + name) for name in filenames]
     print(media_urls)
