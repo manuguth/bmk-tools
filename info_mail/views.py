@@ -85,18 +85,20 @@ def media_upload(request):
 
 @login_required
 def display_media(request):
-    _, filenames = default_storage.listdir("mail_media")
-    media_urls = [default_storage.url("mail_media/" + name) for name in filenames]
-    print(media_urls)
+    if ("DJANGO_ENV" in os.environ and os.environ["DJANGO_ENV"] == "production"):
+
+        connection_string = f"DefaultEndpointsProtocol=https;AccountName={os.environ['AZURE_ACCOUNT_NAME']};AccountKey={os.environ['AZURE_ACCOUNT_KEY']};EndpointSuffix=core.windows.net"
+        container_name = os.environ['AZURE_CONTAINER']
+        blob_service_client = BlobServiceClient.from_connection_string(connection_string)
+        container_client = blob_service_client.get_container_client(container_name)
+        blob_list = container_client.list_blobs(name_starts_with="mail_media/")
+        media_urls = []
+        for blob in blob_list:
+            blob_client = container_client.get_blob_client(blob.name)
+            media_urls.append(blob_client.url)
+    else:
+        _, filenames = default_storage.listdir("mail_media")
+        media_urls = [default_storage.url("mail_media/" + name) for name in filenames]
+        print(media_urls)
     return render(request, "info_mail/display_media.html", {"media_urls": media_urls})
 
-
-def blob_redirect(request, blob_name):
-    connection_string = f"DefaultEndpointsProtocol=https;AccountName={os.environ['AZURE_ACCOUNT_NAME']};AccountKey={os.environ['AZURE_ACCOUNT_KEY']};EndpointSuffix=core.windows.net"
-    container_name = os.environ["AZURE_CONTAINER"]
-
-    blob_service_client = BlobServiceClient.from_connection_string(connection_string)
-    container_client = blob_service_client.get_container_client(container_name)
-    blob_client = container_client.get_blob_client(blob_name)
-
-    return redirect(blob_client.url)
