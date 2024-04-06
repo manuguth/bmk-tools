@@ -1,17 +1,17 @@
 import os
 
+from azure.storage.blob import BlobServiceClient
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.files.storage import default_storage
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.parsers import FileUploadParser, FormParser, MultiPartParser
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from storages.backends.azure_storage import AzureStorage
 
 from info_mail.models import WeeklyMails
 
@@ -89,3 +89,14 @@ def display_media(request):
     media_urls = [default_storage.url("mail_media/" + name) for name in filenames]
     print(media_urls)
     return render(request, "info_mail/display_media.html", {"media_urls": media_urls})
+
+
+def blob_redirect(request, blob_name):
+    connection_string = f"DefaultEndpointsProtocol=https;AccountName={os.environ['AZURE_ACCOUNT_NAME']};AccountKey={os.environ['AZURE_ACCOUNT_KEY']};EndpointSuffix=core.windows.net"
+    container_name = os.environ["AZURE_CONTAINER"]
+
+    blob_service_client = BlobServiceClient.from_connection_string(connection_string)
+    container_client = blob_service_client.get_container_client(container_name)
+    blob_client = container_client.get_blob_client(blob_name)
+
+    return redirect(blob_client.url)
