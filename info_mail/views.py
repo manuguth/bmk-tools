@@ -85,6 +85,20 @@ def media_upload(request):
 
 @login_required
 def display_media(request):
+    """
+    Display the media files associated with the mail.
+
+    This function retrieves the media files from either an Azure Blob Storage container
+    or the local storage, depending on the environment. It then renders the media files
+    in the 'display_media.html' template.
+
+    Parameters:
+    - request: The HTTP request object.
+
+    Returns:
+    - A rendered HTTP response containing the media URLs.
+
+    """
     if ("DJANGO_ENV" in os.environ and os.environ["DJANGO_ENV"] == "production"):
 
         connection_string = f"DefaultEndpointsProtocol=https;AccountName={os.environ['AZURE_ACCOUNT_NAME']};AccountKey={os.environ['AZURE_ACCOUNT_KEY']};EndpointSuffix=core.windows.net"
