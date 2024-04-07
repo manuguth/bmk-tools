@@ -1,9 +1,22 @@
 {% extends "base.html" %}
 
 {% block page_content %}
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Upload</button>
-</form>
+<div class="card">
+    <div class="card-header">
+        <h1 class="h3 mb-0">Upload Media</h1>
+    </div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+            {% csrf_token %}
+            <div class="mb-3">
+                {{ form.file.label_tag }} <!-- Replace 'media' with the name of your FileField -->
+                {{ form.file }} <!-- Replace 'media' with the name of your FileField -->
+                <div class="invalid-feedback">
+                    Please choose a file.
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Upload</button>
+        </form>
+    </div>
+</div>
 {% endblock page_content %}

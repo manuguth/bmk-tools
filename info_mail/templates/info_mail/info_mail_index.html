@@ -7,6 +7,7 @@
         body {
             font-family: Calibri, sans-serif;
         }
+
         #customers {
             font-family: Calibri, sans-serif;
             border-collapse: collapse;
@@ -37,27 +38,32 @@
     </style>
 </head>
 
-<h1> Overview Weekly Mails BMK</h1>
 
-<body>
+<div class="card">
+    <div class="card-header">
+        <h1 class="h3 mb-0">Overview Weekly Mails BMK</h1>
+    </div>
+    <div class="card-body">
+        <table class="table table-striped table-hover">
+            <table id="customers">
+                <tr>
+                    <th>Year</th>
+                    <th>Week</th>
+                    <th>Reference and URL</th>
+                </tr>
 
-    <table id="customers">
-        <tr>
-            <th>Year</th>
-            <th>Week</th>
-            <th>Reference</th>
-        </tr>
+                {% for weekly_mail in weekly_mails %}
+                <tr>
+                    <td>{{weekly_mail.year}}</td>
+                    <td>{{weekly_mail.week}}</td>
+                    <td><a href="details/{{weekly_mail.reference}}">{{weekly_mail.reference}}</a> </td>
 
-        {% for weekly_mail in weekly_mails %}
-        <tr>
-            <td>{{weekly_mail.year}}</td>
-            <td>{{weekly_mail.week}}</td>
-            <td><a href="details/{{weekly_mail.reference}}">{{weekly_mail.reference}}</a> </td>
+                </tr>
+                {% endfor %}
 
-        </tr>
-        {% endfor %}
+            </table>
+        </table>
+    </div>
+</div>
 
-    </table>
-
-</body>
 {% endblock page_content %}

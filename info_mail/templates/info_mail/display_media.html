@@ -1,10 +1,23 @@
 {% extends "base.html" %}
 
 {% block page_content %}
-<h1>Media Files</h1>
-<ul>
-    {% for url in media_urls %}
-    <li><a href="{{ url }}">{{ url }}</a></li>
-    {% endfor %}
-</ul>
+<div class="card">
+    <div class="card-header">
+        <h1 class="h3 mb-0">Media Files</h1>
+    </div>
+    <div class="card-body">
+        <ul class="list-group list-group-flush">
+            {% for url in media_urls %}
+            <li class="list-group-item d-flex align-items-center">
+                <img src="{{ url }}" alt="Media preview" class="mr-5" style="width: 100px; height: auto;">
+                &nbsp;
+                &nbsp;
+                &nbsp;
+                &nbsp;
+                <a href="{{ url }}" target="_blank">{{ url }}</a>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
 {% endblock page_content %}
