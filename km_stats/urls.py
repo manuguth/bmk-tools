@@ -5,5 +5,6 @@ from km_stats import views
 
 urlpatterns = [
     path("", views.home, name="home"),
-    path("django_plotly_dash/", include("django_plotly_dash.urls")),
+    path("dashboard", views.dash_view, name="dashboard"),
+    # path("django_plotly_dash/", include("django_plotly_dash.urls")),
 ]
