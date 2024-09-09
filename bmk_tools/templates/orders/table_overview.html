@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        #customers {
+            font-family: Arial, Helvetica, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        #customers td,
+        #customers th {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+
+        #customers tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        #customers tr:hover {
+            background-color: #ddd;
+        }
+
+        #customers th {
+            padding-top: 12px;
+            padding-bottom: 12px;
+            text-align: left;
+            background-color: #04AA6D;
+            color: white;
+        }
+    </style>
+</head>
+
+<h1> Bestellstatistik FestEssen ToGo</h1>
+<p> <a href="/orders/statistics">Statistiken</a></p>
+<p> Zuletzt aktualisiert: {{updated}}</p>
+
+<body>
+
+    <table id="customers">
+        <tr>
+            <th>Essen</th>
+            <th>gesamt</th>
+            <th>Sonntag Mittag</th>
+            <th>Sonntag Abend</th>
+            <th>Montag</th>
+        </tr>
+
+        {% for item in category_all %}
+        <tr>
+            <td>{{item.product}}</td>
+            <td>{{item.count|floatformat}}</td>
+            <td>{{item.sun_lunch|floatformat}}</td>
+            <td>{{item.sun_evening|floatformat}}</td>
+            <td>{{item.mon_lunch|floatformat}}</td>
+
+        </tr>
+     {% endfor %}
+        <tr>
+            <td><strong>{{total.product}}</strong></td>
+            <td><strong>{{total.count|floatformat}}</strong></td>
+            <td><strong>{{total.sun_lunch|floatformat}}</strong></td>
+            <td><strong>{{total.sun_evening|floatformat}}</strong></td>
+            <td><strong>{{total.mon_lunch|floatformat}}</strong></td>
+
+        </tr>
+      
+    </table>
+    <br>
+    <br>
+    <br>
+    <table id="customers">
+        <tr>
+            <th>Essen</th>
+            <th>gesamt</th>
+            <th>Sonntag Mittag</th>
+            <th>Sonntag Abend</th>
+            <th>Montag</th>
+        </tr>
+        {% for item in subcategory_all %}
+        <tr>
+            <td>{{item.product}}</td>
+            <td>{{item.count|floatformat}}</td>
+            <td>{{item.sun_lunch|floatformat}}</td>
+            <td>{{item.sun_evening|floatformat}}</td>
+            <td>{{item.mon_lunch|floatformat}}</td>
+
+        </tr>
+     {% endfor %}
+       
+    </table>
+
+</body>
+
+</html>

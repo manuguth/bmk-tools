@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        #customers {
+            font-family: Arial, Helvetica, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        #customers td,
+        #customers th {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+
+        #customers tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        #customers tr:hover {
+            background-color: #ddd;
+        }
+
+        #customers th {
+            padding-top: 12px;
+            padding-bottom: 12px;
+            text-align: left;
+            background-color: #04AA6D;
+            color: white;
+        }
+    </style>
+</head>
+
+<h1>Liste Essensausgabe - {{day_label}}</h1>
+
+<body>
+
+    <table id="customers">
+        <tr>
+            <th>Abholzeit</th>
+            <th>ID</th>
+            <th>Preis</th>
+            <th>Bestellung</th>
+            <th>Kommentar</th>
+            <th>Name</th>
+            <th>Abgeholt</th>
+        </tr>
+
+        {% for item in orders %}
+        <tr>
+            <td>{{item.time_slot|date:'d.m H:i'}} Uhr</td>
+            <td><a href="/orders/{{item.id}}">{{item.id}}</a></td>
+            <td>{{item.price_total}} €</td>
+            <td>{{item.order_summary}}</td>
+            <td>{{item.comments}}</td>
+            <td>{{item.name}}</td>
+            <td> </td>
+
+        </tr>
+     {% endfor %}
+        
+    </table>
+
+</body>
+
+</html>

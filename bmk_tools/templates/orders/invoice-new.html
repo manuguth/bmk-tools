@@ -1,0 +1,245 @@
+{% load static %}
+
+<!-- CSS CUSTOM -->
+<link rel=”stylesheet” href=”{% static 'css/styles.css' %}”>
+<html>
+
+<head>
+    <style>
+        @page {
+            size: a4 portrait;
+            font-family: Helvetica;
+
+            @frame banner_left{
+                /* static frame for banner */
+                -pdf-frame-content: banner;
+                left: 0.89cm;
+                width: 3.74cm;
+                top: 0cm;
+                height: 5.35cm;
+
+            }
+            @frame logo_right{
+                -pdf-frame-content: logo;
+                left: 12.37cm;
+                width: 9.26cm;
+                top: 0cm;
+                height: 5.99cm;
+
+            }
+
+            @frame title_frame{
+                -pdf-frame-content: title_left;
+                left: 1.41cm;
+                width: 9.9cm;
+                top: 5.82cm;
+                height: 4cm;
+
+            }
+            
+            @frame date_frame{
+                -pdf-frame-content: date_right;
+                left: 16.54cm;
+                width: 3.14cm;
+                top: 7.59cm;
+                height: 0.96cm;
+
+            }
+            
+            @frame left_info_frame{
+                -pdf-frame-content: left_info;
+                left: 1.41cm;
+                width: 5.71cm;
+                top: 9.15cm;
+                height: 4.16cm;
+
+            }
+           
+            @frame middle_info_frame{
+                -pdf-frame-content: middle_info;
+                left: 7.66cm;
+                width: 5.71cm;
+                top: 9.15cm;
+                height: 4.16cm;
+
+            }
+           
+            @frame right_info_frame{
+                -pdf-frame-content: right_info;
+                left: 13.9cm;
+                width: 5.71cm;
+                top: 9.15cm;
+                height: 4.16cm;
+
+            }
+           
+            @frame order_frame{
+                -pdf-frame-content: orders;
+                left: 1.41cm;
+                width: 18.2cm;
+                top: 13.74cm;
+                height: 10.52cm;
+
+            }
+
+            @frame sum_frame{
+                -pdf-frame-content: sums;
+                left: 1.41cm;
+                width: 18.2cm;
+                top: 22.23cm;
+                height: 1.71cm;
+
+            }
+
+            @frame lower_frame{
+                -pdf-frame-content: lowerone;
+                left: 1.41cm;
+                width: 18.2cm;
+                top: 24.47cm;
+                height: 4.4cm;
+
+            }
+
+            
+        }
+        h1 {
+            color: #E00000;
+            font-size: 32px;
+            margin: 0;
+        }   
+       
+        h2 {
+            color: #929292;
+            font-size: 24px;
+            margin: 0;
+        }   
+         h3 {
+            color: #E00000;
+            font-size: 22px;
+        }   
+         h4 {
+            font-size: 14px;
+        }   
+        p {
+            font-size: 11px;
+        }   
+#customers {
+  font-family:Verdana;
+  font-size: 13px;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+#customers td, #customers th {
+  border: 1px solid #ddd;
+    padding-top: 2px;
+  padding-bottom: 2px;
+    border-right: solid 0px #f00; 
+  border-left: solid 0px #f00;
+}
+
+#customers tr:nth-child(even){background-color: #f2f2f2;}
+
+#customers tr:hover {background-color: #ddd;}
+
+#customers th {
+  padding-top: 2px;
+  padding-bottom: 2px;
+  text-align: left;
+  border: 0px solid #ddd;
+}
+
+    </style>
+</head>
+
+<body>
+    <!-- Content for Static Frame 'header_frame' -->
+    
+    <div id="banner">
+        <img src="images/banner.png" width="3.74cm" height="5.35cm">
+        
+    </div>
+    
+    <div id="logo">
+        <img src="images/logo.png" width="9.26cm" height="5.99cm">
+        
+    </div>
+    
+    <div id="title_left">
+        <h1 >Bestellbestätigung</h1>
+        <h2 >Festessen To Go</h2>
+        
+    </div>
+    
+    <div id="date_right">
+        <p style="text-align:right;font-size: 12px;"> {{date}}</p>
+        
+    </div>
+    
+    <div id="left_info">
+        <h4> <strong>Besteller</strong></h4>
+        <p>{{namebesteller}}</p>
+        <p>{{mail}}</p>
+        <p>{{phone}}</p>
+        
+    </div>
+    
+    <div id="middle_info">
+        <h4> <strong>Bestellnummer</strong></h4>
+        <p><strong>{{bestellid}}</strong></p>
+        
+    </div>
+    
+    <div id="right_info">
+        <h4> <strong>Abholtermin</strong></h4>
+        <p>{{abholdatum}}</p>
+        <p>{{abholzeit}} Uhr</p>
+        <p style="color:#E00000;"><strong>Abholung am alten Bauhof</strong></p>
+        <p style="color:#E00000;">(gegenüber vom Rathaus Buggingen)</p>
+        
+    </div>
+    
+    <div id="orders">
+   
+        
+    <table style="width: 100%" id="customers">
+        <tr>
+            <th style="width: 50%;">Essen</th>
+            <th style="width: 16%;">Menge</th>
+            <th style="width: 16%;">Einzelpreis</th>
+            <th style="width: 16%;">Gesamtpreis</th>
+        </tr>
+        {% for item in products %}
+        <tr>
+            <td>{{item.name}} </td>
+            <td> {{item.amount}} </td>
+            <td> {{item.price}} €</td>
+            <td> {{item.total}}€ </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    </div>
+    
+    <div id="sums">
+        <h3 style="text-align:right;"> <strong>Summe {{total}} €</strong></h3>
+        
+    </div>
+    
+    <div id="lowerone">
+        <p> Vielen Dank für Ihre Bestellung. </p>
+        
+        <p>Bitte bezahlen Sie den oben genannten Betrag bei Abholung ihrer Bestellung passend in bar.</p>
+        
+        <p>Bei Rückfragen stehen wir Ihnen gerne zur Verfügung unter <a
+            href="mailto:bestellung@bmk-buggingen.de">bestellung@bmk-buggingen.de</a></p>
+        
+        
+        Anmerkungen: {{comments}}</p>
+        
+    </div>
+
+
+</body>
+
+</html>
