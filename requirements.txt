@@ -1,21 +1,22 @@
-Django==5.0.3
-ruff==0.3.4
-django-storages==1.14.2
-djangorestframework==3.15.1
-django-plotly-dash==2.3.1
-azure-storage-blob
 asgiref
+azure-storage-blob
+django-cookie-law
 django-crispy-forms
 django-formtools
-pytz
-sqlparse
-whitenoise
-psycopg2-binary
-xhtml2pdf
-pyyaml
-django-cookie-law
+django-plotly-dash==2.3.1
+django-storages==1.14.2
+Django==5.0.3
+djangorestframework==3.15.1
 numpy
 pandas
+psycopg2-binary
+pytz
+pyyaml
+ruff==0.3.4
+setuptools
+sqlparse
+whitenoise
+xhtml2pdf
 
 
 # coverage==6.3.1

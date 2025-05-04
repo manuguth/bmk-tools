@@ -16,6 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from info_mail import views
 
 
 urlpatterns = [
@@ -25,4 +26,5 @@ urlpatterns = [
     path("accounts/", include("django.contrib.auth.urls")),
     path("km_stats/", include("km_stats.urls")),
     path("django_plotly_dash/", include("django_plotly_dash.urls")),
+    path("aktuelle-themen", views.latest_info_mail, name="latest_info_mail"),
 ]

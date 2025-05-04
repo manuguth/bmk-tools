@@ -15,6 +15,7 @@ urlpatterns = [
     path("upload", FileUploadView.as_view(), name="file_upload"),
     path("media_upload/", media_upload, name="media_upload"),
     path("display_media/", display_media, name="display_media"),
+    path("aktuelle-themen", views.latest_info_mail, name="latest_info_mail"),
 ] + static(
     settings.MEDIA_URL + "mail_media/",
     document_root=os.path.join(settings.MEDIA_ROOT, "mail_media"),

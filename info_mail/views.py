@@ -36,6 +36,11 @@ def info_mail_details(request: HttpRequest, reference: str) -> HttpResponse:
     html_file = weekly_mails.html_file
     return HttpResponse(html_file.read(), content_type="text/html")
 
+def latest_info_mail(request: HttpRequest) -> HttpResponse:
+    weekly_mails = WeeklyMails.objects.latest("upload_date")
+    html_file = weekly_mails.html_file
+    return HttpResponse(html_file.read(), content_type="text/html")
+
 
 class FileUploadView(APIView):
     parser_classes = (MultiPartParser, FormParser)
@@ -119,4 +124,3 @@ def display_media(request):
     # media_urls = [default_storage.url("mail_media/" + name) for name in filenames]
     # print(media_urls)
     return render(request, "info_mail/display_media.html", {"media_urls": media_urls})
-
