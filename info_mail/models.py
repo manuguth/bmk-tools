@@ -21,5 +21,5 @@ class WeeklyMails(models.Model):
             # Generate hash value
             self.reference = generate_hash_value()
         super().save(*args, **kwargs)
-    upload_date = models.DateField()
+    upload_date = models.DateTimeField()
     html_file = models.FileField(upload_to='html_files/', blank=True)
