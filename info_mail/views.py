@@ -17,6 +17,7 @@ from info_mail.models import WeeklyMails
 
 from .forms import UploadFileForm
 from .serializers import WeeklyMailsSerializer
+from datetime import date
 
 
 @login_required
@@ -37,8 +38,28 @@ def info_mail_details(request: HttpRequest, reference: str) -> HttpResponse:
     return HttpResponse(html_file.read(), content_type="text/html")
 
 def latest_info_mail(request: HttpRequest) -> HttpResponse:
-    weekly_mails = WeeklyMails.objects.latest("upload_date")
-    html_file = weekly_mails.html_file
+    today = date.today()
+    current_year, current_week, _ = today.isocalendar()
+    weekly_mails = (
+        WeeklyMails.objects
+        .order_by('-year', '-week')
+        .values_list('year', 'week')
+    )
+    year_week_list = list(weekly_mails)
+    closest = None
+    for year, week in year_week_list:
+        if (year < current_year) or (year == current_year and week <= current_week):
+            closest = (year, week)
+            break
+
+    if closest is None:
+        return HttpResponse("No info mail available.", status=404)
+
+    weekly_mail = WeeklyMails.objects.get(year=closest[0], week=closest[1])
+
+    # weekly_mail = WeeklyMails.objects.latest("upload_date")
+
+    html_file = weekly_mail.html_file
     return HttpResponse(html_file.read(), content_type="text/html")
 
 
