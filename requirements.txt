@@ -1,8 +1,5 @@
 asgiref
 azure-storage-blob
-django-cookie-law
-django-crispy-forms
-django-formtools
 django-plotly-dash==2.3.1
 django-storages==1.14.2
 Django==5.0.3
@@ -12,11 +9,9 @@ pandas
 psycopg2-binary
 pytz
 pyyaml
-ruff==0.3.4
 setuptools
 sqlparse
 whitenoise
-xhtml2pdf
 
 
 # coverage==6.3.1
