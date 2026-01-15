@@ -1,6 +1,7 @@
 # package specific exclusions
 uploads/html_files/*
 uploads/
+migrations/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
