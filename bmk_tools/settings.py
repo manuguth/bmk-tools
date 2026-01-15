@@ -32,8 +32,6 @@ ALLOWED_HOSTS = ["host.docker.internal", "localhost", "127.0.0.1"]
 
 INSTALLED_APPS = [
     "info_mail.apps.InfoMailConfig",
-    "km_stats.apps.KmStatsConfig",
-    "django_plotly_dash.apps.DjangoPlotlyDashConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
