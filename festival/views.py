@@ -633,13 +633,13 @@ def admin_print_overview(request, festival_slug):
                     'shortage': shortage,
                 }
             else:
-                # Task doesn't exist in this shift - mark as empty
+                # Task doesn't exist in this shift - mark as not applicable
                 cell = {
-                    'status': 'empty',
+                    'status': 'not_applicable',
                     'participants': [],
                     'current': 0,
-                    'required': required_helpers,
-                    'shortage': required_helpers if required_helpers > 0 else 0,
+                    'required': 0,
+                    'shortage': 0,
                 }
 
             task_row['cells'].append(cell)

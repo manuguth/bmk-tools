@@ -46,13 +46,15 @@
 
                         <!-- Participant Cells for This Task across All Shifts -->
                         {% for cell in task_row.cells %}
-                            <td class="status-{{ cell.status }}" style="{% if cell.status == 'full' %}background: #d1fae5; color: #065f46;{% elif cell.status == 'partial' %}background: #fef3c7; color: #92400e;{% else %}background: #fee2e2; color: #991b1b;{% endif %} border: 1px solid #d1d5db; padding: 1rem; vertical-align: top; font-size: 0.85rem; line-height: 1.5;">
+                            <td class="status-{{ cell.status }}" style="{% if cell.status == 'full' %}background: #d1fae5; color: #065f46;{% elif cell.status == 'partial' %}background: #fef3c7; color: #92400e;{% elif cell.status == 'empty' %}background: #fee2e2; color: #991b1b;{% else %}background: #f3f4f6; color: #6b7280;{% endif %} border: 1px solid #d1d5db; padding: 1rem; vertical-align: top; font-size: 0.85rem; line-height: 1.5;">
                                 {% if cell.status == 'full' %}
                                     <span style="font-weight: 600; margin-right: 0.5rem;">✓</span>
                                 {% elif cell.status == 'partial' %}
                                     <span style="font-weight: 600; margin-right: 0.5rem;">⚠</span>
-                                {% else %}
+                                {% elif cell.status == 'empty' %}
                                     <span style="font-weight: 600; margin-right: 0.5rem;">✗</span>
+                                {% else %}
+                                    <span style="font-weight: 400; margin-right: 0.5rem;">−</span>
                                 {% endif %}
 
                                 {% if cell.participants %}
@@ -74,6 +76,8 @@
                                 {% elif cell.status == 'empty' and cell.required > 0 %}
                                     <div style="font-style: italic; opacity: 0.8; margin-bottom: 0.5rem;">keine Helfer</div>
                                     <div style="font-weight: 600; font-size: 0.8rem;">({{ cell.required }} {% if cell.required == 1 %}erforderlich{% else %}erforderlich{% endif %})</div>
+                                {% elif cell.status == 'not_applicable' %}
+                                    <div style="font-style: italic; opacity: 0.8;">nicht erforderlich für diese Schicht</div>
                                 {% endif %}
                             </td>
                         {% endfor %}
