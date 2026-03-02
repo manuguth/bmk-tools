@@ -1,0 +1,116 @@
+{% extends "festival/base.html" %}
+
+{% block title %}{{ festival.name }} - Sign Up{% endblock title %}
+
+{% block page_content %}
+<div class="festival-header">
+    <h1>{{ festival.name }}</h1>
+    <div class="festival-date">
+        <i class="bi bi-calendar-event"></i>
+        {{ festival.date|date:"l, F j, Y" }}
+    </div>
+    {% if festival.description %}
+        <p class="festival-description">{{ festival.description }}</p>
+    {% endif %}
+</div>
+
+{% for shift in shifts %}
+    <div class="shift-section">
+        <div class="shift-header">
+            <div class="shift-icon">
+                <i class="bi bi-clock"></i>
+            </div>
+            <div>
+                <h2>{{ shift.name }}</h2>
+            </div>
+        </div>
+
+        <div class="shift-info">
+            <div class="shift-info-item">
+                <i class="bi bi-calendar3"></i>
+                <span>{{ shift.date|date:"l, F j, Y" }}</span>
+            </div>
+            <div class="shift-info-item">
+                <i class="bi bi-hourglass-split"></i>
+                <span>{{ shift.start_time|time:"H:i" }} – {{ shift.end_time|time:"H:i" }}</span>
+            </div>
+        </div>
+
+        {% if shift.description %}
+            <div style="padding: 1rem; background: white; border-radius: 8px; margin-bottom: 1.5rem; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);">
+                <p style="margin: 0; color: #475569;">{{ shift.description }}</p>
+            </div>
+        {% endif %}
+
+        {% if shift.tasks.exists %}
+            <div class="tasks-grid">
+                {% for task in shift.tasks %}
+                    <div class="task-card {% if task.is_full %}task-full{% endif %}">
+                        <div class="task-card-header">
+                            <h3>{{ task.name }}</h3>
+                            {% if task.description %}
+                                <p>{{ task.description|truncatewords:15 }}</p>
+                            {% endif %}
+                        </div>
+
+                        <div class="task-card-body">
+                            {% if task.description %}
+                                <p class="task-description">{{ task.description }}</p>
+                            {% endif %}
+
+                            {% if task.special_requirements %}
+                                <div class="task-requirements">
+                                    <strong><i class="bi bi-exclamation-circle"></i> Requirements:</strong> {{ task.special_requirements }}
+                                </div>
+                            {% endif %}
+
+                            <div class="task-capacity">
+                                <div class="capacity-label">
+                                    <span>Helpers Needed</span>
+                                    <span>
+                                        <span class="current">{{ task.current_helpers }}</span>
+                                        <span class="total">/ {{ task.required_helpers }}</span>
+                                    </span>
+                                </div>
+                                <div class="progress">
+                                    <div class="progress-bar" role="progressbar"
+                                         style="width: {% widthratio task.current_helpers task.required_helpers 100 %}%"
+                                         aria-valuenow="{{ task.current_helpers }}"
+                                         aria-valuemin="0"
+                                         aria-valuemax="{{ task.required_helpers }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="task-card-footer">
+                            {% if task.is_full %}
+                                <button class="signup-btn full" disabled>
+                                    <i class="bi bi-check-circle"></i> Full ({{ task.current_helpers }}/{{ task.required_helpers }})
+                                </button>
+                            {% else %}
+                                <a href="{% url 'festival:task_signup' festival_slug=festival.slug task_id=task.id %}"
+                                   class="signup-btn available">
+                                    <i class="bi bi-plus-circle"></i> Sign Up Now
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state" style="padding: 2rem;">
+                <i class="bi bi-inbox"></i>
+                <h3>No tasks yet</h3>
+                <p>Tasks for this shift will be available soon.</p>
+            </div>
+        {% endif %}
+    </div>
+{% empty %}
+    <div class="empty-state">
+        <i class="bi bi-calendar-x"></i>
+        <h3>No shifts available</h3>
+        <p>Please check back later for updates.</p>
+    </div>
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,161 @@
+{% extends "festival/base.html" %}
+
+{% block title %}Admin Dashboard - {{ festival.name }}{% endblock title %}
+
+{% block page_content %}
+<div style="margin-bottom: 2rem;">
+    <h1 style="font-size: 2rem; font-weight: 700; color: var(--festival-dark); margin-bottom: 0.5rem;">
+        <i class="bi bi-speedometer2"></i> Admin Dashboard
+    </h1>
+    {% if festival %}
+        <p style="color: #6b7280; font-size: 1rem;">{{ festival.name }}</p>
+    {% else %}
+        <p style="color: #9ca3af; font-size: 1rem;">No festival selected</p>
+    {% endif %}
+</div>
+
+{% if not festival %}
+    <div class="empty-state">
+        <i class="bi bi-inbox"></i>
+        <h3>No Festival Selected</h3>
+        <p>Please select a festival to view the admin dashboard.</p>
+    </div>
+{% else %}
+    <!-- Statistics Cards -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
+        <!-- Total Participants Card -->
+        <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); border-left: 5px solid var(--festival-primary);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <p style="color: #6b7280; font-size: 0.9rem; margin-bottom: 0.5rem;">Total Participants</p>
+                    <h2 style="font-size: 2.5rem; font-weight: 700; color: var(--festival-dark); margin: 0;">{{ total_participants }}</h2>
+                    <p style="color: #9ca3af; font-size: 0.85rem; margin: 0.5rem 0 0 0;">volunteers signed up</p>
+                </div>
+                <div style="width: 50px; height: 50px; border-radius: 10px; background: linear-gradient(135deg, var(--festival-primary) 0%, var(--festival-secondary) 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Attended Card -->
+        <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); border-left: 5px solid var(--festival-success);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <p style="color: #6b7280; font-size: 0.9rem; margin-bottom: 0.5rem;">Attended</p>
+                    <h2 style="font-size: 2.5rem; font-weight: 700; color: var(--festival-dark); margin: 0;">{{ attended_count }}</h2>
+                    <p style="color: #9ca3af; font-size: 0.85rem; margin: 0.5rem 0 0 0;">checked in</p>
+                </div>
+                <div style="width: 50px; height: 50px; border-radius: 10px; background: linear-gradient(135deg, var(--festival-success) 0%, #059669 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+                    <i class="bi bi-check-circle-fill"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Card -->
+        <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); border-left: 5px solid var(--festival-accent);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <p style="color: #6b7280; font-size: 0.9rem; margin-bottom: 0.5rem;">Pending</p>
+                    <h2 style="font-size: 2.5rem; font-weight: 700; color: var(--festival-dark); margin: 0;">{{ pending_count }}</h2>
+                    <p style="color: #9ca3af; font-size: 0.85rem; margin: 0.5rem 0 0 0;">not checked in</p>
+                </div>
+                <div style="width: 50px; height: 50px; border-radius: 10px; background: linear-gradient(135deg, var(--festival-accent) 0%, #f97316 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+                    <i class="bi bi-hourglass-split"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Shifts Card -->
+        <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); border-left: 5px solid #8b5cf6;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <p style="color: #6b7280; font-size: 0.9rem; margin-bottom: 0.5rem;">Total Shifts</p>
+                    <h2 style="font-size: 2.5rem; font-weight: 700; color: var(--festival-dark); margin: 0;">{{ total_shifts }}</h2>
+                    <p style="color: #9ca3af; font-size: 0.85rem; margin: 0.5rem 0 0 0;">shifts scheduled</p>
+                </div>
+                <div style="width: 50px; height: 50px; border-radius: 10px; background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+                    <i class="bi bi-calendar-event-fill"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if total_participants > 0 %}
+        <!-- Attendance Rate Progress -->
+        <div style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); margin-bottom: 3rem;">
+            <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--festival-dark); margin: 0 0 1.5rem 0;">
+                <i class="bi bi-graph-up"></i> Attendance Rate
+            </h3>
+            <div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.9rem; font-weight: 500;">
+                    <span style="color: var(--festival-dark);">Progress</span>
+                    <span style="color: var(--festival-primary);">{{ attended_count }}/{{ total_participants }} ({% widthratio attended_count total_participants 100 %}%)</span>
+                </div>
+                <div style="height: 12px; background: #e5e7eb; border-radius: 6px; overflow: hidden;">
+                    <div style="height: 100%; background: linear-gradient(90deg, var(--festival-primary) 0%, var(--festival-secondary) 100%); width: {% widthratio attended_count total_participants 100 %}%; transition: width 0.3s ease;"></div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Shifts Overview -->
+    <div style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); margin-bottom: 3rem;">
+        <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--festival-dark); margin: 0 0 1.5rem 0;">
+            <i class="bi bi-list-check"></i> Shifts Overview
+        </h3>
+
+        {% if shifts_data %}
+            <div style="display: grid; gap: 1rem;">
+                {% for item in shifts_data %}
+                    <div style="padding: 1.25rem; border: 1px solid #e5e7eb; border-radius: 8px; background: #f9fafb; transition: all 0.3s ease;">
+                        <div style="display: grid; grid-template-columns: 1fr auto; gap: 1rem; align-items: center;">
+                            <div>
+                                <h4 style="font-size: 1.1rem; font-weight: 600; color: var(--festival-dark); margin: 0 0 0.5rem 0;">
+                                    {{ item.shift.name }}
+                                </h4>
+                                <div style="display: flex; flex-wrap: wrap; gap: 1rem; color: #6b7280; font-size: 0.9rem;">
+                                    <span>
+                                        <i class="bi bi-calendar3" style="color: var(--festival-primary); margin-right: 0.25rem;"></i>
+                                        {{ item.shift.date|date:"l, F j" }}
+                                    </span>
+                                    <span>
+                                        <i class="bi bi-clock" style="color: var(--festival-primary); margin-right: 0.25rem;"></i>
+                                        {{ item.shift.start_time|time:"H:i" }} – {{ item.shift.end_time|time:"H:i" }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div style="text-align: right; background: white; padding: 1rem; border-radius: 8px; border-left: 4px solid var(--festival-primary);">
+                                <p style="color: #6b7280; font-size: 0.85rem; margin: 0; font-weight: 500;">Participants</p>
+                                <p style="font-size: 1.75rem; font-weight: 700; color: var(--festival-primary); margin: 0.25rem 0 0 0;">{{ item.participant_count }}</p>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div style="text-align: center; padding: 2rem; color: #9ca3af;">
+                <i class="bi bi-inbox" style="font-size: 2.5rem; opacity: 0.3; display: block; margin-bottom: 0.5rem;"></i>
+                <p style="margin: 0;">No shifts available for this festival.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Admin Actions -->
+    <div style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);">
+        <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--festival-dark); margin: 0 0 1.5rem 0;">
+            <i class="bi bi-sliders"></i> Admin Actions
+        </h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            <a href="{% url 'festival:participant_list_admin' festival.slug %}" style="padding: 1rem; background: linear-gradient(135deg, var(--festival-primary) 0%, var(--festival-secondary) 100%); color: white; border-radius: 8px; text-decoration: none; text-align: center; font-weight: 600; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 0.5rem;" onmouseover="this.style.boxShadow='0 4px 12px rgba(99, 102, 241, 0.4)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.boxShadow='none'; this.style.transform='translateY(0)';">
+                <i class="bi bi-people"></i> Manage Participants
+            </a>
+            <a href="{% url 'festival:export_participants_csv' festival.slug %}" style="padding: 1rem; background: linear-gradient(135deg, var(--festival-success) 0%, #059669 100%); color: white; border-radius: 8px; text-decoration: none; text-align: center; font-weight: 600; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 0.5rem;" onmouseover="this.style.boxShadow='0 4px 12px rgba(16, 185, 129, 0.4)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.boxShadow='none'; this.style.transform='translateY(0)';">
+                <i class="bi bi-download"></i> Export CSV
+            </a>
+            <a href="{% url 'festival:festival_detail' festival.slug %}" style="padding: 1rem; background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); color: white; border-radius: 8px; text-decoration: none; text-align: center; font-weight: 600; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 0.5rem;" onmouseover="this.style.boxShadow='0 4px 12px rgba(107, 114, 128, 0.4)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.boxShadow='none'; this.style.transform='translateY(0)';">
+                <i class="bi bi-eye"></i> View Festival
+            </a>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}

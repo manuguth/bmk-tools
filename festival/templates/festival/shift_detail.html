@@ -1,0 +1,105 @@
+{% extends "festival/base.html" %}
+
+{% block title %}{{ shift.name }} - {{ festival.name }}{% endblock title %}
+
+{% block page_content %}
+<div style="animation: fadeInDown 0.6s ease;">
+    <div style="margin-bottom: 2rem;">
+        <a href="{% url 'festival:festival_detail' festival_slug=festival.slug %}" style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--festival-primary); text-decoration: none; font-weight: 600; margin-bottom: 1rem; transition: all 0.3s ease;" onmouseover="this.style.opacity='0.7';" onmouseout="this.style.opacity='1';">
+            <i class="bi bi-arrow-left"></i> Back to Festival
+        </a>
+        <h1 style="font-size: 2rem; font-weight: 700; color: var(--festival-dark); margin: 0 0 0.5rem 0;">{{ shift.name }}</h1>
+        <p style="color: #6b7280; font-size: 1rem; margin: 0;">{{ festival.name }}</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
+        <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); border-left: 5px solid var(--festival-primary);">
+            <h3 style="font-size: 0.9rem; color: #6b7280; font-weight: 600; margin: 0 0 0.75rem 0; text-transform: uppercase; letter-spacing: 0.5px;">Date</h3>
+            <p style="font-size: 1.3rem; font-weight: 700; color: var(--festival-dark); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="bi bi-calendar3" style="color: var(--festival-primary);"></i>
+                {{ shift.date|date:"l, F j, Y" }}
+            </p>
+        </div>
+        <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); border-left: 5px solid var(--festival-accent);">
+            <h3 style="font-size: 0.9rem; color: #6b7280; font-weight: 600; margin: 0 0 0.75rem 0; text-transform: uppercase; letter-spacing: 0.5px;">Time</h3>
+            <p style="font-size: 1.3rem; font-weight: 700; color: var(--festival-dark); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="bi bi-clock" style="color: var(--festival-accent);"></i>
+                {{ shift.start_time|time:"H:i" }} – {{ shift.end_time|time:"H:i" }}
+            </p>
+        </div>
+        {% if shift.description %}
+            <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); border-left: 5px solid var(--festival-secondary); grid-column: auto / span 1;">
+                <h3 style="font-size: 0.9rem; color: #6b7280; font-weight: 600; margin: 0 0 0.75rem 0; text-transform: uppercase; letter-spacing: 0.5px;">Description</h3>
+                <p style="font-size: 0.95rem; color: #475569; margin: 0; line-height: 1.6;">{{ shift.description }}</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <div style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); margin-bottom: 2rem;">
+        <h2 style="font-size: 1.5rem; font-weight: 600; color: var(--festival-dark); margin: 0 0 1.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
+            <i class="bi bi-list-check" style="color: var(--festival-primary);"></i> Available Tasks
+        </h2>
+
+        {% if shift.tasks.exists %}
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
+                {% for task in shift.tasks %}
+                    <div class="task-card {% if task.is_full %}task-full{% endif %}">
+                        <div class="task-card-header">
+                            <h3>{{ task.name }}</h3>
+                        </div>
+
+                        <div class="task-card-body">
+                            {% if task.description %}
+                                <p class="task-description">{{ task.description }}</p>
+                            {% endif %}
+
+                            {% if task.special_requirements %}
+                                <div class="task-requirements">
+                                    <strong><i class="bi bi-exclamation-circle"></i> Requirements:</strong> {{ task.special_requirements }}
+                                </div>
+                            {% endif %}
+
+                            <div class="task-capacity">
+                                <div class="capacity-label">
+                                    <span>Helpers Needed</span>
+                                    <span>
+                                        <span class="current">{{ task.current_helpers }}</span>
+                                        <span class="total">/ {{ task.required_helpers }}</span>
+                                    </span>
+                                </div>
+                                <div class="progress">
+                                    <div class="progress-bar" role="progressbar"
+                                         style="width: {% widthratio task.current_helpers task.required_helpers 100 %}%"
+                                         aria-valuenow="{{ task.current_helpers }}"
+                                         aria-valuemin="0"
+                                         aria-valuemax="{{ task.required_helpers }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="task-card-footer">
+                            {% if task.is_full %}
+                                <button class="signup-btn full" disabled>
+                                    <i class="bi bi-check-circle"></i> Full ({{ task.current_helpers }}/{{ task.required_helpers }})
+                                </button>
+                            {% else %}
+                                <a href="{% url 'festival:task_signup' festival_slug=festival.slug task_id=task.id %}"
+                                   class="signup-btn available">
+                                    <i class="bi bi-plus-circle"></i> Sign Up Now
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="bi bi-inbox"></i>
+                <h3>No Tasks Available Yet</h3>
+                <p>Please check back later for updates.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock page_content %}
