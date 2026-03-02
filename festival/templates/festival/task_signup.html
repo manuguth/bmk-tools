@@ -11,7 +11,7 @@
     <div class="festival-header">
         <h1>Anmelden für {{ task.name }}</h1>
         <p class="festival-description">
-            {{ festival.name }} · {{ task.shift.name }} · {{ task.shift.date|date:"F j, Y" }}
+            {{ festival.name }} · {{ task.shift.name }} · {{ task.shift.date|date:"j. F Y" }}
         </p>
     </div>
 
@@ -33,7 +33,7 @@
                 <div>
                     <p style="margin: 0; color: #94a3b8; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Datum & Zeit</p>
                     <p style="margin: 0.25rem 0 0 0; color: var(--festival-dark); font-weight: 600;">
-                        {{ task.shift.date|date:"l, F j" }} · {{ task.shift.start_time|time:"H:i" }}–{{ task.shift.end_time|time:"H:i" }}
+                        {{ task.shift.date|date:"l, j. F" }} · {{ task.shift.start_time|time:"H:i" }}–{{ task.shift.end_time|time:"H:i" }}
                     </p>
                 </div>
             </div>

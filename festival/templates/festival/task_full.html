@@ -35,7 +35,7 @@
             <div style="padding: 1rem; background: #f8fafc; border-radius: 8px;">
                 <p style="margin: 0; color: #94a3b8; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Datum & Zeit</p>
                 <p style="margin: 0.25rem 0 0 0; color: var(--festival-dark); font-weight: 600;">
-                    {{ task.shift.date|date:"l, F j" }} · {{ task.shift.start_time|time:"H:i" }}–{{ task.shift.end_time|time:"H:i" }}
+                    {{ task.shift.date|date:"l, j. F" }} · {{ task.shift.start_time|time:"H:i" }}–{{ task.shift.end_time|time:"H:i" }}
                 </p>
             </div>
 

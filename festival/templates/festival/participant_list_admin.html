@@ -40,7 +40,7 @@
                             <tr style="border-bottom: 1px solid #e5e7eb; transition: background-color 0.3s ease;" onmouseover="this.style.backgroundColor='#f9fafb';" onmouseout="this.style.backgroundColor='white';">
                                 <td style="padding: 1rem 1.25rem; color: var(--festival-dark); font-weight: 600;">{{ participant.name }}</td>
                                 <td style="padding: 1rem 1.25rem; color: #6b7280;">{{ participant.task.shift.name }}</td>
-                                <td style="padding: 1rem 1.25rem; color: #6b7280;">{{ participant.task.shift.date|date:"M j, Y" }}</td>
+                                <td style="padding: 1rem 1.25rem; color: #6b7280;">{{ participant.task.shift.date|date:"j. F Y" }}</td>
                                 <td style="padding: 1rem 1.25rem; color: #6b7280;">{{ participant.task.name }}</td>
                                 <td style="padding: 1rem 1.25rem; color: #6b7280;">{{ participant.task.shift.start_time|time:"H:i" }} – {{ participant.task.shift.end_time|time:"H:i" }}</td>
                                 <td style="padding: 1rem 1.25rem; color: #6b7280; font-size: 0.9rem;">{{ participant.signed_up_at|date:"M j, H:i" }}</td>
