@@ -31,8 +31,11 @@
             <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); border-left: 5px solid var(--festival-primary);">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                     <div>
-                        <p style="color: #6b7280; font-size: 0.9rem; margin-bottom: 0.5rem;">Gesamtteilnehmer</p>
-                        <h2 style="font-size: 2.5rem; font-weight: 700; color: var(--festival-dark); margin: 0;">{{ total_all_participants }}</h2>
+                        <p style="color: #6b7280; font-size: 0.9rem; margin-bottom: 0.5rem;">Anmeldungen</p>
+                        <h2 style="font-size: 2.5rem; font-weight: 700; color: var(--festival-dark); margin: 0;">
+                            {{ total_all_participants }}<span style="font-size: 1.2rem; color: #9ca3af; font-weight: 400;"> / {{ total_all_required_helpers }}</span>
+                        </h2>
+                        <p style="color: #9ca3af; font-size: 0.85rem; margin: 0.5rem 0 0 0;">Plätze besetzt</p>
                     </div>
                     <div style="width: 50px; height: 50px; border-radius: 10px; background: linear-gradient(135deg, var(--festival-primary) 0%, var(--festival-secondary) 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
                         <i class="bi bi-people-fill"></i>

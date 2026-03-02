@@ -13,6 +13,7 @@ def admin_festival_list(request):
     festivals = Festival.objects.all().order_by("-start_date")
     festivals_data = []
     total_all_participants = 0
+    total_all_required_helpers = 0
     total_all_shifts = 0
 
     for festival in festivals:
@@ -25,6 +26,7 @@ def admin_festival_list(request):
         ).count()
         total_shifts = festival.shifts.count()
         total_all_participants += total_participants
+        total_all_required_helpers += total_required_helpers
         total_all_shifts += total_shifts
 
         festivals_data.append({
@@ -38,6 +40,7 @@ def admin_festival_list(request):
     context = {
         "festivals_data": festivals_data,
         "total_all_participants": total_all_participants,
+        "total_all_required_helpers": total_all_required_helpers,
         "total_all_shifts": total_all_shifts,
     }
     return render(request, "festival/admin_festival_list.html", context)
