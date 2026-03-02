@@ -2,6 +2,7 @@ import csv
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.contrib.admin.views.decorators import staff_member_required
+from django.db import models
 from .models import Festival, Shift, Task, Participant
 from .forms import ParticipantSignUpForm
 
@@ -127,6 +128,9 @@ def admin_overview(request, festival_slug=None):
 
     # Calculate stats
     total_participants = Participant.objects.filter(task__shift__festival=festival).count()
+    total_required_helpers = Task.objects.filter(shift__festival=festival).aggregate(
+        total=models.Sum('required_helpers')
+    )['total'] or 0
     attended_count = Participant.objects.filter(
         task__shift__festival=festival, attended=True
     ).count()
@@ -139,6 +143,7 @@ def admin_overview(request, festival_slug=None):
         "festival": festival,
         "shifts_data": shifts_data,
         "total_participants": total_participants,
+        "total_required_helpers": total_required_helpers,
         "total_shifts": total_shifts,
         "attended_count": attended_count,
         "pending_count": pending_count,
