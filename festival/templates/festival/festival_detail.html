@@ -44,7 +44,7 @@
 
         {% if shift.tasks.exists %}
             <div class="tasks-grid">
-                {% for task in shift.tasks %}
+                {% for task in shift.tasks.all %}
                     <div class="task-card {% if task.is_full %}task-full{% endif %}">
                         <div class="task-card-header">
                             <h3>{{ task.name }}</h3>
