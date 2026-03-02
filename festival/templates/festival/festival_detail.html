@@ -1,6 +1,6 @@
 {% extends "festival/base.html" %}
 
-{% block title %}{{ festival.name }} - Sign Up{% endblock title %}
+{% block title %}{{ festival.name }} - Anmelden{% endblock title %}
 
 {% block page_content %}
 <div class="festival-header">
@@ -60,13 +60,13 @@
 
                             {% if task.special_requirements %}
                                 <div class="task-requirements">
-                                    <strong><i class="bi bi-exclamation-circle"></i> Requirements:</strong> {{ task.special_requirements }}
+                                    <strong><i class="bi bi-exclamation-circle"></i> Anforderungen:</strong> {{ task.special_requirements }}
                                 </div>
                             {% endif %}
 
                             <div class="task-capacity">
                                 <div class="capacity-label">
-                                    <span>Helpers Needed</span>
+                                    <span>Helfer benötigt</span>
                                     <span>
                                         <span class="current">{{ task.current_helpers }}</span>
                                         <span class="total">/ {{ task.required_helpers }}</span>
@@ -86,12 +86,12 @@
                         <div class="task-card-footer">
                             {% if task.is_full %}
                                 <button class="signup-btn full" disabled>
-                                    <i class="bi bi-check-circle"></i> Full ({{ task.current_helpers }}/{{ task.required_helpers }})
+                                    <i class="bi bi-check-circle"></i> Voll ({{ task.current_helpers }}/{{ task.required_helpers }})
                                 </button>
                             {% else %}
                                 <a href="{% url 'festival:task_signup' festival_slug=festival.slug task_id=task.id %}"
                                    class="signup-btn available">
-                                    <i class="bi bi-plus-circle"></i> Sign Up Now
+                                    <i class="bi bi-plus-circle"></i> Jetzt anmelden
                                 </a>
                             {% endif %}
                         </div>
@@ -101,16 +101,16 @@
         {% else %}
             <div class="empty-state" style="padding: 2rem;">
                 <i class="bi bi-inbox"></i>
-                <h3>No tasks yet</h3>
-                <p>Tasks for this shift will be available soon.</p>
+                <h3>Noch keine Aufgaben</h3>
+                <p>Aufgaben für diese Schicht werden bald verfügbar sein.</p>
             </div>
         {% endif %}
     </div>
 {% empty %}
     <div class="empty-state">
         <i class="bi bi-calendar-x"></i>
-        <h3>No shifts available</h3>
-        <p>Please check back later for updates.</p>
+        <h3>Keine Schichten verfügbar</h3>
+        <p>Bitte schauen Sie später nach Updates.</p>
     </div>
 {% endfor %}
 {% endblock %}

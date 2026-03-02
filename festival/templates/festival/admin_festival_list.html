@@ -1,14 +1,14 @@
 {% extends "festival/base.html" %}
 
-{% block title %}Admin Dashboard - All Festivals{% endblock title %}
+{% block title %}Admin-Übersicht - Alle Festivals{% endblock title %}
 
 {% block page_content %}
 <div style="animation: fadeInDown 0.6s ease;">
     <div style="margin-bottom: 3rem;">
         <h1 style="font-size: 2.5rem; font-weight: 700; color: var(--festival-dark); margin: 0 0 0.5rem 0;">
-            <i class="bi bi-speedometer2"></i> Admin Dashboard
+            <i class="bi bi-speedometer2"></i> Admin-Übersicht
         </h1>
-        <p style="color: #6b7280; font-size: 1rem; margin: 0;">Manage all festivals</p>
+        <p style="color: #6b7280; font-size: 1rem; margin: 0;">Alle Festivals verwalten</p>
     </div>
 
     {% if festivals_data %}
@@ -18,7 +18,7 @@
             <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); border-left: 5px solid var(--festival-primary);">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                     <div>
-                        <p style="color: #6b7280; font-size: 0.9rem; margin-bottom: 0.5rem;">Total Festivals</p>
+                        <p style="color: #6b7280; font-size: 0.9rem; margin-bottom: 0.5rem;">Gesamtfestivals</p>
                         <h2 style="font-size: 2.5rem; font-weight: 700; color: var(--festival-dark); margin: 0;">{{ festivals_data|length }}</h2>
                     </div>
                     <div style="width: 50px; height: 50px; border-radius: 10px; background: linear-gradient(135deg, var(--festival-primary) 0%, var(--festival-secondary) 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
@@ -31,7 +31,7 @@
             <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); border-left: 5px solid var(--festival-primary);">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                     <div>
-                        <p style="color: #6b7280; font-size: 0.9rem; margin-bottom: 0.5rem;">Total Participants</p>
+                        <p style="color: #6b7280; font-size: 0.9rem; margin-bottom: 0.5rem;">Gesamtteilnehmer</p>
                         <h2 style="font-size: 2.5rem; font-weight: 700; color: var(--festival-dark); margin: 0;">{{ festivals_data|dictsort:"total_participants"|last|default:"0" }}</h2>
                     </div>
                     <div style="width: 50px; height: 50px; border-radius: 10px; background: linear-gradient(135deg, var(--festival-primary) 0%, var(--festival-secondary) 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
@@ -44,7 +44,7 @@
             <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); border-left: 5px solid #8b5cf6;">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                     <div>
-                        <p style="color: #6b7280; font-size: 0.9rem; margin-bottom: 0.5rem;">Total Shifts</p>
+                        <p style="color: #6b7280; font-size: 0.9rem; margin-bottom: 0.5rem;">Gesamtschichten</p>
                         <h2 style="font-size: 2.5rem; font-weight: 700; color: var(--festival-dark); margin: 0;">{{ festivals_data|length }}</h2>
                     </div>
                     <div style="width: 50px; height: 50px; border-radius: 10px; background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
@@ -57,7 +57,7 @@
         <!-- Festivals List -->
         <div style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);">
             <h2 style="font-size: 1.5rem; font-weight: 600; color: var(--festival-dark); margin: 0 0 1.5rem 0;">
-                <i class="bi bi-list-check"></i> All Festivals
+                <i class="bi bi-list-check"></i> Alle Festivals
             </h2>
 
             <div style="display: grid; gap: 1.5rem;">
@@ -78,15 +78,15 @@
                                     </div>
                                     <div style="display: flex; align-items: center; gap: 0.5rem; color: #6b7280;">
                                         <i class="bi bi-hourglass-split" style="color: var(--festival-primary); font-size: 1.1rem;"></i>
-                                        <span><strong>{{ item.total_shifts }}</strong> {{ item.total_shifts|pluralize:"shift,shifts" }}</span>
+                                        <span><strong>{{ item.total_shifts }}</strong> {{ item.total_shifts|pluralize:"Schicht,Schichten" }}</span>
                                     </div>
                                     <div style="display: flex; align-items: center; gap: 0.5rem; color: #6b7280;">
                                         <i class="bi bi-people" style="color: var(--festival-primary); font-size: 1.1rem;"></i>
-                                        <span><strong>{{ item.total_participants }}</strong> {{ item.total_participants|pluralize:"participant,participants" }}</span>
+                                        <span><strong>{{ item.total_participants }}</strong> {{ item.total_participants|pluralize:"Teilnehmer,Teilnehmer" }}</span>
                                     </div>
                                     <div style="display: flex; align-items: center; gap: 0.5rem; color: #6b7280;">
                                         <i class="bi bi-check-circle" style="color: var(--festival-success); font-size: 1.1rem;"></i>
-                                        <span><strong>{{ item.attended_count }}</strong> attended</span>
+                                        <span><strong>{{ item.attended_count }}</strong> teilgenommen</span>
                                     </div>
                                 </div>
 
@@ -94,15 +94,15 @@
                                 <div style="margin-top: 1rem;">
                                     {% if item.festival.status == 'active' %}
                                         <span style="display: inline-block; background: #d1fae5; color: var(--festival-success); padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">
-                                            <i class="bi bi-circle-fill" style="margin-right: 0.25rem;"></i> Active
+                                            <i class="bi bi-circle-fill" style="margin-right: 0.25rem;"></i> Aktiv
                                         </span>
                                     {% elif item.festival.status == 'draft' %}
                                         <span style="display: inline-block; background: #fef3c7; color: var(--festival-accent); padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">
-                                            <i class="bi bi-circle-fill" style="margin-right: 0.25rem;"></i> Draft
+                                            <i class="bi bi-circle-fill" style="margin-right: 0.25rem;"></i> Entwurf
                                         </span>
                                     {% else %}
                                         <span style="display: inline-block; background: #e5e7eb; color: #6b7280; padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">
-                                            <i class="bi bi-circle-fill" style="margin-right: 0.25rem;"></i> Completed
+                                            <i class="bi bi-circle-fill" style="margin-right: 0.25rem;"></i> Abgeschlossen
                                         </span>
                                     {% endif %}
                                 </div>
@@ -111,7 +111,7 @@
                             <!-- Stats Cards -->
                             <div style="display: grid; gap: 1rem; min-width: 200px;">
                                 <div style="text-align: right;">
-                                    <p style="color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 500;">Participation Rate</p>
+                                    <p style="color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 500;">Beteiligungsquote</p>
                                     <div style="font-size: 1.75rem; font-weight: 700; color: var(--festival-primary);">
                                         {% if item.total_participants > 0 %}
                                             {% widthratio item.attended_count item.total_participants 100 %}%
@@ -122,7 +122,7 @@
                                 </div>
                                 <a href="{% url 'festival:admin_overview' item.festival.slug %}"
                                    style="display: inline-block; padding: 0.75rem 1.25rem; background: linear-gradient(135deg, var(--festival-primary) 0%, var(--festival-secondary) 100%); color: white; border-radius: 8px; text-decoration: none; font-weight: 600; text-align: center; transition: all 0.3s ease;" onmouseover="this.style.boxShadow='0 4px 12px rgba(99, 102, 241, 0.4)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.boxShadow='none'; this.style.transform='translateY(0)';">
-                                    <i class="bi bi-arrow-right" style="margin-right: 0.5rem;"></i> View Details
+                                    <i class="bi bi-arrow-right" style="margin-right: 0.5rem;"></i> Details anzeigen
                                 </a>
                             </div>
                         </div>
@@ -133,8 +133,8 @@
     {% else %}
         <div style="background: white; border-radius: 12px; padding: 4rem 2rem; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); text-align: center;">
             <i class="bi bi-inbox" style="font-size: 3rem; color: var(--festival-primary); opacity: 0.2; display: block; margin-bottom: 1rem;"></i>
-            <h3 style="color: var(--festival-dark); font-size: 1.25rem; margin: 0 0 0.5rem 0;">No Festivals Found</h3>
-            <p style="color: #9ca3af; margin: 0;">Create a festival to get started.</p>
+            <h3 style="color: var(--festival-dark); font-size: 1.25rem; margin: 0 0 0.5rem 0;">Keine Festivals gefunden</h3>
+            <p style="color: #9ca3af; margin: 0;">Erstellen Sie ein Festival, um zu beginnen.</p>
         </div>
     {% endif %}
 </div>

@@ -1,6 +1,6 @@
 {% extends "festival/base.html" %}
 
-{% block title %}Manage Participants - {{ festival.name }}{% endblock title %}
+{% block title %}Teilnehmer verwalten - {{ festival.name }}{% endblock title %}
 
 {% block page_content %}
 <div style="animation: fadeInDown 0.6s ease;">
@@ -8,13 +8,13 @@
     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
         <div>
             <h1 style="font-size: 2rem; font-weight: 700; color: var(--festival-dark); margin: 0 0 0.5rem 0;">
-                <i class="bi bi-people-fill"></i> Manage Participants
+                <i class="bi bi-people-fill"></i> Teilnehmer verwalten
             </h1>
             <p style="color: #6b7280; font-size: 1rem; margin: 0;">{{ festival.name }}</p>
         </div>
         <a href="{% url 'festival:export_participants_csv' festival_slug=festival.slug %}"
            style="padding: 0.75rem 1.5rem; background: linear-gradient(135deg, var(--festival-success) 0%, #059669 100%); color: white; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 0.5rem;" onmouseover="this.style.boxShadow='0 4px 12px rgba(16, 185, 129, 0.4)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.boxShadow='none'; this.style.transform='translateY(0)';">
-            <i class="bi bi-download"></i> Download CSV
+            <i class="bi bi-download"></i> CSV herunterladen
         </a>
     </div>
 
@@ -26,15 +26,15 @@
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.75rem;">
             <a href="?attended="
                style="padding: 0.75rem 1rem; text-align: center; {% if not request.GET.attended %}background: linear-gradient(135deg, var(--festival-primary) 0%, var(--festival-secondary) 100%); color: white;{% else %}background: #f3f4f6; color: var(--festival-dark);{% endif %} border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; display: inline-block;" onmouseover="this.style.opacity='0.9';" onmouseout="this.style.opacity='1';">
-                <i class="bi bi-people"></i> All ({{ participants.count }})
+                <i class="bi bi-people"></i> Alle ({{ participants.count }})
             </a>
             <a href="?attended=false"
                style="padding: 0.75rem 1rem; text-align: center; {% if request.GET.attended == 'false' %}background: linear-gradient(135deg, var(--festival-accent) 0%, #f97316 100%); color: white;{% else %}background: #f3f4f6; color: var(--festival-dark);{% endif %} border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; display: inline-block;" onmouseover="this.style.opacity='0.9';" onmouseout="this.style.opacity='1';">
-                <i class="bi bi-clock"></i> Pending
+                <i class="bi bi-clock"></i> Ausstehend
             </a>
             <a href="?attended=true"
                style="padding: 0.75rem 1rem; text-align: center; {% if request.GET.attended == 'true' %}background: linear-gradient(135deg, var(--festival-success) 0%, #059669 100%); color: white;{% else %}background: #f3f4f6; color: var(--festival-dark);{% endif %} border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; display: inline-block;" onmouseover="this.style.opacity='0.9';" onmouseout="this.style.opacity='1';">
-                <i class="bi bi-check-circle"></i> Attended
+                <i class="bi bi-check-circle"></i> Teilgenommen
             </a>
         </div>
     </div>
@@ -47,13 +47,13 @@
                     <thead>
                         <tr style="background: linear-gradient(135deg, var(--festival-primary) 0%, var(--festival-secondary) 100%); color: white;">
                             <th style="padding: 1.25rem; text-align: left; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Name</th>
-                            <th style="padding: 1.25rem; text-align: left; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Shift</th>
-                            <th style="padding: 1.25rem; text-align: left; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Date</th>
-                            <th style="padding: 1.25rem; text-align: left; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Task</th>
-                            <th style="padding: 1.25rem; text-align: left; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Time</th>
-                            <th style="padding: 1.25rem; text-align: left; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Signed Up</th>
+                            <th style="padding: 1.25rem; text-align: left; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Schicht</th>
+                            <th style="padding: 1.25rem; text-align: left; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Datum</th>
+                            <th style="padding: 1.25rem; text-align: left; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Aufgabe</th>
+                            <th style="padding: 1.25rem; text-align: left; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Zeit</th>
+                            <th style="padding: 1.25rem; text-align: left; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Angemeldet</th>
                             <th style="padding: 1.25rem; text-align: left; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Status</th>
-                            <th style="padding: 1.25rem; text-align: center; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Actions</th>
+                            <th style="padding: 1.25rem; text-align: center; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Aktionen</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -68,18 +68,18 @@
                                 <td style="padding: 1rem 1.25rem;">
                                     {% if participant.attended %}
                                         <span style="display: inline-block; background: #d1fae5; color: var(--festival-success); padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">
-                                            <i class="bi bi-check-circle" style="margin-right: 0.25rem;"></i> Attended
+                                            <i class="bi bi-check-circle" style="margin-right: 0.25rem;"></i> Teilgenommen
                                         </span>
                                     {% else %}
                                         <span style="display: inline-block; background: #fed7aa; color: var(--festival-accent); padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">
-                                            <i class="bi bi-clock" style="margin-right: 0.25rem;"></i> Pending
+                                            <i class="bi bi-clock" style="margin-right: 0.25rem;"></i> Ausstehend
                                         </span>
                                     {% endif %}
                                 </td>
                                 <td style="padding: 1rem 1.25rem; text-align: center;">
                                     <a href="/admin/festival/participant/{{ participant.id }}/change/"
                                        style="color: var(--festival-primary); text-decoration: none; font-weight: 600; transition: color 0.3s ease;" onmouseover="this.style.opacity='0.7';" onmouseout="this.style.opacity='1';">
-                                        <i class="bi bi-pencil"></i> Edit
+                                        <i class="bi bi-pencil"></i> Bearbeiten
                                     </a>
                                 </td>
                             </tr>
@@ -91,8 +91,8 @@
     {% else %}
         <div style="background: white; border-radius: 12px; padding: 3rem; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); text-align: center;">
             <i class="bi bi-inbox" style="font-size: 3rem; color: var(--festival-primary); opacity: 0.2; display: block; margin-bottom: 1rem;"></i>
-            <h3 style="color: var(--festival-dark); font-size: 1.25rem; margin: 0 0 0.5rem 0;">No Participants Found</h3>
-            <p style="color: #9ca3af; margin: 0;">There are no sign-ups for this festival yet.</p>
+            <h3 style="color: var(--festival-dark); font-size: 1.25rem; margin: 0 0 0.5rem 0;">Keine Teilnehmer gefunden</h3>
+            <p style="color: #9ca3af; margin: 0;">Es gibt noch keine Anmeldungen für dieses Festival.</p>
         </div>
     {% endif %}
 </div>

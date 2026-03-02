@@ -1,15 +1,15 @@
 {% extends "festival/base.html" %}
 
-{% block title %}Sign Up - {{ task.name }}{% endblock title %}
+{% block title %}Anmelden - {{ task.name }}{% endblock title %}
 
 {% block page_content %}
 <a href="{% url 'festival:festival_detail' festival_slug=festival.slug %}" style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--festival-primary); text-decoration: none; font-weight: 600; margin-bottom: 1.5rem; transition: all 0.3s ease;" onmouseover="this.style.opacity='0.7';" onmouseout="this.style.opacity='1';">
-    <i class="bi bi-arrow-left"></i> Back to Festival
+    <i class="bi bi-arrow-left"></i> Zurück zum Festival
 </a>
 
 <div style="max-width: 700px; margin: 0 auto;">
     <div class="festival-header">
-        <h1>Sign Up for {{ task.name }}</h1>
+        <h1>Anmelden für {{ task.name }}</h1>
         <p class="festival-description">
             {{ festival.name }} · {{ task.shift.name }} · {{ task.shift.date|date:"F j, Y" }}
         </p>
@@ -19,7 +19,7 @@
         <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);">
             <h3 style="margin-top: 0; color: var(--festival-dark); font-weight: 600; margin-bottom: 1rem;">
                 <i class="bi bi-info-circle" style="color: var(--festival-primary); margin-right: 0.5rem;"></i>
-                Task Details
+                Aufgabendetails
             </h3>
             <div style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.95rem;">
                 <div>
@@ -27,11 +27,11 @@
                     <p style="margin: 0.25rem 0 0 0; color: var(--festival-dark); font-weight: 600;">{{ festival.name }}</p>
                 </div>
                 <div>
-                    <p style="margin: 0; color: #94a3b8; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Shift</p>
+                    <p style="margin: 0; color: #94a3b8; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Schicht</p>
                     <p style="margin: 0.25rem 0 0 0; color: var(--festival-dark); font-weight: 600;">{{ task.shift.name }}</p>
                 </div>
                 <div>
-                    <p style="margin: 0; color: #94a3b8; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Date & Time</p>
+                    <p style="margin: 0; color: #94a3b8; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Datum & Zeit</p>
                     <p style="margin: 0.25rem 0 0 0; color: var(--festival-dark); font-weight: 600;">
                         {{ task.shift.date|date:"l, F j" }} · {{ task.shift.start_time|time:"H:i" }}–{{ task.shift.end_time|time:"H:i" }}
                     </p>
@@ -51,7 +51,7 @@
                 <div style="padding: 0.75rem; background: rgba(255, 255, 255, 0.2); border-radius: 6px;">
                     <p style="margin: 0; font-size: 0.9rem; font-weight: 600;">
                         <i class="bi bi-exclamation-circle" style="margin-right: 0.25rem;"></i>
-                        Requirements
+                        Anforderungen
                     </p>
                     <p style="margin: 0.25rem 0 0 0; font-size: 0.9rem; opacity: 0.95;">{{ task.special_requirements }}</p>
                 </div>
@@ -63,7 +63,7 @@
     <div style="background: #f0fdf4; border-left: 4px solid var(--festival-success); padding: 1rem; border-radius: 8px; margin-bottom: 2rem;">
         <p style="margin: 0; color: var(--festival-dark); font-weight: 600;">
             <i class="bi bi-check-circle" style="color: var(--festival-success); margin-right: 0.5rem;"></i>
-            {{ task.current_helpers }} of {{ task.required_helpers }} spots filled
+            {{ task.current_helpers }} von {{ task.required_helpers }} Plätze belegt
         </p>
     </div>
 
@@ -71,7 +71,7 @@
     <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);">
         <h2 style="margin-top: 0; color: var(--festival-dark); font-weight: 600; margin-bottom: 1.5rem;">
             <i class="bi bi-pencil-square" style="color: var(--festival-primary); margin-right: 0.5rem;"></i>
-            Your Information
+            Ihre Informationen
         </h2>
 
         <form method="post" novalidate>
@@ -90,12 +90,12 @@
 
             <button type="submit" style="width: 100%; padding: 1rem; background: linear-gradient(135deg, var(--festival-success) 0%, #059669 100%); color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: all 0.3s ease;">
                 <i class="bi bi-check-circle" style="margin-right: 0.5rem;"></i>
-                Confirm Sign Up
+                Anmeldung bestätigen
             </button>
         </form>
 
         <p style="margin-top: 1.5rem; font-size: 0.9rem; color: #94a3b8; text-align: center;">
-            By signing up, you confirm that you'll be available for this shift.
+            Durch die Anmeldung bestätigen Sie, dass Sie für diese Schicht verfügbar sind.
         </p>
     </div>
 </div>

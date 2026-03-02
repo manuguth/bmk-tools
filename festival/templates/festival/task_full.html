@@ -1,10 +1,10 @@
 {% extends "festival/base.html" %}
 
-{% block title %}Task Full - {{ festival.name }}{% endblock title %}
+{% block title %}Aufgabe voll - {{ festival.name }}{% endblock title %}
 
 {% block page_content %}
 <a href="{% url 'festival:festival_detail' festival_slug=festival.slug %}" style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--festival-primary); text-decoration: none; font-weight: 600; margin-bottom: 1.5rem; transition: all 0.3s ease;" onmouseover="this.style.opacity='0.7';" onmouseout="this.style.opacity='1';">
-    <i class="bi bi-arrow-left"></i> Back to Festival
+    <i class="bi bi-arrow-left"></i> Zurück zum Festival
 </a>
 
 <div style="max-width: 600px; margin: 0 auto; text-align: center; padding: 2rem 0;">
@@ -12,36 +12,36 @@
         <i class="bi bi-exclamation-circle-fill"></i>
     </div>
 
-    <h1 style="color: var(--festival-dark); margin-bottom: 0.5rem;">Task is Full</h1>
-    <p class="festival-description">Unfortunately, this task has reached its capacity.</p>
+    <h1 style="color: var(--festival-dark); margin-bottom: 0.5rem;">Aufgabe ist voll</h1>
+    <p class="festival-description">Leider hat diese Aufgabe ihre Kapazität erreicht.</p>
 
     <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); margin: 2rem 0; text-align: left;">
         <h3 style="margin-top: 0; color: var(--festival-dark); font-weight: 600; margin-bottom: 1.5rem;">
             <i class="bi bi-briefcase" style="color: var(--festival-primary); margin-right: 0.5rem;"></i>
-            Task Details
+            Aufgabendetails
         </h3>
 
         <div style="display: flex; flex-direction: column; gap: 1rem;">
             <div style="padding: 1rem; background: #f8fafc; border-radius: 8px;">
-                <p style="margin: 0; color: #94a3b8; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Task</p>
+                <p style="margin: 0; color: #94a3b8; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Aufgabe</p>
                 <p style="margin: 0.25rem 0 0 0; color: var(--festival-dark); font-weight: 600;">{{ task.name }}</p>
             </div>
 
             <div style="padding: 1rem; background: #f8fafc; border-radius: 8px;">
-                <p style="margin: 0; color: #94a3b8; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Shift</p>
+                <p style="margin: 0; color: #94a3b8; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Schicht</p>
                 <p style="margin: 0.25rem 0 0 0; color: var(--festival-dark); font-weight: 600;">{{ task.shift.name }}</p>
             </div>
 
             <div style="padding: 1rem; background: #f8fafc; border-radius: 8px;">
-                <p style="margin: 0; color: #94a3b8; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Date & Time</p>
+                <p style="margin: 0; color: #94a3b8; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Datum & Zeit</p>
                 <p style="margin: 0.25rem 0 0 0; color: var(--festival-dark); font-weight: 600;">
                     {{ task.shift.date|date:"l, F j" }} · {{ task.shift.start_time|time:"H:i" }}–{{ task.shift.end_time|time:"H:i" }}
                 </p>
             </div>
 
             <div style="padding: 1rem; background: #f8fafc; border-radius: 8px;">
-                <p style="margin: 0; color: #94a3b8; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Capacity</p>
-                <p style="margin: 0.25rem 0 0 0; color: var(--festival-dark); font-weight: 600;">{{ task.current_helpers }} / {{ task.required_helpers }} volunteers</p>
+                <p style="margin: 0; color: #94a3b8; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Kapazität</p>
+                <p style="margin: 0.25rem 0 0 0; color: var(--festival-dark); font-weight: 600;">{{ task.current_helpers }} / {{ task.required_helpers }} Freiwillige</p>
             </div>
         </div>
     </div>
@@ -50,10 +50,10 @@
     <div style="background: #fef3c7; border-left: 4px solid var(--festival-accent); padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; text-align: left;">
         <p style="margin: 0; color: var(--festival-dark); font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
             <i class="bi bi-info-circle"></i>
-            We're All Set!
+            Wir sind alle gesetzt!
         </p>
         <p style="margin: 0.5rem 0 0 0; color: #854d0e; line-height: 1.6;">
-            We have enough volunteers for this task. But don't worry! You can sign up for other available tasks in different shifts.
+            Wir haben genug Freiwillige für diese Aufgabe. Aber machen Sie sich keine Sorgen! Sie können sich für andere verfügbare Aufgaben in verschiedenen Schichten anmelden.
         </p>
     </div>
 
@@ -61,7 +61,7 @@
     <div style="display: grid; gap: 1rem;">
         <a href="{% url 'festival:festival_detail' festival_slug=festival.slug %}"
            style="padding: 1rem; background: linear-gradient(135deg, var(--festival-primary) 0%, var(--festival-secondary) 100%); color: white; border: none; border-radius: 8px; font-weight: 600; text-decoration: none; transition: all 0.3s ease; display: inline-block;">
-            <i class="bi bi-arrow-left"></i> View Other Tasks
+            <i class="bi bi-arrow-left"></i> Andere Aufgaben anzeigen
         </a>
     </div>
 </div>

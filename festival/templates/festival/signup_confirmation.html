@@ -1,6 +1,6 @@
 {% extends "festival/base.html" %}
 
-{% block title %}Sign Up Confirmed - {{ festival.name }}{% endblock title %}
+{% block title %}Anmeldung bestätigt - {{ festival.name }}{% endblock title %}
 
 {% block page_content %}
 <div style="max-width: 700px; margin: 0 auto;">
@@ -8,16 +8,16 @@
         <div style="font-size: 4rem; color: var(--festival-success); margin-bottom: 1rem;">
             <i class="bi bi-check-circle-fill"></i>
         </div>
-        <h1>You're All Set!</h1>
+        <h1>Alles erledigt!</h1>
         <p class="festival-description">
-            Thanks for signing up, <strong style="color: var(--festival-dark);">{{ participant.name }}</strong>!
+            Vielen Dank, dass Sie sich angemeldet haben, <strong style="color: var(--festival-dark);">{{ participant.name }}</strong>!
         </p>
     </div>
 
     <div style="background: linear-gradient(135deg, var(--festival-success) 0%, #059669 100%); padding: 2rem; border-radius: 12px; color: white; margin-bottom: 2rem; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
         <h2 style="margin-top: 0; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
             <i class="bi bi-calendar-check"></i>
-            Your Sign-Up Details
+            Ihre Anmeldedaten
         </h2>
 
         <div style="display: grid; gap: 1rem;">
@@ -32,7 +32,7 @@
             <div style="display: flex; align-items: start; gap: 1rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.2);">
                 <i class="bi bi-hourglass-split" style="font-size: 1.2rem; flex-shrink: 0; margin-top: 0.25rem;"></i>
                 <div>
-                    <p style="margin: 0; font-size: 0.9rem; opacity: 0.9;">Shift</p>
+                    <p style="margin: 0; font-size: 0.9rem; opacity: 0.9;">Schicht</p>
                     <p style="margin: 0.25rem 0 0 0; font-weight: 600;">
                         {{ participant.task.shift.name }}
                         <br>
@@ -44,7 +44,7 @@
             <div style="display: flex; align-items: start; gap: 1rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.2);">
                 <i class="bi bi-calendar-event" style="font-size: 1.2rem; flex-shrink: 0; margin-top: 0.25rem;"></i>
                 <div>
-                    <p style="margin: 0; font-size: 0.9rem; opacity: 0.9;">Date</p>
+                    <p style="margin: 0; font-size: 0.9rem; opacity: 0.9;">Datum</p>
                     <p style="margin: 0.25rem 0 0 0; font-weight: 600;">{{ participant.task.shift.date|date:"l, F j, Y" }}</p>
                 </div>
             </div>
@@ -52,7 +52,7 @@
             <div style="display: flex; align-items: start; gap: 1rem;">
                 <i class="bi bi-briefcase" style="font-size: 1.2rem; flex-shrink: 0; margin-top: 0.25rem;"></i>
                 <div>
-                    <p style="margin: 0; font-size: 0.9rem; opacity: 0.9;">Your Task</p>
+                    <p style="margin: 0; font-size: 0.9rem; opacity: 0.9;">Ihre Aufgabe</p>
                     <p style="margin: 0.25rem 0 0 0; font-weight: 600;">{{ participant.task.name }}</p>
                 </div>
             </div>
@@ -63,7 +63,7 @@
     {% if participant.task.description %}
         <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); margin-bottom: 1.5rem;">
             <h3 style="margin-top: 0; color: var(--festival-dark); font-weight: 600; margin-bottom: 0.75rem;">
-                About This Task
+                Über diese Aufgabe
             </h3>
             <p style="margin: 0; color: #475569; line-height: 1.6;">{{ participant.task.description }}</p>
         </div>
@@ -74,7 +74,7 @@
         <div style="background: #fef3c7; border-left: 4px solid var(--festival-accent); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
             <p style="margin: 0; color: var(--festival-dark); font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
                 <i class="bi bi-exclamation-circle"></i>
-                Requirements
+                Anforderungen
             </p>
             <p style="margin: 0.5rem 0 0 0; color: #854d0e;">{{ participant.task.special_requirements }}</p>
         </div>
@@ -84,10 +84,10 @@
     <div style="background: #ede9fe; border-left: 4px solid var(--festival-primary); padding: 1rem; border-radius: 8px; margin-bottom: 2rem;">
         <h4 style="margin: 0 0 0.75rem 0; color: var(--festival-dark); display: flex; align-items: center; gap: 0.5rem;">
             <i class="bi bi-info-circle"></i>
-            Important
+            Wichtig
         </h4>
         <p style="margin: 0; color: #4f3919; line-height: 1.6;">
-            Please arrive on time for your shift. If you need to cancel, contact the organizers as soon as possible.
+            Bitte kommen Sie pünktlich zu Ihrer Schicht. Wenn Sie absagen müssen, kontaktieren Sie die Organizer so schnell wie möglich.
         </p>
     </div>
 
@@ -95,13 +95,13 @@
     <div style="display: grid; gap: 1rem;">
         <a href="{% url 'festival:festival_detail' festival_slug=festival.slug %}"
            style="padding: 1rem; text-align: center; background: linear-gradient(135deg, var(--festival-primary) 0%, var(--festival-secondary) 100%); color: white; border: none; border-radius: 8px; font-weight: 600; text-decoration: none; transition: all 0.3s ease; display: inline-block;">
-            <i class="bi bi-arrow-left"></i> Back to Festival
+            <i class="bi bi-arrow-left"></i> Zurück zum Festival
         </a>
     </div>
 
     <!-- Timestamp -->
     <p style="margin-top: 2rem; text-align: center; color: #94a3b8; font-size: 0.85rem;">
-        Signed up on {{ participant.signed_up_at|date:"F j, Y \a\t H:i" }}
+        Angemeldet am {{ participant.signed_up_at|date:"F j, Y \a\t H:i" }}
     </p>
 </div>
 {% endblock %}
