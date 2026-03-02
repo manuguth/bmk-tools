@@ -12,7 +12,8 @@ class Festival(models.Model):
 
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
-    date = models.DateField()
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
     slug = models.SlugField(unique=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="draft")
     created_at = models.DateTimeField(auto_now_add=True)

@@ -7,7 +7,11 @@
     <h1>{{ festival.name }}</h1>
     <div class="festival-date">
         <i class="bi bi-calendar-event"></i>
-        {{ festival.date|date:"l, F j, Y" }}
+        {% if festival.start_date == festival.end_date %}
+            {{ festival.start_date|date:"l, j. F Y" }}
+        {% else %}
+            {{ festival.start_date|date:"j. F Y" }} – {{ festival.end_date|date:"j. F Y" }}
+        {% endif %}
     </div>
     {% if festival.description %}
         <p class="festival-description">{{ festival.description }}</p>

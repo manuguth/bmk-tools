@@ -74,7 +74,15 @@
                                 <div style="display: flex; flex-wrap: wrap; gap: 1.5rem; font-size: 0.9rem;">
                                     <div style="display: flex; align-items: center; gap: 0.5rem; color: #6b7280;">
                                         <i class="bi bi-calendar3" style="color: var(--festival-primary); font-size: 1.1rem;"></i>
-                                        <span><strong>{{ item.festival.date|date:"l, F j, Y" }}</strong></span>
+                                        <span>
+                                            <strong>
+                                                {% if item.festival.start_date == item.festival.end_date %}
+                                                    {{ item.festival.start_date|date:"j. F Y" }}
+                                                {% else %}
+                                                    {{ item.festival.start_date|date:"j. F Y" }} – {{ item.festival.end_date|date:"j. F Y" }}
+                                                {% endif %}
+                                            </strong>
+                                        </span>
                                     </div>
                                     <div style="display: flex; align-items: center; gap: 0.5rem; color: #6b7280;">
                                         <i class="bi bi-hourglass-split" style="color: var(--festival-primary); font-size: 1.1rem;"></i>

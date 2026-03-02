@@ -14,8 +14,8 @@ class TaskInline(admin.TabularInline):
 
 @admin.register(Festival)
 class FestivalAdmin(admin.ModelAdmin):
-    list_display = ("name", "date", "status", "created_at")
-    list_filter = ("status", "date")
+    list_display = ("name", "start_date", "end_date", "status", "created_at")
+    list_filter = ("status", "start_date", "end_date")
     search_fields = ("name", "description")
     prepopulated_fields = {"slug": ("name",)}
     inlines = [ShiftInline]
