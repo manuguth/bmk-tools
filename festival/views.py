@@ -12,6 +12,8 @@ def admin_festival_list(request):
     """Admin view to list all festivals with stats."""
     festivals = Festival.objects.all().order_by("-start_date")
     festivals_data = []
+    total_all_participants = 0
+    total_all_shifts = 0
 
     for festival in festivals:
         total_participants = Participant.objects.filter(task__shift__festival=festival).count()
@@ -22,6 +24,8 @@ def admin_festival_list(request):
             task__shift__festival=festival, attended=True
         ).count()
         total_shifts = festival.shifts.count()
+        total_all_participants += total_participants
+        total_all_shifts += total_shifts
 
         festivals_data.append({
             "festival": festival,
@@ -33,6 +37,8 @@ def admin_festival_list(request):
 
     context = {
         "festivals_data": festivals_data,
+        "total_all_participants": total_all_participants,
+        "total_all_shifts": total_all_shifts,
     }
     return render(request, "festival/admin_festival_list.html", context)
 
