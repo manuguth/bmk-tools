@@ -84,10 +84,6 @@
                                         <i class="bi bi-people" style="color: var(--festival-primary); font-size: 1.1rem;"></i>
                                         <span><strong>{{ item.total_participants }}</strong> {{ item.total_participants|pluralize:"Teilnehmer,Teilnehmer" }}</span>
                                     </div>
-                                    <div style="display: flex; align-items: center; gap: 0.5rem; color: #6b7280;">
-                                        <i class="bi bi-check-circle" style="color: var(--festival-success); font-size: 1.1rem;"></i>
-                                        <span><strong>{{ item.attended_count }}</strong> teilgenommen</span>
-                                    </div>
                                 </div>
 
                                 <!-- Status Badge -->
@@ -110,16 +106,6 @@
 
                             <!-- Stats Cards -->
                             <div style="display: grid; gap: 1rem; min-width: 200px;">
-                                <div style="text-align: right;">
-                                    <p style="color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 500;">Beteiligungsquote</p>
-                                    <div style="font-size: 1.75rem; font-weight: 700; color: var(--festival-primary);">
-                                        {% if item.total_participants > 0 %}
-                                            {% widthratio item.attended_count item.total_participants 100 %}%
-                                        {% else %}
-                                            0%
-                                        {% endif %}
-                                    </div>
-                                </div>
                                 <a href="{% url 'festival:admin_overview' item.festival.slug %}"
                                    style="display: inline-block; padding: 0.75rem 1.25rem; background: linear-gradient(135deg, var(--festival-primary) 0%, var(--festival-secondary) 100%); color: white; border-radius: 8px; text-decoration: none; font-weight: 600; text-align: center; transition: all 0.3s ease;" onmouseover="this.style.boxShadow='0 4px 12px rgba(99, 102, 241, 0.4)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.boxShadow='none'; this.style.transform='translateY(0)';">
                                     <i class="bi bi-arrow-right" style="margin-right: 0.5rem;"></i> Details anzeigen
