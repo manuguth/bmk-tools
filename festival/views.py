@@ -9,7 +9,7 @@ from .forms import ParticipantSignUpForm
 @staff_member_required
 def admin_festival_list(request):
     """Admin view to list all festivals with stats."""
-    festivals = Festival.objects.all().order_by("-date")
+    festivals = Festival.objects.all().order_by("-start_date")
     festivals_data = []
 
     for festival in festivals:
@@ -109,9 +109,9 @@ def admin_overview(request, festival_slug=None):
         festival = get_object_or_404(Festival, slug=festival_slug)
     else:
         # Get the most recent active festival if no slug provided
-        festival = Festival.objects.filter(status="active").order_by("-date").first()
+        festival = Festival.objects.filter(status="active").order_by("-start_date").first()
         if not festival:
-            festival = Festival.objects.order_by("-date").first()
+            festival = Festival.objects.order_by("-start_date").first()
 
     if not festival:
         context = {"festival": None, "shifts_data": []}
