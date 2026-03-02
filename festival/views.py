@@ -1,9 +1,11 @@
 import csv
+import json
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.contrib.admin.views.decorators import staff_member_required
+from django.views.decorators.http import require_http_methods
 from django.db import models
-from .models import Festival, Shift, Task, Participant
+from .models import Festival, Shift, Task, Participant, TaskTemplate
 from .forms import ParticipantSignUpForm
 
 
@@ -137,7 +139,14 @@ def admin_overview(request, festival_slug=None):
 
     for shift in shifts:
         participant_count = Participant.objects.filter(task__shift=shift).count()
-        shifts_data.append({"shift": shift, "participant_count": participant_count})
+        total_required_helpers = Task.objects.filter(shift=shift).aggregate(
+            total=models.Sum('required_helpers')
+        )['total'] or 0
+        shifts_data.append({
+            "shift": shift,
+            "participant_count": participant_count,
+            "total_required_helpers": total_required_helpers,
+        })
 
     # Calculate stats
     total_participants = Participant.objects.filter(task__shift__festival=festival).count()
@@ -215,3 +224,432 @@ def export_participants_csv(request, festival_slug):
         ])
 
     return response
+
+
+@staff_member_required
+def admin_edit(request, festival_slug):
+    """Admin edit view for managing shifts, tasks, and participants."""
+    festival = get_object_or_404(Festival, slug=festival_slug)
+
+    # Get all shifts with tasks and participants
+    shifts = festival.shifts.all()
+    shifts_data = []
+
+    for shift in shifts:
+        tasks_data = []
+        for task in shift.tasks.all():
+            participants = Participant.objects.filter(task=task).select_related('task__shift')
+            tasks_data.append({
+                'task': task,
+                'participants': participants,
+            })
+        shifts_data.append({
+            'shift': shift,
+            'tasks': tasks_data,
+        })
+
+    context = {
+        'festival': festival,
+        'shifts_data': shifts_data,
+    }
+    return render(request, 'festival/admin_edit.html', context)
+
+
+@staff_member_required
+@require_http_methods(["POST"])
+def api_update_task(request, festival_slug, task_id):
+    """API endpoint to update task details."""
+    festival = get_object_or_404(Festival, slug=festival_slug)
+    task = get_object_or_404(Task, id=task_id, shift__festival=festival)
+
+    try:
+        data = json.loads(request.body)
+
+        # Validate and update required_helpers
+        if 'required_helpers' in data:
+            required_helpers = int(data['required_helpers'])
+            if required_helpers < 1:
+                return JsonResponse({'success': False, 'error': 'Required helpers must be at least 1'}, status=400)
+            task.required_helpers = required_helpers
+
+        # Update description
+        if 'description' in data:
+            task.description = data['description']
+
+        task.save()
+        return JsonResponse({
+            'success': True,
+            'message': 'Task updated successfully',
+            'data': {
+                'required_helpers': task.required_helpers,
+                'description': task.description,
+            }
+        })
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+    except ValueError:
+        return JsonResponse({'success': False, 'error': 'Invalid required_helpers value'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@staff_member_required
+@require_http_methods(["POST"])
+def api_update_shift(request, festival_slug, shift_id):
+    """API endpoint to update shift details."""
+    festival = get_object_or_404(Festival, slug=festival_slug)
+    shift = get_object_or_404(Shift, id=shift_id, festival=festival)
+
+    try:
+        data = json.loads(request.body)
+
+        # Update description
+        if 'description' in data:
+            shift.description = data['description']
+
+        shift.save()
+        return JsonResponse({
+            'success': True,
+            'message': 'Shift updated successfully',
+            'data': {
+                'description': shift.description,
+            }
+        })
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@staff_member_required
+@require_http_methods(["POST"])
+def api_update_participant(request, festival_slug, participant_id):
+    """API endpoint to update participant details."""
+    festival = get_object_or_404(Festival, slug=festival_slug)
+    participant = get_object_or_404(Participant, id=participant_id, task__shift__festival=festival)
+
+    try:
+        data = json.loads(request.body)
+
+        # Update name
+        if 'name' in data:
+            participant.name = data['name']
+
+        # Update attended status
+        if 'attended' in data:
+            participant.attended = data['attended'] in ['true', True, 'True', '1', 1]
+
+        # Update notes
+        if 'notes' in data:
+            participant.notes = data['notes']
+
+        participant.save()
+        return JsonResponse({
+            'success': True,
+            'message': 'Participant updated successfully',
+            'data': {
+                'name': participant.name,
+                'attended': participant.attended,
+                'notes': participant.notes,
+            }
+        })
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@staff_member_required
+@require_http_methods(["POST"])
+def api_delete_participant(request, festival_slug, participant_id):
+    """API endpoint to delete a participant."""
+    festival = get_object_or_404(Festival, slug=festival_slug)
+    participant = get_object_or_404(Participant, id=participant_id, task__shift__festival=festival)
+
+    try:
+        participant_name = participant.name
+        participant.delete()
+        return JsonResponse({
+            'success': True,
+            'message': f'Participant "{participant_name}" deleted successfully',
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@staff_member_required
+@require_http_methods(["POST"])
+def api_create_task(request, festival_slug, shift_id):
+    """API endpoint to create a new task."""
+    festival = get_object_or_404(Festival, slug=festival_slug)
+    shift = get_object_or_404(Shift, id=shift_id, festival=festival)
+
+    try:
+        data = json.loads(request.body)
+
+        # Validate required fields
+        if not data.get('name'):
+            return JsonResponse({'success': False, 'error': 'Task name is required'}, status=400)
+
+        required_helpers = int(data.get('required_helpers', 1))
+        if required_helpers < 1:
+            return JsonResponse({'success': False, 'error': 'Required helpers must be at least 1'}, status=400)
+
+        # Get template data if template_id provided
+        description = data.get('description', '')
+        special_requirements = data.get('special_requirements', '')
+
+        if data.get('template_id'):
+            try:
+                template = TaskTemplate.objects.get(id=data['template_id'])
+                description = template.description
+                required_helpers = template.required_helpers
+                special_requirements = template.special_requirements
+            except TaskTemplate.DoesNotExist:
+                return JsonResponse({'success': False, 'error': 'Template not found'}, status=404)
+
+        # Create the task
+        task = Task.objects.create(
+            shift=shift,
+            name=data['name'],
+            description=description,
+            required_helpers=required_helpers,
+            special_requirements=special_requirements
+        )
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Task created successfully',
+            'data': {
+                'id': str(task.id),
+                'name': task.name,
+                'description': task.description,
+                'required_helpers': task.required_helpers,
+                'special_requirements': task.special_requirements,
+            }
+        })
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+    except ValueError:
+        return JsonResponse({'success': False, 'error': 'Invalid required_helpers value'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@staff_member_required
+def admin_templates(request):
+    """Admin view to manage task templates."""
+    templates = TaskTemplate.objects.all()
+    context = {
+        'templates': templates,
+    }
+    return render(request, 'festival/admin_templates.html', context)
+
+
+@staff_member_required
+@require_http_methods(["GET"])
+def api_get_templates(request):
+    """API endpoint to get all task templates."""
+    templates = TaskTemplate.objects.all().values('id', 'name', 'description', 'required_helpers', 'special_requirements')
+    return JsonResponse({
+        'success': True,
+        'data': list(templates)
+    })
+
+
+@staff_member_required
+@require_http_methods(["POST"])
+def api_create_template(request):
+    """API endpoint to create a new task template."""
+    try:
+        data = json.loads(request.body)
+
+        # Validate required fields
+        if not data.get('name'):
+            return JsonResponse({'success': False, 'error': 'Template name is required'}, status=400)
+
+        required_helpers = int(data.get('required_helpers', 1))
+        if required_helpers < 1:
+            return JsonResponse({'success': False, 'error': 'Required helpers must be at least 1'}, status=400)
+
+        # Create the template
+        template = TaskTemplate.objects.create(
+            name=data['name'],
+            description=data.get('description', ''),
+            required_helpers=required_helpers,
+            special_requirements=data.get('special_requirements', '')
+        )
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Template created successfully',
+            'data': {
+                'id': str(template.id),
+                'name': template.name,
+                'description': template.description,
+                'required_helpers': template.required_helpers,
+                'special_requirements': template.special_requirements,
+            }
+        })
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+    except ValueError:
+        return JsonResponse({'success': False, 'error': 'Invalid required_helpers value'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@staff_member_required
+@require_http_methods(["POST"])
+def api_update_template(request, template_id):
+    """API endpoint to update a task template."""
+    template = get_object_or_404(TaskTemplate, id=template_id)
+
+    try:
+        data = json.loads(request.body)
+
+        # Update name
+        if 'name' in data:
+            if not data['name']:
+                return JsonResponse({'success': False, 'error': 'Template name is required'}, status=400)
+            template.name = data['name']
+
+        # Update description
+        if 'description' in data:
+            template.description = data['description']
+
+        # Update required_helpers
+        if 'required_helpers' in data:
+            required_helpers = int(data['required_helpers'])
+            if required_helpers < 1:
+                return JsonResponse({'success': False, 'error': 'Required helpers must be at least 1'}, status=400)
+            template.required_helpers = required_helpers
+
+        # Update special_requirements
+        if 'special_requirements' in data:
+            template.special_requirements = data['special_requirements']
+
+        template.save()
+        return JsonResponse({
+            'success': True,
+            'message': 'Template updated successfully',
+            'data': {
+                'id': str(template.id),
+                'name': template.name,
+                'description': template.description,
+                'required_helpers': template.required_helpers,
+                'special_requirements': template.special_requirements,
+            }
+        })
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+    except ValueError:
+        return JsonResponse({'success': False, 'error': 'Invalid required_helpers value'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@staff_member_required
+@require_http_methods(["POST"])
+def api_delete_template(request, template_id):
+    """API endpoint to delete a task template."""
+    template = get_object_or_404(TaskTemplate, id=template_id)
+
+    try:
+        template_name = template.name
+        template.delete()
+        return JsonResponse({
+            'success': True,
+            'message': f'Template "{template_name}" deleted successfully',
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@staff_member_required
+def admin_print_overview(request, festival_slug):
+    """Task-centric matrix view: tasks as columns, shifts as rows."""
+    festival = get_object_or_404(Festival, slug=festival_slug)
+
+    # Get all shifts ordered by date and time
+    shifts = festival.shifts.all().order_by('date', 'start_time')
+
+    # Get unique task names across all shifts
+    unique_task_names = (
+        Task.objects.filter(shift__festival=festival)
+        .values_list('name', flat=True)
+        .distinct()
+        .order_by('name')
+    )
+
+    # Build matrix data as a list of task rows, each with cells for each shift
+    matrix_data = []
+
+    for task_name in unique_task_names:
+        task_row = {
+            'task_name': task_name,
+            'cells': []
+        }
+
+        # Get one task to determine required_helpers (they should be the same for same-named tasks)
+        first_task_for_name = (
+            Task.objects.filter(shift__festival=festival, name=task_name)
+            .first()
+        )
+        required_helpers = first_task_for_name.required_helpers if first_task_for_name else 0
+
+        for shift in shifts:
+            # Find tasks with this name in this shift
+            tasks_in_shift = Task.objects.filter(
+                shift=shift,
+                name=task_name
+            )
+
+            if tasks_in_shift.exists():
+                # Get the first task (should typically be only one)
+                task = tasks_in_shift.first()
+                participants = Participant.objects.filter(
+                    task=task
+                ).order_by('name')
+
+                current_count = participants.count()
+                required_count = task.required_helpers
+
+                # Calculate status
+                if current_count >= required_count:
+                    status = 'full'
+                elif current_count == 0:
+                    status = 'empty'
+                else:
+                    status = 'partial'
+
+                shortage = max(0, required_count - current_count)
+
+                cell = {
+                    'status': status,
+                    'participants': list(participants),
+                    'current': current_count,
+                    'required': required_count,
+                    'shortage': shortage,
+                }
+            else:
+                # Task doesn't exist in this shift - mark as empty
+                cell = {
+                    'status': 'empty',
+                    'participants': [],
+                    'current': 0,
+                    'required': required_helpers,
+                    'shortage': required_helpers if required_helpers > 0 else 0,
+                }
+
+            task_row['cells'].append(cell)
+
+        task_row['required_helpers'] = required_helpers
+        matrix_data.append(task_row)
+
+    context = {
+        'festival': festival,
+        'shifts': shifts,
+        'matrix_data': matrix_data,
+    }
+    return render(request, 'festival/admin_print_overview.html', context)

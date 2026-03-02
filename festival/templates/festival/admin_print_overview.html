@@ -1,0 +1,144 @@
+{% extends "festival/base.html" %}
+
+{% block title %}Helferplan - {{ festival.name }}{% endblock title %}
+
+{% block page_content %}
+<div style="margin-bottom: 2rem;">
+    <a href="{% url 'festival:admin_overview' festival.slug %}" style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--festival-primary); text-decoration: none; font-weight: 600; margin-bottom: 1.5rem; transition: all 0.3s ease;" onmouseover="this.style.opacity='0.7';" onmouseout="this.style.opacity='1';">
+        <i class="bi bi-arrow-left"></i> Zurück zur Übersicht
+    </a>
+
+    <h1 style="font-size: 2rem; font-weight: 700; color: var(--festival-dark); margin-bottom: 0.5rem;">
+        <i class="bi bi-printer"></i> Helferplan
+    </h1>
+    <p style="color: #6b7280; font-size: 1rem;">{{ festival.name }}</p>
+</div>
+
+{% if shifts %}
+    <div style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+            <!-- Table Header: Shifts as Columns -->
+            <thead>
+                <tr style="background: #f3f4f6;">
+                    <th style="border: 1px solid #d1d5db; padding: 1rem; text-align: left; font-weight: 600; min-width: 180px; vertical-align: middle;">
+                        Schicht / Uhrzeit
+                    </th>
+                    {% for shift in shifts %}
+                        <th style="border: 1px solid #d1d5db; padding: 1rem; text-align: center; font-weight: 600; min-width: 150px;">
+                            {{ shift.date|date:"l, j.m." }}<br/>
+                            <span style="font-weight: 400; font-size: 0.8rem; color: #6b7280;">{{ shift.start_time|time:"H:i" }} Uhr</span>
+                        </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+
+            <!-- Table Body: Tasks as Rows -->
+            <tbody>
+                {% for task_row in matrix_data %}
+                    <tr>
+                        <!-- Task Name Cell -->
+                        <td style="border: 1px solid #d1d5db; padding: 1rem; font-weight: 600; background: #f9fafb; min-width: 180px;">
+                            <div style="margin-bottom: 0.25rem;">{{ task_row.task_name }}</div>
+                            <div style="font-size: 0.85rem; color: #6b7280;">
+                                ({{ task_row.required_helpers }} {% if task_row.required_helpers == 1 %}Person{% else %}Personen{% endif %})
+                            </div>
+                        </td>
+
+                        <!-- Participant Cells for This Task across All Shifts -->
+                        {% for cell in task_row.cells %}
+                            <td class="status-{{ cell.status }}" style="{% if cell.status == 'full' %}background: #d1fae5; color: #065f46;{% elif cell.status == 'partial' %}background: #fef3c7; color: #92400e;{% else %}background: #fee2e2; color: #991b1b;{% endif %} border: 1px solid #d1d5db; padding: 1rem; vertical-align: top; font-size: 0.85rem; line-height: 1.5;">
+                                {% if cell.status == 'full' %}
+                                    <span style="font-weight: 600; margin-right: 0.5rem;">✓</span>
+                                {% elif cell.status == 'partial' %}
+                                    <span style="font-weight: 600; margin-right: 0.5rem;">⚠</span>
+                                {% else %}
+                                    <span style="font-weight: 600; margin-right: 0.5rem;">✗</span>
+                                {% endif %}
+
+                                {% if cell.participants %}
+                                    <div style="margin-bottom: 0.5rem;">
+                                        {% for participant in cell.participants %}
+                                            {% if forloop.first %}
+                                                {{ participant.name }}{% if not forloop.last %},{% endif %}
+                                            {% elif forloop.last %}
+                                                {{ participant.name }}
+                                            {% else %}
+                                                {{ participant.name }}{% if not forloop.last %},{% endif %}
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+
+                                {% if cell.status == 'partial' %}
+                                    <div style="font-weight: 600; font-size: 0.8rem; margin-top: 0.25rem;">− {{ cell.shortage }} erforderlich</div>
+                                {% elif cell.status == 'empty' and cell.required > 0 %}
+                                    <div style="font-style: italic; opacity: 0.8;">keine Helfer</div>
+                                {% endif %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Print Styles -->
+    <style>
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+            }
+
+            /* Hide non-print elements */
+            a, button {
+                display: none !important;
+            }
+
+            /* Ensure table is visible on print */
+            table {
+                page-break-inside: avoid;
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            tr {
+                page-break-inside: avoid;
+            }
+
+            td, th {
+                page-break-inside: avoid;
+            }
+
+            /* Adjust print margins and padding */
+            div[style*="margin-bottom: 2rem"] {
+                margin-bottom: 1rem;
+            }
+
+            /* Ensure header sticks on new pages */
+            thead {
+                display: table-header-group;
+            }
+
+            /* Font size for printing */
+            table {
+                font-size: 9pt;
+            }
+
+            /* Page margins - landscape for better fit */
+            @page {
+                margin: 0.5cm;
+                size: A4 landscape;
+            }
+        }
+    </style>
+
+{% else %}
+    <div style="background: white; border-radius: 12px; padding: 4rem 2rem; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); text-align: center;">
+        <i class="bi bi-inbox" style="font-size: 3rem; color: var(--festival-primary); opacity: 0.2; display: block; margin-bottom: 1rem;"></i>
+        <h3 style="color: var(--festival-dark); font-size: 1.25rem; margin: 0 0 0.5rem 0;">Keine Schichten verfügbar</h3>
+        <p style="color: #9ca3af; margin: 0;">Es gibt noch keine Schichten für diesen Helferplan.</p>
+    </div>
+{% endif %}
+{% endblock %}
