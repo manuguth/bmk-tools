@@ -15,6 +15,9 @@ def admin_festival_list(request):
 
     for festival in festivals:
         total_participants = Participant.objects.filter(task__shift__festival=festival).count()
+        total_required_helpers = Task.objects.filter(shift__festival=festival).aggregate(
+            total=models.Sum('required_helpers')
+        )['total'] or 0
         attended_count = Participant.objects.filter(
             task__shift__festival=festival, attended=True
         ).count()
@@ -23,6 +26,7 @@ def admin_festival_list(request):
         festivals_data.append({
             "festival": festival,
             "total_participants": total_participants,
+            "total_required_helpers": total_required_helpers,
             "attended_count": attended_count,
             "total_shifts": total_shifts,
         })
