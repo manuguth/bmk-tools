@@ -6,6 +6,32 @@ from .models import Festival, Shift, Task, Participant
 from .forms import ParticipantSignUpForm
 
 
+@staff_member_required
+def admin_festival_list(request):
+    """Admin view to list all festivals with stats."""
+    festivals = Festival.objects.all().order_by("-date")
+    festivals_data = []
+
+    for festival in festivals:
+        total_participants = Participant.objects.filter(task__shift__festival=festival).count()
+        attended_count = Participant.objects.filter(
+            task__shift__festival=festival, attended=True
+        ).count()
+        total_shifts = festival.shifts.count()
+
+        festivals_data.append({
+            "festival": festival,
+            "total_participants": total_participants,
+            "attended_count": attended_count,
+            "total_shifts": total_shifts,
+        })
+
+    context = {
+        "festivals_data": festivals_data,
+    }
+    return render(request, "festival/admin_festival_list.html", context)
+
+
 def festival_detail(request, festival_slug):
     """Display festival details and list of shifts."""
     festival = get_object_or_404(Festival, slug=festival_slug)

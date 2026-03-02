@@ -31,6 +31,7 @@ ALLOWED_HOSTS = ["host.docker.internal", "localhost", "127.0.0.1"]
 # Application definition
 
 INSTALLED_APPS = [
+    "festival.apps.FestivalConfig",
     "info_mail.apps.InfoMailConfig",
     "django.contrib.admin",
     "django.contrib.auth",

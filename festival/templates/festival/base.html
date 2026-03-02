@@ -444,6 +444,13 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
+                    {% if user.is_staff %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'festival:admin_festival_list' %}">
+                                <i class="bi bi-speedometer2"></i> Admin
+                            </a>
+                        </li>
+                    {% endif %}
                     {% if festival %}
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'festival:festival_detail' festival.slug %}">
@@ -453,7 +460,7 @@
                         {% if user.is_staff %}
                             <li class="nav-item">
                                 <a class="nav-link" href="{% url 'festival:admin_overview' festival.slug %}">
-                                    <i class="bi bi-speedometer2"></i> Admin Dashboard <span class="admin-badge">ADMIN</span>
+                                    <i class="bi bi-chart-bar"></i> Dashboard <span class="admin-badge">ADMIN</span>
                                 </a>
                             </li>
                             <li class="nav-item">
