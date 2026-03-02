@@ -81,6 +81,22 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Signed Up Participants -->
+                            {% if task.participants.all %}
+                                <div style="margin-top: 1.5rem; padding: 1rem; background: #f0f9ff; border-left: 4px solid var(--festival-primary); border-radius: 6px;">
+                                    <p style="margin: 0 0 0.75rem 0; font-size: 0.85rem; font-weight: 600; color: #1e40af; text-transform: uppercase; letter-spacing: 0.5px;">
+                                        <i class="bi bi-person-check" style="margin-right: 0.5rem;"></i>Bereits angemeldet
+                                    </p>
+                                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                                        {% for participant in task.participants.all %}
+                                            <span style="display: inline-block; background: white; color: #1e40af; padding: 0.4rem 0.75rem; border-radius: 20px; font-size: 0.85rem; font-weight: 500;">
+                                                {{ participant.name }}
+                                            </span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endif %}
                         </div>
 
                         <div class="task-card-footer">
