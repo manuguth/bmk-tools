@@ -7,8 +7,8 @@ urlpatterns = [
     path("admin/", views.admin_festival_list, name="admin_festival_list"),
     path("<slug:festival_slug>/admin/", views.admin_overview, name="admin_overview"),
     path("<slug:festival_slug>/", views.festival_detail, name="festival_detail"),
-    path("<slug:festival_slug>/shift/<int:shift_id>/", views.shift_detail, name="shift_detail"),
-    path("<slug:festival_slug>/task/<int:task_id>/signup/", views.task_signup, name="task_signup"),
+    path("<slug:festival_slug>/shift/<uuid:shift_id>/", views.shift_detail, name="shift_detail"),
+    path("<slug:festival_slug>/task/<uuid:task_id>/signup/", views.task_signup, name="task_signup"),
     path(
         "<slug:festival_slug>/confirmation/<int:participant_id>/",
         views.signup_confirmation,
@@ -25,3 +25,4 @@ urlpatterns = [
         name="export_participants_csv",
     ),
 ]
+

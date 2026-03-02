@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 from django.utils.text import slugify
 
@@ -27,6 +28,7 @@ class Festival(models.Model):
 
 
 class Shift(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     festival = models.ForeignKey(Festival, on_delete=models.CASCADE, related_name="shifts")
     name = models.CharField(max_length=255)
     start_time = models.TimeField()
@@ -44,6 +46,7 @@ class Shift(models.Model):
 
 
 class Task(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     shift = models.ForeignKey(Shift, on_delete=models.CASCADE, related_name="tasks")
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
@@ -76,3 +79,4 @@ class Participant(models.Model):
 
     class Meta:
         ordering = ["signed_up_at"]
+
