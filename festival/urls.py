@@ -66,5 +66,9 @@ urlpatterns = [
     path('<slug:festival_slug>/admin/print/', views.admin_print_overview, name='admin_print_overview'),
     # Shift creation
     path('<slug:festival_slug>/api/shift/create/', views.api_create_shift, name='api_create_shift'),
+    # YAML export/import
+    path('<slug:festival_slug>/api/festival/export/yaml/', views.api_export_festival_yaml, name='api_export_yaml'),
+    path('<slug:festival_slug>/api/festival/import/yaml/', views.api_import_festival_yaml, name='api_import_yaml'),
+    path('<slug:festival_slug>/api/festival/import/yaml-file/', views.api_import_festival_yaml_file, name='api_import_yaml_file'),
 ]
 

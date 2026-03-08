@@ -50,6 +50,89 @@
             </select>
         </div>
     </div>
+
+    <!-- YAML Export/Import Section -->
+    <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); margin-bottom: 2rem;">
+        <h3 style="font-size: 1.1rem; font-weight: 600; color: var(--festival-dark); margin: 0 0 1rem 0;">
+            <i class="bi bi-cloud-arrow-up-down"></i> Datenexport & -import
+        </h3>
+
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <!-- Export Buttons -->
+            <button id="exportFullBtn" style="padding: 0.75rem 1.5rem; background: var(--festival-primary); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.3s ease;" onmouseover="this.style.opacity='0.9';" onmouseout="this.style.opacity='1';">
+                <i class="bi bi-download"></i> Export (mit Teilnehmern)
+            </button>
+
+            <button id="exportStructureBtn" style="padding: 0.75rem 1.5rem; background: #06b6d4; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.3s ease;" onmouseover="this.style.opacity='0.9';" onmouseout="this.style.opacity='1';">
+                <i class="bi bi-download"></i> Export (nur Struktur)
+            </button>
+
+            <!-- Import Button -->
+            <button id="importToggleBtn" style="padding: 0.75rem 1.5rem; background: #f59e0b; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.3s ease;" onmouseover="this.style.opacity='0.9';" onmouseout="this.style.opacity='1';">
+                <i class="bi bi-upload"></i> Import
+            </button>
+        </div>
+
+        <!-- Import Form (hidden by default) -->
+        <div id="importForm" style="display: none; margin-top: 1.5rem; padding: 1.5rem; background: #fef3c7; border: 2px solid #f59e0b; border-radius: 8px;">
+            <h4 style="margin: 0 0 1rem 0; color: #92400e;">YAML-Datei importieren</h4>
+
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">YAML-Datei</label>
+                <input type="file" id="importFileInput" accept=".yaml,.yml" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; box-sizing: border-box;">
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                    <input type="checkbox" id="importIncludeParticipantsCheckbox" checked style="cursor: pointer;">
+                    <span style="color: #6b7280; font-size: 0.9rem;">Teilnehmer importieren (wenn in Datei enthalten)</span>
+                </label>
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                    <input type="checkbox" id="importDryRunCheckbox" style="cursor: pointer;">
+                    <span style="color: #6b7280; font-size: 0.9rem;">Trockentest durchführen (keine Daten ändern)</span>
+                </label>
+            </div>
+
+            <div id="importValidationMessages" style="display: none; margin-bottom: 1rem; padding: 1rem; background: white; border-radius: 6px; border-left: 4px solid #ef4444;">
+                <p style="margin: 0 0 0.5rem 0; color: #7f1d1d; font-weight: 600;">Validierungsfehler:</p>
+                <ul id="importValidationList" style="margin: 0; padding-left: 1.5rem; color: #991b1b;"></ul>
+            </div>
+
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <button id="importExecuteBtn" style="padding: 0.75rem 1.5rem; background: #ef4444; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.3s ease;" onmouseover="this.style.opacity='0.9';" onmouseout="this.style.opacity='1';">
+                    <i class="bi bi-exclamation-circle"></i> Importieren
+                </button>
+                <button id="importCancelBtn" style="padding: 0.75rem 1.5rem; background: #6b7280; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.3s ease;" onmouseover="this.style.opacity='0.9';" onmouseout="this.style.opacity='1';">
+                    Abbrechen
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Confirmation Modal -->
+    <div id="importConfirmModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 1000; align-items: center; justify-content: center; padding: 1rem;">
+        <div style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); max-width: 500px; width: 100%;">
+            <h3 style="color: var(--festival-dark); font-size: 1.25rem; margin: 0 0 1rem 0;">
+                <i class="bi bi-exclamation-triangle" style="color: #ef4444; margin-right: 0.5rem;"></i>
+                Import bestätigen
+            </h3>
+            <p style="color: #6b7280; margin: 0 0 1rem 0;">
+                Dies wird alle aktuellen Schichten, Aufgaben und Teilnehmer dieses Festivals löschen und durch die importierten Daten ersetzen. Diese Aktion kann nicht rückgängig gemacht werden.
+            </p>
+            <p id="importSummary" style="color: #6b7280; margin: 0 0 1.5rem 0; padding: 1rem; background: #f9fafb; border-radius: 6px; font-family: monospace; font-size: 0.9rem; border-left: 3px solid #f59e0b;"></p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <button id="importConfirmBtn" style="padding: 0.75rem 1.5rem; background: #ef4444; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.opacity='0.9';" onmouseout="this.style.opacity='1';">
+                    Ja, importieren
+                </button>
+                <button id="importConfirmCancelBtn" style="padding: 0.75rem 1.5rem; background: #e5e7eb; color: var(--festival-dark); border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.opacity='0.9';" onmouseout="this.style.opacity='1';">
+                    Abbrechen
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
 {% if shifts_data %}
@@ -1246,6 +1329,223 @@
 
     // Initialize status badge styling on page load
     document.addEventListener('DOMContentLoaded', updateStatusBadgeStyleEdit);
+
+    // ===== YAML Export/Import Functionality =====
+
+    // Wait for DOM to be ready before setting up event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+        const exportFullBtn = document.getElementById('exportFullBtn');
+        const exportStructureBtn = document.getElementById('exportStructureBtn');
+        const importToggleBtn = document.getElementById('importToggleBtn');
+        const importForm = document.getElementById('importForm');
+        const importFileInput = document.getElementById('importFileInput');
+        const importIncludeParticipantsCheckbox = document.getElementById('importIncludeParticipantsCheckbox');
+        const importDryRunCheckbox = document.getElementById('importDryRunCheckbox');
+        const importExecuteBtn = document.getElementById('importExecuteBtn');
+        const importCancelBtn = document.getElementById('importCancelBtn');
+        const importConfirmModal = document.getElementById('importConfirmModal');
+        const importConfirmBtn = document.getElementById('importConfirmBtn');
+        const importConfirmCancelBtn = document.getElementById('importConfirmCancelBtn');
+        const importValidationMessages = document.getElementById('importValidationMessages');
+        const importValidationList = document.getElementById('importValidationList');
+        const importSummary = document.getElementById('importSummary');
+
+        const festivalSlug = '{{ festival.slug }}';
+        let pendingImportData = null;
+
+        // Export functionality
+        if (exportFullBtn) exportFullBtn.addEventListener('click', () => exportFestival(true));
+        if (exportStructureBtn) exportStructureBtn.addEventListener('click', () => exportFestival(false));
+
+        function exportFestival(includeParticipants) {
+            const params = new URLSearchParams({
+                'include_participants': includeParticipants.toString()
+            });
+
+            const url = `/festival/${festivalSlug}/api/festival/export/yaml/?${params}`;
+
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Export failed');
+                }
+                return response.blob();
+            })
+            .then(blob => {
+                // Create download link
+                const blobUrl = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = blobUrl;
+
+                // Generate filename
+                const mode = includeParticipants ? 'full' : 'structure-only';
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('Z')[0];
+                link.download = `festival_${festivalSlug}_${mode}_${timestamp}.yaml`;
+
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(blobUrl);
+
+                showNotification('Festival erfolgreich exportiert');
+            })
+            .catch(error => {
+                showNotification('Exportfehler: ' + error.message, false);
+            });
+        }
+
+        // Import functionality
+        if (importToggleBtn) {
+            importToggleBtn.addEventListener('click', () => {
+                importForm.style.display = importForm.style.display === 'none' ? 'block' : 'none';
+                if (importForm.style.display === 'block') {
+                    importFileInput.focus();
+                }
+            });
+        }
+
+        if (importCancelBtn) {
+            importCancelBtn.addEventListener('click', () => {
+                importForm.style.display = 'none';
+                importFileInput.value = '';
+                importValidationMessages.style.display = 'none';
+            });
+        }
+
+        if (importExecuteBtn) importExecuteBtn.addEventListener('click', validateAndPrepareImport);
+        if (importConfirmBtn) importConfirmBtn.addEventListener('click', executeImport);
+        if (importConfirmCancelBtn) {
+            importConfirmCancelBtn.addEventListener('click', () => {
+                importConfirmModal.style.display = 'none';
+                pendingImportData = null;
+            });
+        }
+
+        // Close modal when clicking outside
+        if (importConfirmModal) {
+            importConfirmModal.addEventListener('click', (e) => {
+                if (e.target === importConfirmModal) {
+                    importConfirmModal.style.display = 'none';
+                    pendingImportData = null;
+                }
+            });
+        }
+
+        function validateAndPrepareImport() {
+            const file = importFileInput.files[0];
+
+            if (!file) {
+                showNotification('Bitte wählen Sie eine YAML-Datei', false);
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const yamlContent = e.target.result;
+                const includeParticipants = importIncludeParticipantsCheckbox.checked;
+                const dryRun = importDryRunCheckbox.checked;
+
+                // Send validation request
+                fetch(`/festival/${festivalSlug}/api/festival/import/yaml/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken'),
+                    },
+                    body: JSON.stringify({
+                        yaml_content: yamlContent,
+                        include_participants: includeParticipants,
+                        dry_run: true  // Always do dry-run first for validation
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success || (data.data && data.data.validation_errors && data.data.validation_errors.length === 0)) {
+                        // No validation errors - show confirmation
+                        pendingImportData = {
+                            yaml_content: yamlContent,
+                            include_participants: includeParticipants,
+                            dry_run: dryRun
+                        };
+
+                        importSummary.textContent =
+                            `Schichten: ${data.data.shifts_created}\n` +
+                            `Aufgaben: ${data.data.tasks_created}\n` +
+                            `Teilnehmer: ${data.data.participants_created}`;
+
+                        importValidationMessages.style.display = 'none';
+                        importConfirmModal.style.display = 'flex';
+                    } else {
+                        // Show validation errors
+                        const errors = data.data.validation_errors || [];
+                        importValidationList.innerHTML = '';
+                        errors.forEach(error => {
+                            const li = document.createElement('li');
+                            li.textContent = error;
+                            importValidationList.appendChild(li);
+                        });
+                        importValidationMessages.style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    showNotification('Validierungsfehler: ' + error.message, false);
+                });
+            };
+
+            reader.readAsText(file);
+        }
+
+        function executeImport() {
+            if (!pendingImportData) return;
+
+            importConfirmModal.style.display = 'none';
+
+            const data = pendingImportData;
+            const wasIncludeParticipants = data.include_participants;
+            const wasDryRun = data.dry_run;
+
+            fetch(`/festival/${festivalSlug}/api/festival/import/yaml/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+                body: JSON.stringify({
+                    yaml_content: data.yaml_content,
+                    include_participants: wasIncludeParticipants,
+                    dry_run: wasDryRun
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification(`Import erfolgreich! ${data.data.shifts_created} Schichten, ${data.data.tasks_created} Aufgaben, ${data.data.participants_created} Teilnehmer importiert`);
+                    importForm.style.display = 'none';
+                    importFileInput.value = '';
+
+                    // Reload the page to show the updated data
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    const errors = data.data.validation_errors || [];
+                    const errorMsg = errors.length > 0 ? errors.join(', ') : data.message;
+                    showNotification('Importfehler: ' + errorMsg, false);
+                }
+            })
+            .catch(error => {
+                showNotification('Importfehler: ' + error.message, false);
+            })
+            .finally(() => {
+                pendingImportData = null;
+            });
+        }
+    });
 </script>
 
 {% endblock %}

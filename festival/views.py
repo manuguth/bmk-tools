@@ -1,5 +1,6 @@
 import csv
 import json
+from datetime import datetime
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from django.contrib.admin.views.decorators import staff_member_required
@@ -7,8 +8,10 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from django.db import models
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from .models import Festival, Shift, Task, Participant, TaskTemplate
 from .forms import ParticipantSignUpForm
+from .serializers import serialize_festival_to_yaml, parse_yaml_to_dict, validate_import_data, import_festival_data
 
 
 def check_festival_draft_access(request, festival):
@@ -789,3 +792,233 @@ def api_create_shift(request, festival_slug):
         return JsonResponse({'success': False, 'error': f'Invalid field format: {str(e)}'}, status=400)
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@staff_member_required
+@require_http_methods(["GET"])
+def api_export_festival_yaml(request, festival_slug):
+    """API endpoint to export festival data as YAML file."""
+    festival = get_object_or_404(Festival, slug=festival_slug)
+
+    try:
+        # Get include_participants parameter
+        include_participants = request.GET.get('include_participants', 'false').lower() == 'true'
+
+        # Serialize festival to YAML
+        yaml_content = serialize_festival_to_yaml(festival, include_participants=include_participants)
+
+        # Determine export mode for filename
+        mode = 'full' if include_participants else 'structure-only'
+        timestamp = datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
+        filename = f'festival_{festival_slug}_{mode}_{timestamp}.yaml'
+
+        # Create response with YAML content
+        response = HttpResponse(
+            content=yaml_content.encode('utf-8'),
+            content_type='text/yaml; charset=utf-8'
+        )
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+
+        return response
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'Export failed: {str(e)}'}, status=500)
+
+
+@staff_member_required
+@require_http_methods(["POST"])
+def api_import_festival_yaml(request, festival_slug):
+    """API endpoint to import festival data from YAML content."""
+    festival = get_object_or_404(Festival, slug=festival_slug)
+
+    try:
+        data = json.loads(request.body)
+        yaml_content = data.get('yaml_content', '')
+        include_participants = data.get('include_participants', True)
+        dry_run = data.get('dry_run', False)
+
+        if not yaml_content:
+            return JsonResponse(
+                {
+                    'success': False,
+                    'message': 'YAML content is required',
+                    'data': {'validation_errors': ['YAML content is required']}
+                },
+                status=400
+            )
+
+        # Parse YAML
+        try:
+            parsed_data = parse_yaml_to_dict(yaml_content)
+        except ValidationError as e:
+            return JsonResponse(
+                {
+                    'success': False,
+                    'message': str(e),
+                    'data': {'validation_errors': [str(e)]}
+                },
+                status=400
+            )
+
+        # Validate data
+        validation_errors = validate_import_data(parsed_data)
+        if validation_errors:
+            return JsonResponse(
+                {
+                    'success': False,
+                    'message': 'Validation failed',
+                    'data': {'validation_errors': validation_errors}
+                },
+                status=400
+            )
+
+        # Import data
+        result = import_festival_data(
+            festival,
+            parsed_data,
+            include_participants=include_participants,
+            dry_run=dry_run
+        )
+
+        if result['success']:
+            return JsonResponse({
+                'success': True,
+                'message': result['message'],
+                'data': {
+                    'shifts_created': result['shifts_created'],
+                    'tasks_created': result['tasks_created'],
+                    'participants_created': result['participants_created'],
+                }
+            })
+        else:
+            return JsonResponse(
+                {
+                    'success': False,
+                    'message': result['message'],
+                    'data': {'validation_errors': []}
+                },
+                status=500
+            )
+
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'message': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        return JsonResponse(
+            {
+                'success': False,
+                'message': f'Import failed: {str(e)}',
+                'data': {'validation_errors': []}
+            },
+            status=500
+        )
+
+
+@staff_member_required
+@require_http_methods(["POST"])
+def api_import_festival_yaml_file(request, festival_slug):
+    """API endpoint to import festival data from uploaded YAML file."""
+    festival = get_object_or_404(Festival, slug=festival_slug)
+
+    try:
+        # Get uploaded file
+        if 'yaml_file' not in request.FILES:
+            return JsonResponse(
+                {
+                    'success': False,
+                    'message': 'YAML file is required',
+                    'data': {'validation_errors': ['YAML file is required']}
+                },
+                status=400
+            )
+
+        yaml_file = request.FILES['yaml_file']
+
+        # Check file size (limit to 10MB)
+        if yaml_file.size > 10 * 1024 * 1024:
+            return JsonResponse(
+                {
+                    'success': False,
+                    'message': 'File size exceeds 10MB limit',
+                    'data': {'validation_errors': ['File size exceeds 10MB limit']}
+                },
+                status=400
+            )
+
+        # Read file content
+        yaml_content = yaml_file.read().decode('utf-8')
+
+        # Get parameters
+        include_participants = request.POST.get('include_participants', 'true').lower() == 'true'
+        dry_run = request.POST.get('dry_run', 'false').lower() == 'true'
+
+        # Parse YAML
+        try:
+            parsed_data = parse_yaml_to_dict(yaml_content)
+        except ValidationError as e:
+            return JsonResponse(
+                {
+                    'success': False,
+                    'message': str(e),
+                    'data': {'validation_errors': [str(e)]}
+                },
+                status=400
+            )
+
+        # Validate data
+        validation_errors = validate_import_data(parsed_data)
+        if validation_errors:
+            return JsonResponse(
+                {
+                    'success': False,
+                    'message': 'Validation failed',
+                    'data': {'validation_errors': validation_errors}
+                },
+                status=400
+            )
+
+        # Import data
+        result = import_festival_data(
+            festival,
+            parsed_data,
+            include_participants=include_participants,
+            dry_run=dry_run
+        )
+
+        if result['success']:
+            return JsonResponse({
+                'success': True,
+                'message': result['message'],
+                'data': {
+                    'shifts_created': result['shifts_created'],
+                    'tasks_created': result['tasks_created'],
+                    'participants_created': result['participants_created'],
+                }
+            })
+        else:
+            return JsonResponse(
+                {
+                    'success': False,
+                    'message': result['message'],
+                    'data': {'validation_errors': []}
+                },
+                status=500
+            )
+
+    except UnicodeDecodeError:
+        return JsonResponse(
+            {
+                'success': False,
+                'message': 'Invalid file encoding. Please use UTF-8 encoding.',
+                'data': {'validation_errors': ['Invalid file encoding']}
+            },
+            status=400
+        )
+    except Exception as e:
+        return JsonResponse(
+            {
+                'success': False,
+                'message': f'Import failed: {str(e)}',
+                'data': {'validation_errors': []}
+            },
+            status=500
+        )
