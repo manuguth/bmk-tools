@@ -13,6 +13,7 @@ ALLOWED_HOSTS = (
         "tools.bmk-buggingen.de",
         "https://tools.bmk-buggingen.de",
         "https://bmk-tools.azurewebsites.net",
+        "169.254.130.2",
     ]
     if "WEBSITE_HOSTNAME" in os.environ
     else []
@@ -42,8 +43,7 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 hostname = os.environ["DBHOST"]
 
 SECRET_KEY = os.environ["SECRET_KEY"]
-# DEBUG = False
-DEBUG = True
+DEBUG = False
 
 # Configure Postgres database; the full username is username@servername,
 # which we construct using the DBHOST value.
