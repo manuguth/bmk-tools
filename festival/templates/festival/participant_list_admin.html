@@ -1,0 +1,63 @@
+{% extends "festival/base.html" %}
+
+{% block title %}Teilnehmer verwalten - {{ festival.name }}{% endblock title %}
+
+{% block page_content %}
+<div style="animation: fadeInDown 0.6s ease;">
+    <!-- Header -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h1 style="font-size: 2rem; font-weight: 700; color: var(--festival-dark); margin: 0 0 0.5rem 0;">
+                <i class="bi bi-people-fill"></i> Teilnehmer verwalten
+            </h1>
+            <p style="color: #6b7280; font-size: 1rem; margin: 0;">{{ festival.name }}</p>
+        </div>
+    </div>
+
+
+    <!-- Participants Table -->
+    {% if participants %}
+        <div style="background: white; border-radius: 12px; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); overflow: hidden;">
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: linear-gradient(135deg, var(--festival-primary) 0%, var(--festival-secondary) 100%); color: white;">
+                            <th style="padding: 1.25rem; text-align: left; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Name</th>
+                            <th style="padding: 1.25rem; text-align: left; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Schicht</th>
+                            <th style="padding: 1.25rem; text-align: left; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Datum</th>
+                            <th style="padding: 1.25rem; text-align: left; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Aufgabe</th>
+                            <th style="padding: 1.25rem; text-align: left; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Zeit</th>
+                            <th style="padding: 1.25rem; text-align: left; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Angemeldet</th>
+                            <th style="padding: 1.25rem; text-align: center; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Aktionen</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for participant in participants %}
+                            <tr style="border-bottom: 1px solid #e5e7eb; transition: background-color 0.3s ease;" onmouseover="this.style.backgroundColor='#f9fafb';" onmouseout="this.style.backgroundColor='white';">
+                                <td style="padding: 1rem 1.25rem; color: var(--festival-dark); font-weight: 600;">{{ participant.name }}</td>
+                                <td style="padding: 1rem 1.25rem; color: #6b7280;">{{ participant.task.shift.name }}</td>
+                                <td style="padding: 1rem 1.25rem; color: #6b7280;">{{ participant.task.shift.date|date:"j. F Y" }}</td>
+                                <td style="padding: 1rem 1.25rem; color: #6b7280;">{{ participant.task.name }}</td>
+                                <td style="padding: 1rem 1.25rem; color: #6b7280;">{{ participant.task.shift.start_time|time:"H:i" }} – {{ participant.task.shift.end_time|time:"H:i" }}</td>
+                                <td style="padding: 1rem 1.25rem; color: #6b7280; font-size: 0.9rem;">{{ participant.signed_up_at|date:"M j, H:i" }}</td>
+                                <td style="padding: 1rem 1.25rem; text-align: center;">
+                                    <a href="/admin/festival/participant/{{ participant.id }}/change/"
+                                       style="color: var(--festival-primary); text-decoration: none; font-weight: 600; transition: color 0.3s ease;" onmouseover="this.style.opacity='0.7';" onmouseout="this.style.opacity='1';">
+                                        <i class="bi bi-pencil"></i> Bearbeiten
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% else %}
+        <div style="background: white; border-radius: 12px; padding: 3rem; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); text-align: center;">
+            <i class="bi bi-inbox" style="font-size: 3rem; color: var(--festival-primary); opacity: 0.2; display: block; margin-bottom: 1rem;"></i>
+            <h3 style="color: var(--festival-dark); font-size: 1.25rem; margin: 0 0 0.5rem 0;">Keine Teilnehmer gefunden</h3>
+            <p style="color: #9ca3af; margin: 0;">Es gibt noch keine Anmeldungen für dieses Festival.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock page_content %}

@@ -1,0 +1,439 @@
+{% extends "festival/base.html" %}
+
+{% block title %}Admin-Übersicht - Alle Festivals{% endblock title %}
+
+{% block page_content %}
+<div style="animation: fadeInDown 0.6s ease;">
+    <div style="margin-bottom: 3rem;">
+        <h1 style="font-size: 2.5rem; font-weight: 700; color: var(--festival-dark); margin: 0 0 0.5rem 0;">
+            <i class="bi bi-speedometer2"></i> Admin-Übersicht
+        </h1>
+        <p style="color: #6b7280; font-size: 1rem; margin: 0;">Alle Festivals verwalten</p>
+    </div>
+
+    {% if festivals_data %}
+        <!-- Overall Statistics -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
+            <!-- Total Festivals -->
+            <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); border-left: 5px solid var(--festival-primary);">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <p style="color: #6b7280; font-size: 0.9rem; margin-bottom: 0.5rem;">Gesamtfestivals</p>
+                        <h2 style="font-size: 2.5rem; font-weight: 700; color: var(--festival-dark); margin: 0;">{{ festivals_data|length }}</h2>
+                    </div>
+                    <div style="width: 50px; height: 50px; border-radius: 10px; background: linear-gradient(135deg, var(--festival-primary) 0%, var(--festival-secondary) 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+                        <i class="bi bi-calendar-event-fill"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Participants -->
+            <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); border-left: 5px solid var(--festival-primary);">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <p style="color: #6b7280; font-size: 0.9rem; margin-bottom: 0.5rem;">Anmeldungen</p>
+                        <h2 style="font-size: 2.5rem; font-weight: 700; color: var(--festival-dark); margin: 0;">
+                            {{ total_all_participants }}<span style="font-size: 1.2rem; color: #9ca3af; font-weight: 400;"> / {{ total_all_required_helpers }}</span>
+                        </h2>
+                        <p style="color: #9ca3af; font-size: 0.85rem; margin: 0.5rem 0 0 0;">Plätze besetzt</p>
+                    </div>
+                    <div style="width: 50px; height: 50px; border-radius: 10px; background: linear-gradient(135deg, var(--festival-primary) 0%, var(--festival-secondary) 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Shifts -->
+            <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); border-left: 5px solid #8b5cf6;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <p style="color: #6b7280; font-size: 0.9rem; margin-bottom: 0.5rem;">Gesamtschichten</p>
+                        <h2 style="font-size: 2.5rem; font-weight: 700; color: var(--festival-dark); margin: 0;">{{ total_all_shifts }}</h2>
+                    </div>
+                    <div style="width: 50px; height: 50px; border-radius: 10px; background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+                        <i class="bi bi-clock-fill"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Task Templates Management -->
+            <a href="{% url 'festival:admin_templates' %}" style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); border-left: 5px solid #10b981; text-decoration: none; transition: all 0.3s ease; display: flex; justify-content: space-between; align-items: flex-start;" onmouseover="this.style.boxShadow='0 4px 16px rgba(16, 185, 129, 0.3)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.boxShadow='0 2px 12px rgba(0, 0, 0, 0.08)'; this.style.transform='translateY(0)';">
+                <div>
+                    <p style="color: #6b7280; font-size: 0.9rem; margin-bottom: 0.5rem;">Aufgabe-Vorlagen</p>
+                    <h2 style="font-size: 2rem; font-weight: 700; color: var(--festival-dark); margin: 0;">
+                        <i class="bi bi-clipboard-check" style="margin-right: 0.5rem;"></i> Verwalten
+                    </h2>
+                    <p style="color: #9ca3af; font-size: 0.85rem; margin: 0.5rem 0 0 0;">Aufgabenvorlagen erstellen</p>
+                </div>
+                <div style="width: 50px; height: 50px; border-radius: 10px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+                    <i class="bi bi-arrow-right"></i>
+                </div>
+            </a>
+        </div>
+
+        <!-- Festivals List -->
+        <div style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 style="font-size: 1.5rem; font-weight: 600; color: var(--festival-dark); margin: 0;">
+                    <i class="bi bi-list-check"></i> Alle Festivals
+                </h2>
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <button id="createFestivalToggleBtn" style="padding: 0.6rem 1.2rem; background: linear-gradient(135deg, var(--festival-primary) 0%, var(--festival-secondary) 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.95rem; transition: all 0.3s ease;" onclick="toggleCreateFestivalForm()" onmouseover="this.style.boxShadow='0 4px 12px rgba(99, 102, 241, 0.4)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.boxShadow='none'; this.style.transform='translateY(0)';">
+                        <i class="bi bi-plus-circle" style="margin-right: 0.5rem;"></i> Festival erstellen
+                    </button>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; user-select: none;">
+                        <input type="checkbox" id="show-archived-toggle" {% if show_archived %}checked{% endif %} style="width: 18px; height: 18px; cursor: pointer;" onchange="toggleArchived()">
+                        <span style="color: #6b7280; font-size: 0.95rem;">Archivierte anzeigen</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Create Festival Form (Hidden by default) -->
+            <div id="festival-form-container" class="festival-form-container" style="display: none; background: white; border-radius: 12px; padding: 2rem; margin-bottom: 2rem; border-top: 5px solid var(--festival-primary); box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);">
+                <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--festival-dark); margin: 0 0 1.5rem 0;">Neues Festival erstellen</h3>
+
+                <form onsubmit="return createFestival(event)" style="display: grid; gap: 1.5rem;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                        <!-- Festival Name -->
+                        <div>
+                            <label for="festival-name" style="display: block; font-weight: 600; color: var(--festival-dark); margin-bottom: 0.5rem; font-size: 0.95rem;">Festival Name <span style="color: #ef4444;">*</span></label>
+                            <input type="text" id="festival-name" placeholder="z.B. Sommerfest 2024" style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 0.95rem; transition: all 0.3s ease;" onfocus="this.style.borderColor='var(--festival-primary)'; this.style.boxShadow='0 0 0 3px rgba(99, 102, 241, 0.1)';" onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none';">
+                            <span id="festival-name-error" style="display: none; color: #ef4444; font-size: 0.85rem; margin-top: 0.25rem;"></span>
+                        </div>
+
+                        <!-- Start Date -->
+                        <div>
+                            <label for="festival-start-date" style="display: block; font-weight: 600; color: var(--festival-dark); margin-bottom: 0.5rem; font-size: 0.95rem;">Startdatum <span style="color: #ef4444;">*</span></label>
+                            <input type="date" id="festival-start-date" style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 0.95rem; transition: all 0.3s ease;" onfocus="this.style.borderColor='var(--festival-primary)'; this.style.boxShadow='0 0 0 3px rgba(99, 102, 241, 0.1)';" onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none';">
+                            <span id="festival-start-date-error" style="display: none; color: #ef4444; font-size: 0.85rem; margin-top: 0.25rem;"></span>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                        <!-- End Date -->
+                        <div>
+                            <label for="festival-end-date" style="display: block; font-weight: 600; color: var(--festival-dark); margin-bottom: 0.5rem; font-size: 0.95rem;">Enddatum <span style="color: #ef4444;">*</span></label>
+                            <input type="date" id="festival-end-date" style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 0.95rem; transition: all 0.3s ease;" onfocus="this.style.borderColor='var(--festival-primary)'; this.style.boxShadow='0 0 0 3px rgba(99, 102, 241, 0.1)';" onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none';">
+                            <span id="festival-end-date-error" style="display: none; color: #ef4444; font-size: 0.85rem; margin-top: 0.25rem;"></span>
+                        </div>
+
+                        <!-- Description -->
+                        <div>
+                            <label for="festival-description" style="display: block; font-weight: 600; color: var(--festival-dark); margin-bottom: 0.5rem; font-size: 0.95rem;">Beschreibung</label>
+                            <textarea id="festival-description" placeholder="Optionale Beschreibung..." style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 0.95rem; resize: vertical; min-height: 80px; transition: all 0.3s ease;" onfocus="this.style.borderColor='var(--festival-primary)'; this.style.boxShadow='0 0 0 3px rgba(99, 102, 241, 0.1)';" onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none';"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Form Buttons -->
+                    <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1rem;">
+                        <button type="button" onclick="cancelCreateFestival()" style="padding: 0.75rem 1.5rem; background: #e5e7eb; color: var(--festival-dark); border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.backgroundColor='#d1d5db';" onmouseout="this.style.backgroundColor='#e5e7eb';">
+                            Abbrechen
+                        </button>
+                        <button type="submit" style="padding: 0.75rem 1.5rem; background: linear-gradient(135deg, var(--festival-primary) 0%, var(--festival-secondary) 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.boxShadow='0 4px 12px rgba(99, 102, 241, 0.4)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.boxShadow='none'; this.style.transform='translateY(0)';">
+                            <i class="bi bi-check-circle" style="margin-right: 0.5rem;"></i> Festival erstellen
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div style="display: grid; gap: 1.5rem;">
+                {% for item in festivals_data %}
+                    <div style="padding: 1.5rem; border: 2px solid #e5e7eb; border-radius: 12px; background: #f9fafb; transition: all 0.3s ease;" onmouseover="this.style.borderColor='var(--festival-primary)'; this.style.backgroundColor='#ffffff';" onmouseout="this.style.borderColor='#e5e7eb'; this.style.backgroundColor='#f9fafb';">
+                        <div style="display: grid; grid-template-columns: 1fr auto; gap: 2rem; align-items: start;">
+                            <!-- Festival Info -->
+                            <div>
+                                <h3 style="font-size: 1.4rem; font-weight: 700; color: var(--festival-dark); margin: 0 0 0.75rem 0;">
+                                    {{ item.festival.name }}
+                                </h3>
+                                <p style="color: #6b7280; margin: 0 0 1rem 0; line-height: 1.6;">{{ item.festival.description|truncatewords:20 }}</p>
+
+                                <div style="display: flex; flex-wrap: wrap; gap: 1.5rem; font-size: 0.9rem;">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem; color: #6b7280;">
+                                        <i class="bi bi-calendar3" style="color: var(--festival-primary); font-size: 1.1rem;"></i>
+                                        <span>
+                                            <strong>
+                                                {% if item.festival.start_date == item.festival.end_date %}
+                                                    {{ item.festival.start_date|date:"j. F Y" }}
+                                                {% else %}
+                                                    {{ item.festival.start_date|date:"j. F Y" }} – {{ item.festival.end_date|date:"j. F Y" }}
+                                                {% endif %}
+                                            </strong>
+                                        </span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 0.5rem; color: #6b7280;">
+                                        <i class="bi bi-hourglass-split" style="color: var(--festival-primary); font-size: 1.1rem;"></i>
+                                        <span><strong>{{ item.total_shifts }}</strong> {{ item.total_shifts|pluralize:"Schicht,Schichten" }}</span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 0.5rem; color: #6b7280;">
+                                        <i class="bi bi-people" style="color: var(--festival-primary); font-size: 1.1rem;"></i>
+                                        <span><strong>{{ item.total_participants }} / {{ item.total_required_helpers }}</strong> Plätze</span>
+                                    </div>
+                                </div>
+
+                                <!-- Status Badge -->
+                                <div style="margin-top: 1rem;">
+                                    {% if item.festival.status == 'active' %}
+                                        <span style="display: inline-block; background: #d1fae5; color: var(--festival-success); padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">
+                                            <i class="bi bi-circle-fill" style="margin-right: 0.25rem;"></i> Aktiv
+                                        </span>
+                                    {% elif item.festival.status == 'draft' %}
+                                        <span style="display: inline-block; background: #fef3c7; color: var(--festival-accent); padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">
+                                            <i class="bi bi-circle-fill" style="margin-right: 0.25rem;"></i> Entwurf
+                                        </span>
+                                    {% else %}
+                                        <span style="display: inline-block; background: #e5e7eb; color: #6b7280; padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">
+                                            <i class="bi bi-circle-fill" style="margin-right: 0.25rem;"></i> Abgeschlossen
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Stats Cards -->
+                            <div style="display: grid; gap: 1rem; min-width: 200px;">
+                                <a href="{% url 'festival:admin_overview' item.festival.slug %}"
+                                   style="display: inline-block; padding: 0.75rem 1.25rem; background: linear-gradient(135deg, var(--festival-primary) 0%, var(--festival-secondary) 100%); color: white; border-radius: 8px; text-decoration: none; font-weight: 600; text-align: center; transition: all 0.3s ease;" onmouseover="this.style.boxShadow='0 4px 12px rgba(99, 102, 241, 0.4)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.boxShadow='none'; this.style.transform='translateY(0)';">
+                                    <i class="bi bi-arrow-right" style="margin-right: 0.5rem;"></i> Details anzeigen
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% else %}
+        <div style="background: white; border-radius: 12px; padding: 4rem 2rem; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); text-align: center;">
+            <i class="bi bi-inbox" style="font-size: 3rem; color: var(--festival-primary); opacity: 0.2; display: block; margin-bottom: 1rem;"></i>
+            <h3 style="color: var(--festival-dark); font-size: 1.25rem; margin: 0 0 0.5rem 0;">Keine Festivals gefunden</h3>
+            <p style="color: #9ca3af; margin: 0;">Erstellen Sie ein Festival, um zu beginnen.</p>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function toggleArchived() {
+    const showArchived = document.getElementById('show-archived-toggle').checked;
+    const url = new URL(window.location);
+
+    if (showArchived) {
+        url.searchParams.set('show_archived', 'true');
+    } else {
+        url.searchParams.delete('show_archived');
+    }
+
+    window.location = url.toString();
+}
+
+function toggleCreateFestivalForm() {
+    const formContainer = document.getElementById('festival-form-container');
+    if (formContainer.style.display === 'none') {
+        formContainer.style.display = 'block';
+        document.getElementById('festival-name').focus();
+    } else {
+        formContainer.style.display = 'none';
+    }
+}
+
+function cancelCreateFestival() {
+    document.getElementById('festival-name').value = '';
+    document.getElementById('festival-start-date').value = '';
+    document.getElementById('festival-end-date').value = '';
+    document.getElementById('festival-description').value = '';
+    clearAllErrors();
+    toggleCreateFestivalForm();
+}
+
+function clearAllErrors() {
+    document.getElementById('festival-name-error').textContent = '';
+    document.getElementById('festival-name-error').style.display = 'none';
+    document.getElementById('festival-start-date-error').textContent = '';
+    document.getElementById('festival-start-date-error').style.display = 'none';
+    document.getElementById('festival-end-date-error').textContent = '';
+    document.getElementById('festival-end-date-error').style.display = 'none';
+}
+
+function showError(fieldId, message) {
+    const errorElement = document.getElementById(fieldId + '-error');
+    errorElement.textContent = message;
+    errorElement.style.display = 'block';
+}
+
+function createFestival(event) {
+    event.preventDefault();
+    clearAllErrors();
+
+    const name = document.getElementById('festival-name').value.trim();
+    const startDate = document.getElementById('festival-start-date').value;
+    const endDate = document.getElementById('festival-end-date').value;
+    const description = document.getElementById('festival-description').value;
+
+    // Client-side validation
+    let hasError = false;
+
+    if (!name) {
+        showError('festival-name', 'Festival name is required');
+        hasError = true;
+    } else if (name.length > 255) {
+        showError('festival-name', 'Festival name cannot exceed 255 characters');
+        hasError = true;
+    }
+
+    if (!startDate) {
+        showError('festival-start-date', 'Start date is required');
+        hasError = true;
+    }
+
+    if (!endDate) {
+        showError('festival-end-date', 'End date is required');
+        hasError = true;
+    }
+
+    if (startDate && endDate) {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        if (end < start) {
+            showError('festival-end-date', 'End date must be on or after start date');
+            hasError = true;
+        }
+    }
+
+    if (hasError) {
+        return false;
+    }
+
+    // Prepare data
+    const data = {
+        name: name,
+        start_date: startDate,
+        end_date: endDate,
+        description: description
+    };
+
+    // Get CSRF token
+    const csrftoken = getCookie('csrftoken');
+
+    // Send request
+    fetch('{% url "festival:api_create_festival" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast('Festival created successfully', 'success');
+            addFestivalToList(data.data);
+            cancelCreateFestival();
+            // Refresh the page after a short delay to ensure the new festival is displayed correctly
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
+        } else {
+            showToast(data.error || 'An error occurred', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('An error occurred while creating the festival', 'error');
+    });
+
+    return false;
+}
+
+function showToast(message, type) {
+    // Remove existing toast if present
+    const existingToast = document.getElementById('toast-notification');
+    if (existingToast) {
+        existingToast.remove();
+    }
+
+    const toastContainer = document.createElement('div');
+    toastContainer.id = 'toast-notification';
+    toastContainer.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 1rem 1.5rem;
+        background: ${type === 'success' ? '#10b981' : '#ef4444'};
+        color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-weight: 500;
+        animation: slideIn 0.3s ease;
+    `;
+
+    const icon = document.createElement('i');
+    icon.className = type === 'success' ? 'bi bi-check-circle' : 'bi bi-exclamation-circle';
+    icon.style.fontSize = '1.25rem';
+
+    const messageText = document.createElement('span');
+    messageText.textContent = message;
+
+    toastContainer.appendChild(icon);
+    toastContainer.appendChild(messageText);
+
+    document.body.appendChild(toastContainer);
+
+    // Add animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+    `;
+    if (!document.querySelector('style[data-toast-styles]')) {
+        style.dataset.toastStyles = 'true';
+        document.head.appendChild(style);
+    }
+
+    // Auto-dismiss after 3 seconds
+    setTimeout(() => {
+        toastContainer.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => toastContainer.remove(), 300);
+    }, 3000);
+}
+
+function addFestivalToList(festivalData) {
+    // This function could dynamically add the new festival to the list
+    // For now, we'll just refresh the page, but this is a placeholder for future enhancement
+}
+</script>
+{% endblock page_content %}

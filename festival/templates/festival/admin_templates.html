@@ -1,0 +1,397 @@
+{% extends "festival/base.html" %}
+
+{% block title %}Aufgabe-Vorlagen verwalten{% endblock title %}
+
+{% block page_content %}
+<div style="margin-bottom: 2rem;">
+    <a href="{% url 'festival:admin_festival_list' %}" style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--festival-primary); text-decoration: none; font-weight: 600; margin-bottom: 1.5rem; transition: all 0.3s ease;" onmouseover="this.style.opacity='0.7';" onmouseout="this.style.opacity='1';">
+        <i class="bi bi-arrow-left"></i> Zurück zum Admin
+    </a>
+
+    <h1 style="font-size: 2rem; font-weight: 700; color: var(--festival-dark); margin-bottom: 0.5rem;">
+        <i class="bi bi-clipboard-check"></i> Aufgabe-Vorlagen
+    </h1>
+    <p style="color: #6b7280; font-size: 1rem;">Verwalten Sie wiederverwendbare Aufgabenvorlagen zur schnelleren Aufgabenerstellung</p>
+</div>
+
+<!-- Add Template Button -->
+<div style="margin-bottom: 2rem;">
+    <button id="addTemplateBtn" style="padding: 0.75rem 1.5rem; background: var(--festival-success); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 0.5rem;" onmouseover="this.style.opacity='0.9';" onmouseout="this.style.opacity='1';">
+        <i class="bi bi-plus-circle"></i> Neue Vorlage
+    </button>
+</div>
+
+<!-- Add Template Form (hidden by default) -->
+<div id="addTemplateForm" style="display: none; margin-bottom: 2rem; padding: 2rem; background: white; border-radius: 12px; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); border-top: 4px solid var(--festival-success);">
+    <h3 style="margin-top: 0; color: var(--festival-dark); font-weight: 600; margin-bottom: 1.5rem;">Neue Vorlage erstellen</h3>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+        <!-- Template Name -->
+        <div>
+            <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Vorlagenname *</label>
+            <input type="text" id="templateName" placeholder="z.B. Einlass" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 1rem;">
+        </div>
+
+        <!-- Required Helpers -->
+        <div>
+            <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Erforderliche Freiwillige *</label>
+            <input type="number" id="templateHelpers" value="1" min="1" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 1rem;">
+        </div>
+    </div>
+
+    <!-- Description -->
+    <div style="margin-bottom: 1rem;">
+        <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Beschreibung</label>
+        <textarea id="templateDescription" placeholder="Detaillierte Beschreibung der Aufgabe" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-family: inherit; font-size: 0.95rem; min-height: 80px;"></textarea>
+    </div>
+
+    <!-- Special Requirements -->
+    <div style="margin-bottom: 1.5rem;">
+        <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Besondere Anforderungen</label>
+        <textarea id="templateRequirements" placeholder="z.B. Erste-Hilfe-Kurs erforderlich" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-family: inherit; font-size: 0.95rem; min-height: 60px;"></textarea>
+    </div>
+
+    <!-- Form Buttons -->
+    <div style="display: flex; gap: 0.5rem;">
+        <button id="saveTemplateBtn" style="padding: 0.75rem 1.5rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+            <i class="bi bi-check-circle"></i> Speichern
+        </button>
+        <button id="cancelTemplateBtn" style="padding: 0.75rem 1.5rem; background: #6b7280; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+            <i class="bi bi-x-circle"></i> Abbrechen
+        </button>
+    </div>
+</div>
+
+<!-- Templates List -->
+<div id="templatesList" style="display: grid; gap: 1.5rem;">
+    {% if templates %}
+        {% for template in templates %}
+            <div class="template-card" data-template-id="{{ template.id }}" style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); border-top: 4px solid #8b5cf6;">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                    <div style="flex: 1;">
+                        <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--festival-dark); margin: 0 0 0.5rem 0;">{{ template.name }}</h3>
+                        <p style="color: #6b7280; margin: 0; font-size: 0.9rem;">
+                            <i class="bi bi-people"></i> {{ template.required_helpers }} Freiwillige erforderlich
+                        </p>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="edit-template-btn" data-template-id="{{ template.id }}" style="padding: 0.5rem 1rem; background: var(--festival-primary); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;"><i class="bi bi-pencil"></i></button>
+                        <button class="delete-template-btn" data-template-id="{{ template.id }}" style="padding: 0.5rem 1rem; background: #ef4444; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;"><i class="bi bi-trash"></i></button>
+                    </div>
+                </div>
+
+                <!-- Edit Form (hidden by default) -->
+                <div class="template-edit-form" data-template-id="{{ template.id }}" style="display: none; padding: 1.5rem; background: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb; margin-bottom: 1rem;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <div>
+                            <label style="display: block; color: #6b7280; font-size: 0.75rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Name</label>
+                            <input type="text" class="template-edit-name" data-template-id="{{ template.id }}" value="{{ template.name }}" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 4px;">
+                        </div>
+                        <div>
+                            <label style="display: block; color: #6b7280; font-size: 0.75rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Erforderliche Freiwillige</label>
+                            <input type="number" class="template-edit-helpers" data-template-id="{{ template.id }}" value="{{ template.required_helpers }}" min="1" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 4px;">
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; color: #6b7280; font-size: 0.75rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Beschreibung</label>
+                        <textarea class="template-edit-description" data-template-id="{{ template.id }}" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 4px; font-family: inherit; min-height: 60px;">{{ template.description }}</textarea>
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; color: #6b7280; font-size: 0.75rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Besondere Anforderungen</label>
+                        <textarea class="template-edit-requirements" data-template-id="{{ template.id }}" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 4px; font-family: inherit; min-height: 50px;">{{ template.special_requirements }}</textarea>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="save-template-edit-btn" data-template-id="{{ template.id }}" style="padding: 0.4rem 0.8rem; background: var(--festival-success); color: white; border: none; border-radius: 4px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">Speichern</button>
+                        <button class="cancel-template-edit-btn" data-template-id="{{ template.id }}" style="padding: 0.4rem 0.8rem; background: #6b7280; color: white; border: none; border-radius: 4px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">Abbrechen</button>
+                    </div>
+                </div>
+
+                <!-- Read Display -->
+                <div class="template-display" data-template-id="{{ template.id }}" style="padding: 1.5rem; background: #f9fafb; border-radius: 8px;">
+                    {% if template.description %}
+                        <div style="margin-bottom: 1rem;">
+                            <p style="color: #6b7280; font-size: 0.75rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Beschreibung</p>
+                            <p style="margin: 0; color: var(--festival-dark); white-space: pre-wrap;">{{ template.description }}</p>
+                        </div>
+                    {% endif %}
+                    {% if template.special_requirements %}
+                        <div>
+                            <p style="color: #6b7280; font-size: 0.75rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Besondere Anforderungen</p>
+                            <p style="margin: 0; color: var(--festival-dark); white-space: pre-wrap;">{{ template.special_requirements }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div style="background: white; border-radius: 12px; padding: 4rem 2rem; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); text-align: center;">
+            <i class="bi bi-inbox" style="font-size: 3rem; color: var(--festival-primary); opacity: 0.2; display: block; margin-bottom: 1rem;"></i>
+            <h3 style="color: var(--festival-dark); font-size: 1.25rem; margin: 0 0 0.5rem 0;">Keine Vorlagen vorhanden</h3>
+            <p style="color: #9ca3af; margin: 0;">Erstellen Sie eine neue Vorlage, um schneller Aufgaben zu erstellen.</p>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); max-width: 400px;">
+        <h3 style="color: var(--festival-dark); font-size: 1.25rem; margin: 0 0 1rem 0;">
+            <i class="bi bi-exclamation-circle" style="color: #ef4444; margin-right: 0.5rem;"></i>
+            Löschen bestätigen
+        </h3>
+        <p id="deleteMessage" style="color: #6b7280; margin: 0 0 1.5rem 0;">Sind Sie sicher, dass Sie diese Vorlage löschen möchten?</p>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <button id="deleteConfirmBtn" style="padding: 0.75rem 1.5rem; background: #ef4444; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                Löschen
+            </button>
+            <button id="deleteCancelBtn" style="padding: 0.75rem 1.5rem; background: #e5e7eb; color: var(--festival-dark); border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                Abbrechen
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Notification Toast -->
+<div id="notificationToast" style="display: none; position: fixed; bottom: 2rem; right: 2rem; padding: 1.5rem; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); z-index: 2000; max-width: 400px; animation: slideIn 0.3s ease;">
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <i id="notificationIcon" class="bi bi-check-circle" style="font-size: 1.5rem; color: var(--festival-success);"></i>
+        <div>
+            <p id="notificationText" style="margin: 0; color: var(--festival-dark); font-weight: 600;"></p>
+        </div>
+    </div>
+</div>
+
+<style>
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(400px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+</style>
+
+<script>
+    let pendingDeleteId = null;
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    function showNotification(message, isSuccess = true) {
+        const toast = document.getElementById('notificationToast');
+        const text = document.getElementById('notificationText');
+        const icon = document.getElementById('notificationIcon');
+
+        text.textContent = message;
+        if (isSuccess) {
+            icon.className = 'bi bi-check-circle';
+            icon.style.color = 'var(--festival-success)';
+        } else {
+            icon.className = 'bi bi-exclamation-circle';
+            icon.style.color = '#ef4444';
+        }
+
+        toast.style.display = 'block';
+        setTimeout(() => {
+            toast.style.display = 'none';
+        }, 3000);
+    }
+
+    // Add Template Button
+    document.getElementById('addTemplateBtn').addEventListener('click', function() {
+        const form = document.getElementById('addTemplateForm');
+        form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    });
+
+    // Cancel Add Template
+    document.getElementById('cancelTemplateBtn').addEventListener('click', function() {
+        document.getElementById('addTemplateForm').style.display = 'none';
+        document.getElementById('templateName').value = '';
+        document.getElementById('templateHelpers').value = '1';
+        document.getElementById('templateDescription').value = '';
+        document.getElementById('templateRequirements').value = '';
+    });
+
+    // Save New Template
+    document.getElementById('saveTemplateBtn').addEventListener('click', async function() {
+        const name = document.getElementById('templateName').value.trim();
+        const requiredHelpers = parseInt(document.getElementById('templateHelpers').value);
+        const description = document.getElementById('templateDescription').value.trim();
+        const specialRequirements = document.getElementById('templateRequirements').value.trim();
+
+        if (!name) {
+            showNotification('Vorlagenname ist erforderlich', false);
+            return;
+        }
+
+        if (requiredHelpers < 1) {
+            showNotification('Mindestens 1 Freiwilliger erforderlich', false);
+            return;
+        }
+
+        this.disabled = true;
+        this.textContent = 'Wird gespeichert...';
+
+        const response = await fetch('/festival/api/templates/create/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                name,
+                description,
+                required_helpers: requiredHelpers,
+                special_requirements: specialRequirements
+            })
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            window.location.reload();
+        } else {
+            const error = await response.json();
+            showNotification(error.error || 'Fehler beim Speichern', false);
+        }
+
+        this.disabled = false;
+        this.textContent = 'Speichern';
+    });
+
+    // Edit Template Button
+    document.querySelectorAll('.edit-template-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const templateId = this.dataset.templateId;
+            const form = document.querySelector(`.template-edit-form[data-template-id="${templateId}"]`);
+            const display = document.querySelector(`.template-display[data-template-id="${templateId}"]`);
+            form.style.display = 'block';
+            display.style.display = 'none';
+        });
+    });
+
+    // Cancel Edit Template
+    document.querySelectorAll('.cancel-template-edit-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const templateId = this.dataset.templateId;
+            const form = document.querySelector(`.template-edit-form[data-template-id="${templateId}"]`);
+            const display = document.querySelector(`.template-display[data-template-id="${templateId}"]`);
+            form.style.display = 'none';
+            display.style.display = 'block';
+        });
+    });
+
+    // Save Edit Template
+    document.querySelectorAll('.save-template-edit-btn').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const templateId = this.dataset.templateId;
+            const name = document.querySelector(`.template-edit-name[data-template-id="${templateId}"]`).value.trim();
+            const requiredHelpers = parseInt(document.querySelector(`.template-edit-helpers[data-template-id="${templateId}"]`).value);
+            const description = document.querySelector(`.template-edit-description[data-template-id="${templateId}"]`).value.trim();
+            const specialRequirements = document.querySelector(`.template-edit-requirements[data-template-id="${templateId}"]`).value.trim();
+
+            if (!name) {
+                showNotification('Vorlagenname ist erforderlich', false);
+                return;
+            }
+
+            if (requiredHelpers < 1) {
+                showNotification('Mindestens 1 Freiwilliger erforderlich', false);
+                return;
+            }
+
+            this.disabled = true;
+            this.textContent = 'Wird gespeichert...';
+
+            const response = await fetch(`/festival/api/templates/${templateId}/update/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    name,
+                    description,
+                    required_helpers: requiredHelpers,
+                    special_requirements: specialRequirements
+                })
+            });
+
+            if (response.ok) {
+                showNotification('Vorlage aktualisiert');
+                window.location.reload();
+            } else {
+                const error = await response.json();
+                showNotification(error.error || 'Fehler beim Speichern', false);
+            }
+
+            this.disabled = false;
+            this.textContent = 'Speichern';
+        });
+    });
+
+    // Delete Template Button
+    const modal = document.getElementById('deleteModal');
+    const confirmBtn = document.getElementById('deleteConfirmBtn');
+    const cancelBtn = document.getElementById('deleteCancelBtn');
+
+    document.querySelectorAll('.delete-template-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            pendingDeleteId = this.dataset.templateId;
+            const card = document.querySelector(`.template-card[data-template-id="${pendingDeleteId}"]`);
+            const templateName = card.querySelector('h3').textContent;
+            document.getElementById('deleteMessage').textContent = `Sind Sie sicher, dass Sie die Vorlage "${templateName}" löschen möchten?`;
+            modal.style.display = 'flex';
+        });
+    });
+
+    confirmBtn.addEventListener('click', async function() {
+        if (!pendingDeleteId) return;
+
+        const response = await fetch(`/festival/api/templates/${pendingDeleteId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        });
+
+        if (response.ok) {
+            showNotification('Vorlage gelöscht');
+            window.location.reload();
+        } else {
+            const error = await response.json();
+            showNotification(error.error || 'Fehler beim Löschen', false);
+        }
+
+        modal.style.display = 'none';
+        pendingDeleteId = null;
+    });
+
+    cancelBtn.addEventListener('click', function() {
+        modal.style.display = 'none';
+        pendingDeleteId = null;
+    });
+
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+            pendingDeleteId = null;
+        }
+    });
+</script>
+
+{% endblock %}

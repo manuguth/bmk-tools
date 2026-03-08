@@ -25,12 +25,13 @@ SECRET_KEY = "django-insecure-9a$g84u=&-_so*b@lzvr_2o@*n4q%17$b6*j2wlw!%#fj%!*$^
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["host.docker.internal", "localhost", "127.0.0.1"]
+ALLOWED_HOSTS = ["*"] if DEBUG else ["host.docker.internal", "localhost", "127.0.0.1"]
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    "festival.apps.FestivalConfig",
     "info_mail.apps.InfoMailConfig",
     "django.contrib.admin",
     "django.contrib.auth",
@@ -115,11 +116,13 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "de"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "Europe/Berlin"
 
 USE_I18N = True
+
+USE_L10N = True
 
 USE_TZ = True
 
