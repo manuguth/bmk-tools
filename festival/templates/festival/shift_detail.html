@@ -52,7 +52,8 @@
 
         {% if shift.tasks.exists %}
             <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
-                {% for task in shift.tasks.all %}
+                {% for task_data in tasks_with_km %}
+                    {% with task=task_data.task km_url=task_data.km_url %}
                     <div class="task-card {% if task.is_full %}task-full{% endif %}">
                         <div class="task-card-header">
                             <h3>{{ task.name }}</h3>
@@ -105,7 +106,12 @@
                         </div>
 
                         <div class="task-card-footer">
-                            {% if festival.status == 'completed' %}
+                            {% if km_url %}
+                                <a href="{{ km_url }}" target="_blank" rel="noopener noreferrer"
+                                   class="signup-btn available">
+                                    <i class="bi bi-box-arrow-up-right"></i> in Konzertmeister anmelden
+                                </a>
+                            {% elif festival.status == 'completed' %}
                                 <button class="signup-btn full" disabled>
                                     <i class="bi bi-lock"></i> Festival abgeschlossen
                                 </button>
@@ -121,6 +127,7 @@
                             {% endif %}
                         </div>
                     </div>
+                    {% endwith %}
                 {% endfor %}
             </div>
         {% else %}

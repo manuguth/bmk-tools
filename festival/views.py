@@ -1,4 +1,5 @@
 import json
+import logging
 from datetime import datetime
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
@@ -11,6 +12,9 @@ from django.core.exceptions import ValidationError
 from .models import Festival, Shift, Task, Participant, TaskTemplate
 from .forms import ParticipantSignUpForm
 from .serializers import serialize_festival_to_yaml, parse_yaml_to_dict, validate_import_data, import_festival_data
+from .utils_km import sync_participants_for_task
+
+logger = logging.getLogger(__name__)
 
 
 def check_festival_draft_access(request, festival):
@@ -75,9 +79,35 @@ def festival_detail(request, festival_slug):
 
     shifts = festival.shifts.all()
 
+    # Enrich shifts with tasks that have KM URLs
+    shifts_with_tasks = []
+    for shift in shifts:
+        tasks_with_km = []
+        for task in shift.tasks.all():
+            # Sync participants from Konzertmeister if configured
+            sync_result = sync_participants_for_task(task)
+            if not sync_result['success']:
+                logger.warning(f"KM sync failed for task {task.id}: {sync_result['error']}")
+
+            # Refresh task to get updated participant count after sync
+            task.refresh_from_db()
+
+            task_data = {
+                'task': task,
+                'km_url': None,
+            }
+            if task.has_km_integration:
+                task_data['km_url'] = f"https://web.konzertmeister.app/appointment/{task.konzertmeister_event_id}"
+            tasks_with_km.append(task_data)
+
+        shifts_with_tasks.append({
+            'shift': shift,
+            'tasks_with_km': tasks_with_km,
+        })
+
     context = {
         "festival": festival,
-        "shifts": shifts,
+        "shifts_with_tasks": shifts_with_tasks,
     }
     return render(request, "festival/festival_detail.html", context)
 
@@ -92,10 +122,21 @@ def shift_detail(request, festival_slug, shift_id):
     shift = get_object_or_404(Shift, id=shift_id, festival=festival)
     tasks = shift.tasks.all()
 
+    # Enrich tasks with KM URLs
+    tasks_with_km = []
+    for task in tasks:
+        task_data = {
+            'task': task,
+            'km_url': None,
+        }
+        if task.has_km_integration:
+            task_data['km_url'] = f"https://web.konzertmeister.app/appointment/{task.konzertmeister_event_id}"
+        tasks_with_km.append(task_data)
+
     context = {
         "festival": festival,
         "shift": shift,
-        "tasks": tasks,
+        "tasks_with_km": tasks_with_km,
     }
     return render(request, "festival/shift_detail.html", context)
 
@@ -116,6 +157,23 @@ def task_signup(request, festival_slug, task_id):
         return render(request, "festival/festival_completed.html", context)
 
     task = get_object_or_404(Task, id=task_id, shift__festival=festival)
+
+    # Check if task has Konzertmeister integration - if so, sign up is locked
+    if task.has_km_integration:
+        context = {
+            "festival": festival,
+            "task": task,
+            "error": "Die Anmeldung für diese Aufgabe wird über Konzertmeister verwaltet. Manuelle Anmeldungen sind nicht möglich.",
+        }
+        return render(request, "festival/task_full.html", context)
+
+    # Sync participants from Konzertmeister if configured
+    sync_result = sync_participants_for_task(task)
+    if not sync_result['success']:
+        logger.warning(f"KM sync failed for task {task_id}: {sync_result['error']}")
+
+    # Refresh task to get updated participant count after sync
+    task.refresh_from_db()
 
     # Check if task is full
     if task.is_full:
@@ -140,6 +198,7 @@ def task_signup(request, festival_slug, task_id):
         "festival": festival,
         "task": task,
         "form": form,
+        "km_sync_warning": sync_result.get('warning'),
     }
     return render(request, "festival/task_signup.html", context)
 
@@ -250,10 +309,19 @@ def admin_edit(request, festival_slug):
     for shift in shifts:
         tasks_data = []
         for task in shift.tasks.all():
+            # Sync participants from Konzertmeister if configured
+            sync_result = sync_participants_for_task(task)
+            if not sync_result['success']:
+                logger.warning(f"KM sync failed for task {task.id}: {sync_result['error']}")
+
+            # Refresh participant count
+            task.refresh_from_db()
             participants = Participant.objects.filter(task=task).select_related('task__shift')
+
             tasks_data.append({
                 'task': task,
                 'participants': participants,
+                'km_sync_warning': sync_result.get('warning'),
             })
         shifts_data.append({
             'shift': shift,

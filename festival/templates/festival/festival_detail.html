@@ -28,7 +28,8 @@
     </div>
 {% endif %}
 
-{% for shift in shifts %}
+{% for shift_data in shifts_with_tasks %}
+    {% with shift=shift_data.shift %}
     <div class="shift-section">
         <div class="shift-header">
             <div class="shift-icon">
@@ -56,9 +57,10 @@
             </div>
         {% endif %}
 
-        {% if shift.tasks.exists %}
+        {% if shift_data.tasks_with_km %}
             <div class="tasks-grid">
-                {% for task in shift.tasks.all %}
+                {% for task_data in shift_data.tasks_with_km %}
+                    {% with task=task_data.task km_url=task_data.km_url %}
                     <div class="task-card {% if task.is_full %}task-full{% endif %}">
                         <div class="task-card-header">
                             <h3>{{ task.name }}</h3>
@@ -111,7 +113,12 @@
                         </div>
 
                         <div class="task-card-footer">
-                            {% if festival.status == 'completed' %}
+                            {% if km_url %}
+                                <a href="{{ km_url }}" target="_blank" rel="noopener noreferrer"
+                                   class="signup-btn available">
+                                    <i class="bi bi-box-arrow-up-right"></i> in Konzertmeister zurückmelden
+                                </a>
+                            {% elif festival.status == 'completed' %}
                                 <button class="signup-btn full" disabled>
                                     <i class="bi bi-lock"></i> Festival abgeschlossen
                                 </button>
@@ -127,6 +134,7 @@
                             {% endif %}
                         </div>
                     </div>
+                    {% endwith %}
                 {% endfor %}
             </div>
         {% else %}
@@ -137,6 +145,7 @@
             </div>
         {% endif %}
     </div>
+    {% endwith %}
 {% empty %}
     <div class="empty-state">
         <i class="bi bi-calendar-x"></i>

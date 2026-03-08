@@ -53,6 +53,7 @@ class Task(models.Model):
     description = models.TextField(blank=True)
     required_helpers = models.IntegerField(default=1)
     special_requirements = models.TextField(blank=True)
+    konzertmeister_event_id = models.IntegerField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -67,13 +68,30 @@ class Task(models.Model):
     def is_full(self):
         return self.current_helpers >= self.required_helpers
 
+    @property
+    def has_km_integration(self):
+        """Check if task has Konzertmeister integration enabled."""
+        return self.konzertmeister_event_id is not None
+
 
 class Participant(models.Model):
+    KM_RESPONSE_STATUS = [
+        ('unknown', 'Unknown'),
+        ('positive', 'Positive'),
+        ('maybe', 'Maybe'),
+    ]
+
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="participants")
     name = models.CharField(max_length=255)
     signed_up_at = models.DateTimeField(auto_now_add=True)
     attended = models.BooleanField(default=False)
     notes = models.TextField(blank=True)
+    konzertmeister_user_id = models.IntegerField(null=True, blank=True)
+    konzertmeister_response_status = models.CharField(
+        max_length=20,
+        choices=KM_RESPONSE_STATUS,
+        default='unknown'
+    )
 
     def __str__(self):
         return f"{self.name} - {self.task.name}"

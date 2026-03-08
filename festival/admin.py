@@ -31,24 +31,62 @@ class ShiftAdmin(admin.ModelAdmin):
 
 @admin.register(Task)
 class TaskAdmin(admin.ModelAdmin):
-    list_display = ("name", "shift", "required_helpers", "current_helpers_display")
-    list_filter = ("shift__festival", "shift__date")
-    search_fields = ("name", "shift__name")
+    list_display = ("name", "shift", "required_helpers", "current_helpers_display", "km_event_display")
+    list_filter = ("shift__festival", "shift__date", "konzertmeister_event_id")
+    search_fields = ("name", "shift__name", "konzertmeister_event_id")
     readonly_fields = ("created_at", "updated_at")
+    fieldsets = (
+        ("Basic Information", {
+            'fields': ('shift', 'name', 'description', 'required_helpers', 'special_requirements')
+        }),
+        ("Konzertmeister Integration", {
+            'fields': ('konzertmeister_event_id',),
+            'classes': ('collapse',),
+            'description': 'Link this task to a Konzertmeister event for automatic participant sync'
+        }),
+        ("Timestamps", {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',),
+        }),
+    )
 
     def current_helpers_display(self, obj):
         return f"{obj.current_helpers}/{obj.required_helpers}"
 
     current_helpers_display.short_description = "Helpers (current/required)"
 
+    def km_event_display(self, obj):
+        return str(obj.konzertmeister_event_id) if obj.konzertmeister_event_id else "-"
+
+    km_event_display.short_description = "KM Event ID"
+
 
 @admin.register(Participant)
 class ParticipantAdmin(admin.ModelAdmin):
-    list_display = ("name", "task", "signed_up_at", "attended")
-    list_filter = ("attended", "task__shift__festival", "task__shift__date", "signed_up_at")
+    list_display = ("name", "task", "signed_up_at", "attended", "km_response_display")
+    list_filter = ("attended", "task__shift__festival", "task__shift__date", "signed_up_at", "konzertmeister_response_status")
     search_fields = ("name", "task__name", "task__shift__name")
-    readonly_fields = ("signed_up_at",)
+    readonly_fields = ("signed_up_at", "konzertmeister_user_id", "konzertmeister_response_status")
+    fieldsets = (
+        ("Basic Information", {
+            'fields': ('task', 'name', 'notes', 'attended', 'signed_up_at')
+        }),
+        ("Konzertmeister Data", {
+            'fields': ('konzertmeister_user_id', 'konzertmeister_response_status'),
+            'classes': ('collapse',),
+            'description': 'Read-only data from Konzertmeister sync'
+        }),
+    )
     actions = ["mark_attended", "mark_not_attended"]
+
+    def km_response_display(self, obj):
+        if obj.konzertmeister_response_status == 'positive':
+            return "Positive"
+        elif obj.konzertmeister_response_status == 'maybe':
+            return "Maybe"
+        return "-"
+
+    km_response_display.short_description = "KM Response"
 
     def mark_attended(self, request, queryset):
         updated = queryset.update(attended=True)
