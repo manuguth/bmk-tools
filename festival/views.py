@@ -1,4 +1,3 @@
-import csv
 import json
 from datetime import datetime
 from django.shortcuts import render, redirect, get_object_or_404
@@ -237,36 +236,6 @@ def participant_list_admin(request, festival_slug):
         "participants": participants,
     }
     return render(request, "festival/participant_list_admin.html", context)
-
-
-@staff_member_required
-def export_participants_csv(request, festival_slug):
-    """Export participants as CSV."""
-    festival = get_object_or_404(Festival, slug=festival_slug)
-    participants = Participant.objects.filter(task__shift__festival=festival).select_related(
-        "task", "task__shift"
-    )
-
-    # Create CSV response
-    response = HttpResponse(content_type="text/csv")
-    response["Content-Disposition"] = f"attachment; filename=festival_{festival_slug}_participants.csv"
-
-    writer = csv.writer(response)
-    writer.writerow(["Name", "Shift", "Date", "Task", "Time", "Signed Up", "Attended"])
-
-    for participant in participants:
-        shift = participant.task.shift
-        writer.writerow([
-            participant.name,
-            shift.name,
-            shift.date,
-            participant.task.name,
-            f"{shift.start_time} - {shift.end_time}",
-            participant.signed_up_at.strftime("%Y-%m-%d %H:%M"),
-            "Yes" if participant.attended else "No",
-        ])
-
-    return response
 
 
 @staff_member_required

@@ -20,11 +20,6 @@ urlpatterns = [
         views.participant_list_admin,
         name="participant_list_admin",
     ),
-    path(
-        "<slug:festival_slug>/admin/export/",
-        views.export_participants_csv,
-        name="export_participants_csv",
-    ),
     # API endpoints for inline editing
     path(
         "<slug:festival_slug>/api/festival/update/",

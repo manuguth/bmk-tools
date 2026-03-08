@@ -12,10 +12,6 @@
             </h1>
             <p style="color: #6b7280; font-size: 1rem; margin: 0;">{{ festival.name }}</p>
         </div>
-        <a href="{% url 'festival:export_participants_csv' festival_slug=festival.slug %}"
-           style="padding: 0.75rem 1.5rem; background: linear-gradient(135deg, var(--festival-success) 0%, #059669 100%); color: white; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 0.5rem;" onmouseover="this.style.boxShadow='0 4px 12px rgba(16, 185, 129, 0.4)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.boxShadow='none'; this.style.transform='translateY(0)';">
-            <i class="bi bi-download"></i> CSV herunterladen
-        </a>
     </div>
 
 
