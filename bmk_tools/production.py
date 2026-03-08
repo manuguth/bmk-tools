@@ -43,7 +43,8 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 hostname = os.environ["DBHOST"]
 
 SECRET_KEY = os.environ["SECRET_KEY"]
-DEBUG = False
+# DEBUG = False
+DEBUG = True
 
 # Configure Postgres database; the full username is username@servername,
 # which we construct using the DBHOST value.
