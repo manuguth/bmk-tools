@@ -47,6 +47,21 @@ urlpatterns = [
         name="api_delete_participant",
     ),
     path(
+        "<slug:festival_slug>/api/shift/<uuid:shift_id>/delete/",
+        views.api_delete_shift,
+        name="api_delete_shift",
+    ),
+    path(
+        "<slug:festival_slug>/api/task/<uuid:task_id>/delete/",
+        views.api_delete_task,
+        name="api_delete_task",
+    ),
+    path(
+        "<slug:festival_slug>/api/festival/delete/",
+        views.api_delete_festival,
+        name="api_delete_festival",
+    ),
+    path(
         "<slug:festival_slug>/api/shift/<uuid:shift_id>/task/create/",
         views.api_create_task,
         name="api_create_task",

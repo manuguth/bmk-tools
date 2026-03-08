@@ -16,6 +16,9 @@
         <button id="editFestivalNameBtn" style="padding: 0.25rem 0.5rem; background: none; border: 1px solid #e5e7eb; color: #6b7280; border-radius: 4px; cursor: pointer; font-size: 0.85rem; transition: all 0.3s ease;" onmouseover="this.style.color='var(--festival-primary)';" onmouseout="this.style.color='#6b7280';">
             <i class="bi bi-pencil" style="font-size: 0.75rem;"></i>
         </button>
+        <button id="deleteFestivalBtn" style="padding: 0.25rem 0.5rem; background: none; border: 1px solid #e5e7eb; color: #ef4444; border-radius: 4px; cursor: pointer; font-size: 0.85rem; transition: all 0.3s ease;" onmouseover="this.style.color='#dc2626';" onmouseout="this.style.color='#ef4444';">
+            <i class="bi bi-trash" style="font-size: 0.75rem;"></i>
+        </button>
     </div>
     <div id="festivalNameEditDiv" style="display: none; gap: 0.5rem; margin-bottom: 1rem;">
         <input type="text" id="festivalNameInput" value="{{ festival.name }}" style="padding: 0.5rem; border: 2px solid var(--festival-primary); border-radius: 6px; font-size: 1rem; flex: 1;">
@@ -155,6 +158,14 @@
                             </span>
                         </div>
                     </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="shift-edit-btn" data-shift-id="{{ shift_item.shift.id }}" style="padding: 0.5rem 0.75rem; background: none; border: 1px solid #e5e7eb; color: #6b7280; border-radius: 4px; cursor: pointer; font-size: 0.85rem; transition: all 0.3s ease;" onmouseover="this.style.color='var(--festival-primary)';" onmouseout="this.style.color='#6b7280';">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="shift-delete-btn" data-shift-id="{{ shift_item.shift.id }}" style="padding: 0.5rem 0.75rem; background: none; border: 1px solid #e5e7eb; color: #ef4444; border-radius: 4px; cursor: pointer; font-size: 0.85rem; transition: all 0.3s ease;" onmouseover="this.style.color='#dc2626';" onmouseout="this.style.color='#ef4444';">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Shift Header - Edit Mode -->
@@ -222,10 +233,24 @@
                             <!-- Task Card -->
                             <div style="padding: 1.5rem; background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 8px; border-left: 4px solid #8b5cf6;">
                                 <div style="display: grid; gap: 1rem; margin-bottom: 1.5rem;">
-                                    <!-- Task Name (read-only) -->
+                                    <!-- Delete Button -->
+                                    <div style="display: flex; justify-content: flex-end;">
+                                        <button class="task-delete-btn" data-task-id="{{ task_item.task.id }}" style="padding: 0.4rem 0.75rem; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; transition: all 0.3s ease;" onmouseover="this.style.opacity='0.8';" onmouseout="this.style.opacity='1';">
+                                            <i class="bi bi-trash"></i> Löschen
+                                        </button>
+                                    </div>
+
+                                    <!-- Task Name (editable) -->
                                     <div>
                                         <p style="color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Aufgabe</p>
-                                        <p style="font-size: 1.25rem; font-weight: 700; color: var(--festival-dark); margin: 0;">{{ task_item.task.name }}</p>
+                                        <div class="task-name-display" data-task-id="{{ task_item.task.id }}" style="padding: 0.75rem; background: white; border-radius: 6px; cursor: pointer; border: 1px solid #e5e7eb; transition: all 0.3s ease; display: inline-block;" onmouseover="this.style.borderColor='var(--festival-primary)';" onmouseout="this.style.borderColor='#e5e7eb';">
+                                            <p style="margin: 0; color: var(--festival-dark); font-size: 1.25rem; font-weight: 700;">{{ task_item.task.name }}</p>
+                                        </div>
+                                        <input type="text" class="task-name-edit" data-task-id="{{ task_item.task.id }}" value="{{ task_item.task.name }}" style="display: none; width: 100%; padding: 0.75rem; border: 2px solid var(--festival-primary); border-radius: 6px; font-size: 1.25rem; font-weight: 700; margin-top: 0.5rem;">
+                                        <div class="task-name-buttons" data-task-id="{{ task_item.task.id }}" style="display: none; gap: 0.5rem; margin-top: 0.5rem;">
+                                            <button class="task-name-save-btn" data-task-id="{{ task_item.task.id }}" style="padding: 0.4rem 0.8rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">Speichern</button>
+                                            <button class="task-name-cancel-btn" data-task-id="{{ task_item.task.id }}" style="padding: 0.4rem 0.8rem; background: #6b7280; color: white; border: none; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">Abbrechen</button>
+                                        </div>
                                     </div>
 
                                     <!-- Task Description (editable) -->
@@ -251,6 +276,20 @@
                                             <input type="number" class="helpers-input" data-task-id="{{ task_item.task.id }}" value="{{ task_item.task.required_helpers }}" min="1" style="width: 120px; padding: 0.5rem; border: 2px solid var(--festival-primary); border-radius: 6px; font-size: 1rem;">
                                             <button class="helpers-save-btn" data-task-id="{{ task_item.task.id }}" style="margin-left: 0.5rem; padding: 0.5rem 1rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Speichern</button>
                                             <button class="helpers-cancel-btn" data-task-id="{{ task_item.task.id }}" style="margin-left: 0.5rem; padding: 0.5rem 1rem; background: #6b7280; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Abbrechen</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Konzertmeister Event ID (editable) -->
+                                    <div>
+                                        <p style="color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Konzertmeister Event ID</p>
+                                        <div class="km-id-display" data-task-id="{{ task_item.task.id }}" style="padding: 0.75rem; background: white; border-radius: 6px; border: 1px solid #e5e7eb; cursor: pointer; display: inline-block; transition: all 0.3s ease;" onmouseover="this.style.borderColor='var(--festival-primary)';" onmouseout="this.style.borderColor='#e5e7eb';">
+                                            <p style="margin: 0; color: var(--festival-dark); font-size: 0.95rem;">{% if task_item.task.konzertmeister_event_id %}{{ task_item.task.konzertmeister_event_id }}{% else %}<span style="color: #9ca3af; font-style: italic;">(nicht verknüpft)</span>{% endif %}</p>
+                                        </div>
+                                        <div class="km-id-edit" data-task-id="{{ task_item.task.id }}" style="display: none; margin-top: 0.5rem;">
+                                            <input type="number" class="km-id-input" data-task-id="{{ task_item.task.id }}" value="{{ task_item.task.konzertmeister_event_id }}" min="1" placeholder="z.B. 12345" style="width: 150px; padding: 0.5rem; border: 2px solid var(--festival-primary); border-radius: 6px; font-size: 1rem;">
+                                            <button class="km-id-save-btn" data-task-id="{{ task_item.task.id }}" style="margin-left: 0.5rem; padding: 0.5rem 1rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Speichern</button>
+                                            <button class="km-id-clear-btn" data-task-id="{{ task_item.task.id }}" style="margin-left: 0.5rem; padding: 0.5rem 1rem; background: #f59e0b; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Löschen</button>
+                                            <button class="km-id-cancel-btn" data-task-id="{{ task_item.task.id }}" style="margin-left: 0.5rem; padding: 0.5rem 1rem; background: #6b7280; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Abbrechen</button>
                                         </div>
                                     </div>
                                 </div>
@@ -284,7 +323,7 @@
                                                     </div>
 
                                                     <!-- Hidden save buttons (shown on edit) -->
-                                                    <div class="participant-edit-buttons" data-participant-id="{{ participant.id }}" style="display: none; grid-column: 1 / -1; display: grid; grid-template-columns: auto auto auto; gap: 0.5rem;">
+                                                    <div class="participant-edit-buttons" data-participant-id="{{ participant.id }}" style="display: none; grid-column: 1 / -1; grid-template-columns: auto auto auto; gap: 0.5rem;">
                                                         <button class="participant-save-btn" data-participant-id="{{ participant.id }}" style="padding: 0.4rem 0.8rem; background: var(--festival-success); color: white; border: none; border-radius: 4px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">
                                                             <i class="bi bi-check-circle"></i> Speichern
                                                         </button>
@@ -492,6 +531,7 @@
 <script>
     const festivalSlug = "{{ festival.slug }}";
     let pendingDeleteId = null;
+    let pendingDeleteType = null;
     let templates = [];
 
     function getCookie(name) {
@@ -639,7 +679,11 @@
 
     // Shift Header Editing (Name, Date, Start Time, End Time)
     document.querySelectorAll('.shift-header-display').forEach(display => {
-        display.addEventListener('click', function() {
+        display.addEventListener('click', function(e) {
+            // Don't enter edit mode if clicking edit or delete buttons
+            if (e.target.closest('.shift-edit-btn') || e.target.closest('.shift-delete-btn')) {
+                return;
+            }
             const shiftId = this.dataset.shiftId;
             this.style.display = 'none';
             document.querySelector(`.shift-header-edit[data-shift-id="${shiftId}"]`).style.display = 'block';
@@ -818,6 +862,59 @@
         });
     });
 
+    // Task Name Editing
+    document.querySelectorAll('.task-name-display').forEach(display => {
+        display.addEventListener('click', function() {
+            const taskId = this.dataset.taskId;
+            this.style.display = 'none';
+            document.querySelector(`.task-name-edit[data-task-id="${taskId}"]`).style.display = 'block';
+            document.querySelector(`.task-name-buttons[data-task-id="${taskId}"]`).style.display = 'flex';
+            document.querySelector(`.task-name-edit[data-task-id="${taskId}"]`).focus();
+        });
+    });
+
+    document.querySelectorAll('.task-name-save-btn').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const taskId = this.dataset.taskId;
+            const input = document.querySelector(`.task-name-edit[data-task-id="${taskId}"]`);
+            const name = input.value.trim();
+
+            if (!name) {
+                showNotification('Aufgabenname darf nicht leer sein', false);
+                return;
+            }
+
+            const response = await fetch(`/festival/${festivalSlug}/api/task/${taskId}/update/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ name })
+            });
+
+            if (response.ok) {
+                document.querySelector(`.task-name-display[data-task-id="${taskId}"] p`).textContent = name;
+                document.querySelector(`.task-name-display[data-task-id="${taskId}"]`).style.display = 'inline-block';
+                input.style.display = 'none';
+                document.querySelector(`.task-name-buttons[data-task-id="${taskId}"]`).style.display = 'none';
+                showNotification('Aufgabe aktualisiert');
+            } else {
+                const error = await response.json();
+                showNotification(error.error || 'Fehler beim Speichern', false);
+            }
+        });
+    });
+
+    document.querySelectorAll('.task-name-cancel-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const taskId = this.dataset.taskId;
+            document.querySelector(`.task-name-display[data-task-id="${taskId}"]`).style.display = 'inline-block';
+            document.querySelector(`.task-name-edit[data-task-id="${taskId}"]`).style.display = 'none';
+            document.querySelector(`.task-name-buttons[data-task-id="${taskId}"]`).style.display = 'none';
+        });
+    });
+
     // Required Helpers Editing
     document.querySelectorAll('.helpers-display').forEach(display => {
         display.addEventListener('click', function() {
@@ -869,84 +966,115 @@
     });
 
     // Participant Editing
-    document.querySelectorAll('.participant-name-display').forEach(display => {
-        display.addEventListener('click', function() {
-            const participantId = this.dataset.participantId;
-            this.style.display = 'none';
-            document.querySelector(`.participant-name-edit[data-participant-id="${participantId}"]`).style.display = 'block';
-            document.querySelector(`.participant-edit-buttons[data-participant-id="${participantId}"]`).style.display = 'grid';
-        });
-    });
-
-    document.querySelectorAll('.participant-notes-display').forEach(display => {
-        display.addEventListener('click', function() {
-            const participantId = this.dataset.participantId;
-            this.style.display = 'none';
-            document.querySelector(`.participant-notes-edit[data-participant-id="${participantId}"]`).style.display = 'block';
-            document.querySelector(`.participant-edit-buttons[data-participant-id="${participantId}"]`).style.display = 'grid';
-        });
-    });
-
-    document.querySelectorAll('.participant-save-btn').forEach(btn => {
-        btn.addEventListener('click', async function() {
-            const participantId = this.dataset.participantId;
-            const name = document.querySelector(`.participant-name-edit[data-participant-id="${participantId}"]`).value;
-            const notes = document.querySelector(`.participant-notes-edit[data-participant-id="${participantId}"]`).value;
-
-            const response = await fetch(`/festival/${festivalSlug}/api/participant/${participantId}/update/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken')
-                },
-                body: JSON.stringify({ name, notes })
-            });
-
-            if (response.ok) {
-                document.querySelector(`.participant-name-display[data-participant-id="${participantId}"]`).textContent = name;
-                document.querySelector(`.participant-notes-display[data-participant-id="${participantId}"]`).textContent = notes || '–';
-                document.querySelector(`.participant-name-display[data-participant-id="${participantId}"]`).style.display = 'block';
-                document.querySelector(`.participant-name-edit[data-participant-id="${participantId}"]`).style.display = 'none';
-                document.querySelector(`.participant-notes-display[data-participant-id="${participantId}"]`).style.display = 'block';
-                document.querySelector(`.participant-notes-edit[data-participant-id="${participantId}"]`).style.display = 'none';
-                document.querySelector(`.participant-edit-buttons[data-participant-id="${participantId}"]`).style.display = 'none';
-                showNotification('Teilnehmer aktualisiert');
-            } else {
-                const error = await response.json();
-                showNotification(error.error || 'Fehler beim Speichern', false);
+    function attachParticipantEventListeners() {
+        document.querySelectorAll('.participant-name-display').forEach(display => {
+            if (!display.dataset.listenerAttached) {
+                display.addEventListener('click', function() {
+                    const participantId = this.dataset.participantId;
+                    this.style.display = 'none';
+                    document.querySelector(`.participant-name-edit[data-participant-id="${participantId}"]`).style.display = 'block';
+                    document.querySelector(`.participant-edit-buttons[data-participant-id="${participantId}"]`).style.display = 'grid';
+                });
+                display.dataset.listenerAttached = true;
             }
         });
-    });
 
-    document.querySelectorAll('.participant-cancel-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const participantId = this.dataset.participantId;
-            document.querySelector(`.participant-name-display[data-participant-id="${participantId}"]`).style.display = 'block';
-            document.querySelector(`.participant-name-edit[data-participant-id="${participantId}"]`).style.display = 'none';
-            document.querySelector(`.participant-notes-display[data-participant-id="${participantId}"]`).style.display = 'block';
-            document.querySelector(`.participant-notes-edit[data-participant-id="${participantId}"]`).style.display = 'none';
-            document.querySelector(`.participant-edit-buttons[data-participant-id="${participantId}"]`).style.display = 'none';
+        document.querySelectorAll('.participant-notes-display').forEach(display => {
+            if (!display.dataset.listenerAttached) {
+                display.addEventListener('click', function() {
+                    const participantId = this.dataset.participantId;
+                    this.style.display = 'none';
+                    document.querySelector(`.participant-notes-edit[data-participant-id="${participantId}"]`).style.display = 'block';
+                    document.querySelector(`.participant-edit-buttons[data-participant-id="${participantId}"]`).style.display = 'grid';
+                });
+                display.dataset.listenerAttached = true;
+            }
         });
-    });
 
-    // Delete Participant
+        document.querySelectorAll('.participant-save-btn').forEach(btn => {
+            if (!btn.dataset.listenerAttached) {
+                btn.addEventListener('click', async function() {
+                    const participantId = this.dataset.participantId;
+                    const name = document.querySelector(`.participant-name-edit[data-participant-id="${participantId}"]`).value;
+                    const notes = document.querySelector(`.participant-notes-edit[data-participant-id="${participantId}"]`).value;
+
+                    const response = await fetch(`/festival/${festivalSlug}/api/participant/${participantId}/update/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        body: JSON.stringify({ name, notes })
+                    });
+
+                    if (response.ok) {
+                        document.querySelector(`.participant-name-display[data-participant-id="${participantId}"]`).textContent = name;
+                        document.querySelector(`.participant-notes-display[data-participant-id="${participantId}"]`).textContent = notes || '–';
+                        document.querySelector(`.participant-name-display[data-participant-id="${participantId}"]`).style.display = 'block';
+                        document.querySelector(`.participant-name-edit[data-participant-id="${participantId}"]`).style.display = 'none';
+                        document.querySelector(`.participant-notes-display[data-participant-id="${participantId}"]`).style.display = 'block';
+                        document.querySelector(`.participant-notes-edit[data-participant-id="${participantId}"]`).style.display = 'none';
+                        document.querySelector(`.participant-edit-buttons[data-participant-id="${participantId}"]`).style.display = 'none';
+                        showNotification('Teilnehmer aktualisiert');
+                    } else {
+                        const error = await response.json();
+                        showNotification(error.error || 'Fehler beim Speichern', false);
+                    }
+                });
+                btn.dataset.listenerAttached = true;
+            }
+        });
+
+        document.querySelectorAll('.participant-cancel-btn').forEach(btn => {
+            if (!btn.dataset.listenerAttached) {
+                btn.addEventListener('click', function() {
+                    const participantId = this.dataset.participantId;
+                    document.querySelector(`.participant-name-display[data-participant-id="${participantId}"]`).style.display = 'block';
+                    document.querySelector(`.participant-name-edit[data-participant-id="${participantId}"]`).style.display = 'none';
+                    document.querySelector(`.participant-notes-display[data-participant-id="${participantId}"]`).style.display = 'block';
+                    document.querySelector(`.participant-notes-edit[data-participant-id="${participantId}"]`).style.display = 'none';
+                    document.querySelector(`.participant-edit-buttons[data-participant-id="${participantId}"]`).style.display = 'none';
+                });
+                btn.dataset.listenerAttached = true;
+            }
+        });
+
+        // Delete Participant
+        document.querySelectorAll('.participant-delete-btn').forEach(btn => {
+            if (!btn.dataset.listenerAttached) {
+                btn.addEventListener('click', function() {
+                    pendingDeleteId = this.dataset.participantId;
+                    pendingDeleteType = 'participant';
+                    const participantName = document.querySelector(`.participant-name-display[data-participant-id="${pendingDeleteId}"]`).textContent;
+                    document.getElementById('deleteMessage').textContent = `Sind Sie sicher, dass Sie den Teilnehmer "${participantName}" löschen möchten?`;
+                    const modal = document.getElementById('deleteModal');
+                    modal.style.display = 'flex';
+                });
+                btn.dataset.listenerAttached = true;
+            }
+        });
+    }
+
+    // Delete Modal Setup
     const modal = document.getElementById('deleteModal');
     const confirmBtn = document.getElementById('deleteConfirmBtn');
     const cancelBtn = document.getElementById('deleteCancelBtn');
 
-    document.querySelectorAll('.participant-delete-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            pendingDeleteId = this.dataset.participantId;
-            const participantName = document.querySelector(`.participant-name-display[data-participant-id="${pendingDeleteId}"]`).textContent;
-            document.getElementById('deleteMessage').textContent = `Sind Sie sicher, dass Sie den Teilnehmer "${participantName}" löschen möchten?`;
-            modal.style.display = 'flex';
-        });
-    });
-
     confirmBtn.addEventListener('click', async function() {
-        if (!pendingDeleteId) return;
+        if (!pendingDeleteType) return;
 
-        const response = await fetch(`/festival/${festivalSlug}/api/participant/${pendingDeleteId}/delete/`, {
+        let url;
+        if (pendingDeleteType === 'participant') {
+            url = `/festival/${festivalSlug}/api/participant/${pendingDeleteId}/delete/`;
+        } else if (pendingDeleteType === 'shift') {
+            url = `/festival/${festivalSlug}/api/shift/${pendingDeleteId}/delete/`;
+        } else if (pendingDeleteType === 'task') {
+            url = `/festival/${festivalSlug}/api/task/${pendingDeleteId}/delete/`;
+        } else if (pendingDeleteType === 'festival') {
+            url = `/festival/${festivalSlug}/api/festival/delete/`;
+        }
+
+        const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'X-CSRFToken': getCookie('csrftoken')
@@ -954,32 +1082,103 @@
         });
 
         if (response.ok) {
-            const participantRow = document.querySelector(`.participant-row[data-participant-id="${pendingDeleteId}"]`);
-            participantRow.style.opacity = '0';
-            setTimeout(() => {
-                participantRow.remove();
-                showNotification('Teilnehmer gelöscht');
+            const data = await response.json();
+
+            if (pendingDeleteType === 'participant') {
+                const participantRow = document.querySelector(`.participant-row[data-participant-id="${pendingDeleteId}"]`);
+                participantRow.style.opacity = '0';
+                setTimeout(() => {
+                    participantRow.remove();
+                    showNotification('Teilnehmer gelöscht');
+                    modal.style.display = 'none';
+                }, 300);
+            } else if (pendingDeleteType === 'shift') {
+                // Find the shift card and remove it
+                const shiftCard = document.querySelector(`.shift-header-display[data-shift-id="${pendingDeleteId}"]`).closest('[style*="border-top: 4px solid"]');
+                shiftCard.style.opacity = '0';
+                setTimeout(() => {
+                    shiftCard.remove();
+                    showNotification('Schicht und alle zugehörigen Aufgaben gelöscht');
+                    modal.style.display = 'none';
+                }, 300);
+            } else if (pendingDeleteType === 'task') {
+                // Find the task card and remove it
+                const taskCard = document.querySelector(`.task-name-display[data-task-id="${pendingDeleteId}"]`).closest('[style*="border-left: 4px solid"]');
+                taskCard.style.opacity = '0';
+                setTimeout(() => {
+                    taskCard.remove();
+                    showNotification('Aufgabe und alle zugehörigen Teilnehmer gelöscht');
+                    modal.style.display = 'none';
+                }, 300);
+            } else if (pendingDeleteType === 'festival') {
+                showNotification('Festival gelöscht. Sie werden umgeleitet...');
                 modal.style.display = 'none';
-            }, 300);
+                setTimeout(() => {
+                    window.location.href = '/festival/admin/';
+                }, 1500);
+            }
         } else {
             const error = await response.json();
             showNotification(error.error || 'Fehler beim Löschen', false);
         }
 
         pendingDeleteId = null;
+        pendingDeleteType = null;
     });
 
     cancelBtn.addEventListener('click', function() {
         modal.style.display = 'none';
         pendingDeleteId = null;
+        pendingDeleteType = null;
     });
 
     modal.addEventListener('click', function(e) {
         if (e.target === modal) {
             modal.style.display = 'none';
             pendingDeleteId = null;
+            pendingDeleteType = null;
         }
     });
+
+    // Delete Shift
+    document.querySelectorAll('.shift-delete-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation(); // Prevent triggering shift header click
+            const shiftId = this.dataset.shiftId;
+            const shiftName = document.querySelector(`.shift-name-display[data-shift-id="${shiftId}"]`).textContent;
+            document.getElementById('deleteMessage').textContent =
+                `Sind Sie sicher, dass Sie die Schicht "${shiftName}" und alle zugehörigen Aufgaben und Teilnehmer löschen möchten?\n\nAchtung: Diese Aktion kann nicht rückgängig gemacht werden.`;
+            pendingDeleteId = shiftId;
+            pendingDeleteType = 'shift';
+            modal.style.display = 'flex';
+        });
+    });
+
+    // Delete Task
+    document.querySelectorAll('.task-delete-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const taskId = this.dataset.taskId;
+            const taskName = document.querySelector(`.task-name-display[data-task-id="${taskId}"] p`).textContent;
+            document.getElementById('deleteMessage').textContent =
+                `Sind Sie sicher, dass Sie die Aufgabe "${taskName}" und alle zugehörigen Teilnehmer löschen möchten?\n\nAchtung: Diese Aktion kann nicht rückgängig gemacht werden.`;
+            pendingDeleteId = taskId;
+            pendingDeleteType = 'task';
+            modal.style.display = 'flex';
+        });
+    });
+
+    // Delete Festival
+    const deleteFestivalBtn = document.getElementById('deleteFestivalBtn');
+    if (deleteFestivalBtn) {
+        deleteFestivalBtn.addEventListener('click', function() {
+            const festivalName = document.getElementById('festivalNameDisplay').textContent;
+            document.getElementById('deleteMessage').textContent =
+                `Sind Sie sicher, dass Sie das Festival "${festivalName}" und alle zugehörigen Schichten, Aufgaben und Teilnehmer löschen möchten?\n\nAchtung: Diese Aktion kann nicht rückgängig gemacht werden und Sie werden zur Festivel-Liste weitergeleitet.`;
+            pendingDeleteId = null;
+            pendingDeleteType = 'festival';
+            modal.style.display = 'flex';
+        });
+    }
 
     // Add Task Form
     document.querySelectorAll('.add-task-toggle-btn').forEach(btn => {
@@ -1058,7 +1257,14 @@
                         <div style="display: grid; gap: 1rem; margin-bottom: 1.5rem;">
                             <div>
                                 <p style="color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Aufgabe</p>
-                                <p style="font-size: 1.25rem; font-weight: 700; color: var(--festival-dark); margin: 0;">${name}</p>
+                                <div class="task-name-display" data-task-id="${taskId}" style="padding: 0.75rem; background: white; border-radius: 6px; cursor: pointer; border: 1px solid #e5e7eb; transition: all 0.3s ease; display: inline-block;" onmouseover="this.style.borderColor='var(--festival-primary)';" onmouseout="this.style.borderColor='#e5e7eb';">
+                                    <p style="margin: 0; color: var(--festival-dark); font-size: 1.25rem; font-weight: 700;">${name}</p>
+                                </div>
+                                <input type="text" class="task-name-edit" data-task-id="${taskId}" value="${name}" style="display: none; width: 100%; padding: 0.75rem; border: 2px solid var(--festival-primary); border-radius: 6px; font-size: 1.25rem; font-weight: 700; margin-top: 0.5rem;">
+                                <div class="task-name-buttons" data-task-id="${taskId}" style="display: none; gap: 0.5rem; margin-top: 0.5rem;">
+                                    <button class="task-name-save-btn" data-task-id="${taskId}" style="padding: 0.4rem 0.8rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">Speichern</button>
+                                    <button class="task-name-cancel-btn" data-task-id="${taskId}" style="padding: 0.4rem 0.8rem; background: #6b7280; color: white; border: none; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">Abbrechen</button>
+                                </div>
                             </div>
                             <div>
                                 <p style="color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Beschreibung</p>
@@ -1104,6 +1310,7 @@
                 }
 
                 // Re-attach event listeners to the new elements
+                attachParticipantEventListeners();
                 attachTaskEventListeners();
 
                 // Reset form
@@ -1148,6 +1355,125 @@
                     document.querySelector(`.helpers-input[data-task-id="${taskId}"]`).focus();
                 });
                 display.dataset.listenerAttached = true;
+            }
+        });
+
+        document.querySelectorAll('.task-delete-btn').forEach(btn => {
+            if (!btn.dataset.listenerAttached) {
+                btn.addEventListener('click', function() {
+                    const taskId = this.dataset.taskId;
+                    const taskName = document.querySelector(`.task-name-display[data-task-id="${taskId}"] p`).textContent;
+                    document.getElementById('deleteMessage').textContent =
+                        `Sind Sie sicher, dass Sie die Aufgabe "${taskName}" und alle zugehörigen Teilnehmer löschen möchten?\n\nAchtung: Diese Aktion kann nicht rückgängig gemacht werden.`;
+                    pendingDeleteId = taskId;
+                    pendingDeleteType = 'task';
+                    modal.style.display = 'flex';
+                });
+                btn.dataset.listenerAttached = true;
+            }
+        });
+
+        // Konzertmeister Event ID editing
+        document.querySelectorAll('.km-id-display').forEach(display => {
+            if (!display.dataset.listenerAttached) {
+                display.addEventListener('click', function() {
+                    const taskId = this.dataset.taskId;
+                    this.style.display = 'none';
+                    document.querySelector(`.km-id-edit[data-task-id="${taskId}"]`).style.display = 'block';
+                    document.querySelector(`.km-id-input[data-task-id="${taskId}"]`).focus();
+                });
+                display.dataset.listenerAttached = true;
+            }
+        });
+
+        document.querySelectorAll('.km-id-save-btn').forEach(btn => {
+            if (!btn.dataset.listenerAttached) {
+                btn.addEventListener('click', async function() {
+                    const taskId = this.dataset.taskId;
+                    const input = document.querySelector(`.km-id-input[data-task-id="${taskId}"]`);
+                    const kmId = input.value.trim();
+
+                    if (!kmId) {
+                        showNotification('Konzertmeister Event ID darf nicht leer sein. Verwenden Sie "Löschen" zur Verknüpfung aufheben.', false);
+                        return;
+                    }
+
+                    this.disabled = true;
+                    const originalText = this.textContent;
+                    this.textContent = 'Wird validiert...';
+
+                    const response = await fetch(`/festival/${festivalSlug}/api/task/${taskId}/update/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        body: JSON.stringify({ konzertmeister_event_id: parseInt(kmId) })
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        const display = document.querySelector(`.km-id-display[data-task-id="${taskId}"] p`);
+                        display.innerHTML = kmId;
+                        document.querySelector(`.km-id-display[data-task-id="${taskId}"]`).style.display = 'inline-block';
+                        document.querySelector(`.km-id-edit[data-task-id="${taskId}"]`).style.display = 'none';
+                        showNotification('Konzertmeister Event ID erfolgreich gespeichert');
+                    } else {
+                        const error = await response.json();
+                        showNotification(error.error || 'Fehler beim Speichern', false);
+                    }
+
+                    this.disabled = false;
+                    this.textContent = originalText;
+                });
+                btn.dataset.listenerAttached = true;
+            }
+        });
+
+        document.querySelectorAll('.km-id-clear-btn').forEach(btn => {
+            if (!btn.dataset.listenerAttached) {
+                btn.addEventListener('click', async function() {
+                    const taskId = this.dataset.taskId;
+
+                    this.disabled = true;
+                    const originalText = this.textContent;
+                    this.textContent = 'Wird gelöscht...';
+
+                    const response = await fetch(`/festival/${festivalSlug}/api/task/${taskId}/update/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        body: JSON.stringify({ konzertmeister_event_id: null })
+                    });
+
+                    if (response.ok) {
+                        const display = document.querySelector(`.km-id-display[data-task-id="${taskId}"] p`);
+                        display.innerHTML = '<span style="color: #9ca3af; font-style: italic;">(nicht verknüpft)</span>';
+                        document.querySelector(`.km-id-display[data-task-id="${taskId}"]`).style.display = 'inline-block';
+                        document.querySelector(`.km-id-edit[data-task-id="${taskId}"]`).style.display = 'none';
+                        showNotification('Konzertmeister Verknüpfung entfernt');
+                    } else {
+                        const error = await response.json();
+                        showNotification(error.error || 'Fehler beim Löschen', false);
+                    }
+
+                    this.disabled = false;
+                    this.textContent = originalText;
+                });
+                btn.dataset.listenerAttached = true;
+            }
+        });
+
+        document.querySelectorAll('.km-id-cancel-btn').forEach(btn => {
+            if (!btn.dataset.listenerAttached) {
+                btn.addEventListener('click', function() {
+                    const taskId = this.dataset.taskId;
+                    document.querySelector(`.km-id-display[data-task-id="${taskId}"]`).style.display = 'inline-block';
+                    document.querySelector(`.km-id-edit[data-task-id="${taskId}"]`).style.display = 'none';
+                });
+                btn.dataset.listenerAttached = true;
             }
         });
     }
@@ -1318,6 +1644,7 @@
             }
 
             // Re-attach event listeners
+            attachParticipantEventListeners();
             attachTaskEventListeners();
             attachShiftEventListeners();
 
@@ -1344,12 +1671,33 @@
         // Attach header display click listeners
         document.querySelectorAll('.shift-header-display').forEach(display => {
             if (!display.dataset.listenerAttached) {
-                display.addEventListener('click', function() {
+                display.addEventListener('click', function(e) {
+                    // Don't enter edit mode if clicking edit or delete buttons
+                    if (e.target.closest('.shift-edit-btn') || e.target.closest('.shift-delete-btn')) {
+                        return;
+                    }
                     const shiftId = this.dataset.shiftId;
                     this.style.display = 'none';
                     document.querySelector(`.shift-header-edit[data-shift-id="${shiftId}"]`).style.display = 'block';
                 });
                 display.dataset.listenerAttached = true;
+            }
+        });
+
+        // Attach shift delete button listeners
+        document.querySelectorAll('.shift-delete-btn').forEach(btn => {
+            if (!btn.dataset.listenerAttached) {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const shiftId = this.dataset.shiftId;
+                    const shiftName = document.querySelector(`.shift-name-display[data-shift-id="${shiftId}"]`).textContent;
+                    document.getElementById('deleteMessage').textContent =
+                        `Sind Sie sicher, dass Sie die Schicht "${shiftName}" und alle zugehörigen Aufgaben und Teilnehmer löschen möchten?\n\nAchtung: Diese Aktion kann nicht rückgängig gemacht werden.`;
+                    pendingDeleteId = shiftId;
+                    pendingDeleteType = 'shift';
+                    modal.style.display = 'flex';
+                });
+                btn.dataset.listenerAttached = true;
             }
         });
 
@@ -1554,7 +1902,13 @@
     }
 
     // Initialize status badge styling on page load
-    document.addEventListener('DOMContentLoaded', updateStatusBadgeStyleEdit);
+    document.addEventListener('DOMContentLoaded', function() {
+        updateStatusBadgeStyleEdit();
+        // Attach event listeners to existing elements on page load
+        attachParticipantEventListeners();
+        attachTaskEventListeners();
+        attachShiftEventListeners();
+    });
 
     // ===== YAML Export/Import Functionality =====
 

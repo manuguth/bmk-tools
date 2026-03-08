@@ -345,6 +345,13 @@ def api_update_task(request, festival_slug, task_id):
     try:
         data = json.loads(request.body)
 
+        # Update name
+        if 'name' in data:
+            name = data['name'].strip()
+            if not name:
+                return JsonResponse({'success': False, 'error': 'Task name cannot be empty'}, status=400)
+            task.name = name
+
         # Validate and update required_helpers
         if 'required_helpers' in data:
             required_helpers = int(data['required_helpers'])
@@ -356,19 +363,50 @@ def api_update_task(request, festival_slug, task_id):
         if 'description' in data:
             task.description = data['description']
 
+        # Update konzertmeister_event_id with validation
+        if 'konzertmeister_event_id' in data:
+            km_id = data['konzertmeister_event_id']
+
+            # Allow null/empty to unlink without validation
+            if km_id is None or km_id == '' or km_id == 0:
+                task.konzertmeister_event_id = None
+            else:
+                # Validate the KM event ID by attempting to sync
+                try:
+                    km_id_int = int(km_id)
+                    if km_id_int < 1:
+                        return JsonResponse({'success': False, 'error': 'Konzertmeister Event ID must be a positive number'}, status=400)
+
+                    # Try to fetch meeting info from Konzertmeister to validate the ID exists
+                    from .utils_km import km_get_meeting_info
+                    try:
+                        km_get_meeting_info(km_id_int)
+                        # If successful, save the ID
+                        task.konzertmeister_event_id = km_id_int
+                    except Exception as km_error:
+                        logger.warning(f"KM validation failed for event {km_id_int}: {str(km_error)}")
+                        return JsonResponse({
+                            'success': False,
+                            'error': f'Konzertmeister Event ID {km_id_int} could not be validated. Please check if the ID exists in Konzertmeister.'
+                        }, status=400)
+                except ValueError:
+                    return JsonResponse({'success': False, 'error': 'Konzertmeister Event ID must be a number'}, status=400)
+
         task.save()
         return JsonResponse({
             'success': True,
             'message': 'Task updated successfully',
             'data': {
+                'name': task.name,
                 'required_helpers': task.required_helpers,
                 'description': task.description,
+                'konzertmeister_event_id': task.konzertmeister_event_id,
             }
         })
     except json.JSONDecodeError:
         return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
     except ValueError:
-        return JsonResponse({'success': False, 'error': 'Invalid required_helpers value'}, status=400)
+        return JsonResponse({'success': False, 'error': 'Invalid field value'}, status=400)
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
@@ -493,6 +531,60 @@ def api_delete_participant(request, festival_slug, participant_id):
         return JsonResponse({
             'success': True,
             'message': f'Participant "{participant_name}" deleted successfully',
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@staff_member_required
+@require_http_methods(["POST"])
+def api_delete_shift(request, festival_slug, shift_id):
+    """API endpoint to delete a shift and all associated tasks and participants."""
+    festival = get_object_or_404(Festival, slug=festival_slug)
+    shift = get_object_or_404(Shift, id=shift_id, festival=festival)
+
+    try:
+        shift_name = shift.name
+        shift.delete()
+        return JsonResponse({
+            'success': True,
+            'message': f'Shift "{shift_name}" and all associated tasks and participants deleted successfully',
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@staff_member_required
+@require_http_methods(["POST"])
+def api_delete_task(request, festival_slug, task_id):
+    """API endpoint to delete a task and all associated participants."""
+    festival = get_object_or_404(Festival, slug=festival_slug)
+    task = get_object_or_404(Task, id=task_id, shift__festival=festival)
+
+    try:
+        task_name = task.name
+        task.delete()
+        return JsonResponse({
+            'success': True,
+            'message': f'Task "{task_name}" and all associated participants deleted successfully',
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@staff_member_required
+@require_http_methods(["POST"])
+def api_delete_festival(request, festival_slug):
+    """API endpoint to delete a festival and all associated shifts, tasks, and participants."""
+    festival = get_object_or_404(Festival, slug=festival_slug)
+
+    try:
+        festival_name = festival.name
+        festival.delete()
+        return JsonResponse({
+            'success': True,
+            'message': f'Festival "{festival_name}" and all associated data deleted successfully',
+            'redirect': '/festival/admin/',
         })
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
