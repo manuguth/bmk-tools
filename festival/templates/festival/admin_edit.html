@@ -321,68 +321,68 @@
             </div>
         {% endfor %}
     </div>
-
-    <!-- Add Shift Button and Form -->
-    <div style="margin-top: 2rem;">
-        <button id="addShiftToggleBtn" style="padding: 0.75rem 1.5rem; background: linear-gradient(135deg, var(--festival-primary) 0%, var(--festival-secondary) 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 0.5rem;" onmouseover="this.style.opacity='0.9';" onmouseout="this.style.opacity='1';">
-            <i class="bi bi-plus-circle"></i> Schicht hinzufügen
-        </button>
-
-        <div id="addShiftForm" style="display: none; margin-top: 1.5rem; padding: 2rem; background: white; border-radius: 12px; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); border-top: 4px solid var(--festival-primary);">
-            <h3 style="margin-top: 0; color: var(--festival-dark); font-weight: 600; margin-bottom: 1.5rem;">Neue Schicht</h3>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
-                <!-- Shift Name -->
-                <div>
-                    <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Schichtname *</label>
-                    <input type="text" id="addShiftNameInput" placeholder="z.B. Morgen Schicht" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 1rem;">
-                </div>
-
-                <!-- Shift Date -->
-                <div>
-                    <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Datum *</label>
-                    <input type="date" id="addShiftDateInput" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 1rem;">
-                </div>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
-                <!-- Start Time -->
-                <div>
-                    <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Startzeit *</label>
-                    <input type="time" id="addShiftStartTimeInput" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 1rem;">
-                </div>
-
-                <!-- End Time -->
-                <div>
-                    <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Endzeit *</label>
-                    <input type="time" id="addShiftEndTimeInput" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 1rem;">
-                </div>
-            </div>
-
-            <!-- Shift Description -->
-            <div style="margin-bottom: 1.5rem;">
-                <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Beschreibung</label>
-                <textarea id="addShiftDescriptionInput" placeholder="Optionale Schichtbeschreibung" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-family: inherit; font-size: 0.95rem; min-height: 80px;"></textarea>
-            </div>
-
-            <!-- Form Buttons -->
-            <div style="display: flex; gap: 0.5rem;">
-                <button id="addShiftSaveBtn" style="padding: 0.75rem 1.5rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
-                    <i class="bi bi-check-circle"></i> Schicht erstellen
-                </button>
-                <button id="addShiftCancelBtn" style="padding: 0.75rem 1.5rem; background: #6b7280; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
-                    <i class="bi bi-x-circle"></i> Abbrechen
-                </button>
-            </div>
-        </div>
-    </div>
 {% else %}
     <div style="background: white; border-radius: 12px; padding: 4rem 2rem; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); text-align: center;">
         <i class="bi bi-inbox" style="font-size: 3rem; color: var(--festival-primary); opacity: 0.2; display: block; margin-bottom: 1rem;"></i>
         <h3 style="color: var(--festival-dark); font-size: 1.25rem; margin: 0 0 0.5rem 0;">Keine Schichten verfügbar</h3>
-        <p style="color: #9ca3af; margin: 0;">Es gibt noch keine Schichten für dieses Festival.</p>
+        <p style="color: #9ca3af; margin: 0 0 1.5rem 0;">Es gibt noch keine Schichten für dieses Festival.</p>
     </div>
 {% endif %}
+
+<!-- Add Shift Button and Form -->
+<div style="margin-top: 2rem;">
+    <button id="addShiftToggleBtn" style="padding: 0.75rem 1.5rem; background: linear-gradient(135deg, var(--festival-primary) 0%, var(--festival-secondary) 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 0.5rem;" onmouseover="this.style.opacity='0.9';" onmouseout="this.style.opacity='1';">
+        <i class="bi bi-plus-circle"></i> Schicht hinzufügen
+    </button>
+
+    <div id="addShiftForm" style="display: none; margin-top: 1.5rem; padding: 2rem; background: white; border-radius: 12px; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); border-top: 4px solid var(--festival-primary);">
+        <h3 style="margin-top: 0; color: var(--festival-dark); font-weight: 600; margin-bottom: 1.5rem;">Neue Schicht</h3>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+            <!-- Shift Name -->
+            <div>
+                <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Schichtname *</label>
+                <input type="text" id="addShiftNameInput" placeholder="z.B. Morgen Schicht" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 1rem;">
+            </div>
+
+            <!-- Shift Date -->
+            <div>
+                <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Datum *</label>
+                <input type="date" id="addShiftDateInput" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 1rem;">
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+            <!-- Start Time -->
+            <div>
+                <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Startzeit *</label>
+                <input type="time" id="addShiftStartTimeInput" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 1rem;">
+            </div>
+
+            <!-- End Time -->
+            <div>
+                <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Endzeit *</label>
+                <input type="time" id="addShiftEndTimeInput" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 1rem;">
+            </div>
+        </div>
+
+        <!-- Shift Description -->
+        <div style="margin-bottom: 1.5rem;">
+            <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Beschreibung</label>
+            <textarea id="addShiftDescriptionInput" placeholder="Optionale Schichtbeschreibung" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-family: inherit; font-size: 0.95rem; min-height: 80px;"></textarea>
+        </div>
+
+        <!-- Form Buttons -->
+        <div style="display: flex; gap: 0.5rem;">
+            <button id="addShiftSaveBtn" style="padding: 0.75rem 1.5rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                <i class="bi bi-check-circle"></i> Schicht erstellen
+            </button>
+            <button id="addShiftCancelBtn" style="padding: 0.75rem 1.5rem; background: #6b7280; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                <i class="bi bi-x-circle"></i> Abbrechen
+            </button>
+        </div>
+    </div>
+</div>
 
 <!-- Delete Confirmation Modal -->
 <div id="deleteModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 1000; align-items: center; justify-content: center;">
