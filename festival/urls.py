@@ -66,6 +66,11 @@ urlpatterns = [
         views.api_create_task,
         name="api_create_task",
     ),
+    path(
+        "<slug:festival_slug>/api/task/<uuid:task_id>/participant/create/",
+        views.api_create_participant,
+        name="api_create_participant",
+    ),
     # Task template management URLs
     path('admin/templates/', views.admin_templates, name='admin_templates'),
     path('api/templates/', views.api_get_templates, name='api_get_templates'),

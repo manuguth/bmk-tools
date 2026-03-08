@@ -340,6 +340,41 @@
                                         <p style="margin: 0;">Keine Teilnehmer angemeldet</p>
                                     </div>
                                 {% endif %}
+
+                                <!-- Add Participant Form -->
+                                <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #e5e7eb;">
+                                    <button class="add-participant-toggle-btn" data-task-id="{{ task_item.task.id }}" style="padding: 0.75rem 1.5rem; background: var(--festival-success); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 0.5rem;" onmouseover="this.style.opacity='0.9';" onmouseout="this.style.opacity='1';">
+                                        <i class="bi bi-plus-circle"></i> Teilnehmer hinzufügen
+                                    </button>
+
+                                    <div class="add-participant-form" data-task-id="{{ task_item.task.id }}" style="display: none; margin-top: 1rem; padding: 1.5rem; background: #f9fafb; border: 2px dashed #e5e7eb; border-radius: 8px;">
+                                        <h4 style="margin-top: 0; color: var(--festival-dark); font-weight: 600; margin-bottom: 1rem;">Neuer Teilnehmer</h4>
+
+                                        <div style="display: grid; grid-template-columns: 1fr; gap: 1rem; margin-bottom: 1rem;">
+                                            <!-- Participant Name -->
+                                            <div>
+                                                <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Name *</label>
+                                                <input type="text" class="add-participant-name-input" data-task-id="{{ task_item.task.id }}" placeholder="z.B. Max Mustermann" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 1rem;">
+                                            </div>
+
+                                            <!-- Participant Notes -->
+                                            <div>
+                                                <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Notizen</label>
+                                                <textarea class="add-participant-notes-input" data-task-id="{{ task_item.task.id }}" placeholder="Optional: Notizen zu diesem Teilnehmer" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-family: inherit; font-size: 0.95rem; min-height: 50px;"></textarea>
+                                            </div>
+                                        </div>
+
+                                        <!-- Form Buttons -->
+                                        <div style="display: flex; gap: 0.5rem;">
+                                            <button class="add-participant-save-btn" data-task-id="{{ task_item.task.id }}" style="padding: 0.75rem 1.5rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                                                <i class="bi bi-check-circle"></i> Teilnehmer erstellen
+                                            </button>
+                                            <button class="add-participant-cancel-btn" data-task-id="{{ task_item.task.id }}" style="padding: 0.75rem 1.5rem; background: #6b7280; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                                                <i class="bi bi-x-circle"></i> Abbrechen
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         {% endfor %}
                     </div>
@@ -1054,6 +1089,116 @@
             }
         });
     }
+
+    // Participant Creation
+    document.querySelectorAll('.add-participant-toggle-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const taskId = this.dataset.taskId;
+            const form = document.querySelector(`.add-participant-form[data-task-id="${taskId}"]`);
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        });
+    });
+
+    document.querySelectorAll('.add-participant-cancel-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const taskId = this.dataset.taskId;
+            const form = document.querySelector(`.add-participant-form[data-task-id="${taskId}"]`);
+            form.style.display = 'none';
+            // Clear form inputs
+            document.querySelector(`.add-participant-name-input[data-task-id="${taskId}"]`).value = '';
+            document.querySelector(`.add-participant-notes-input[data-task-id="${taskId}"]`).value = '';
+        });
+    });
+
+    document.querySelectorAll('.add-participant-save-btn').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const taskId = this.dataset.taskId;
+            const name = document.querySelector(`.add-participant-name-input[data-task-id="${taskId}"]`).value.trim();
+            const notes = document.querySelector(`.add-participant-notes-input[data-task-id="${taskId}"]`).value.trim();
+
+            // Validation
+            if (!name) {
+                showNotification('Teilnehmername ist erforderlich', false);
+                return;
+            }
+
+            this.disabled = true;
+            this.textContent = 'Wird erstellt...';
+
+            const response = await fetch(`/festival/${festivalSlug}/api/task/${taskId}/participant/create/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    name: name,
+                    notes: notes
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const participant = data.data;
+
+                // Build the new participant HTML
+                const participantHtml = `
+                    <div class="participant-row" data-participant-id="${participant.id}" style="padding: 1rem; background: white; border-radius: 6px; border: 1px solid #e5e7eb; display: grid; grid-template-columns: 1fr 1fr 1fr 50px; gap: 1rem; align-items: center;">
+                        <!-- Name -->
+                        <div>
+                            <p style="color: #6b7280; font-size: 0.75rem; margin: 0 0 0.25rem 0; font-weight: 600; text-transform: uppercase;">Name</p>
+                            <p class="participant-name-display" data-participant-id="${participant.id}" style="margin: 0; color: var(--festival-dark); font-weight: 600; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.color='var(--festival-primary)';" onmouseout="this.style.color='var(--festival-dark)';\">${participant.name}</p>
+                            <input type="text" class="participant-name-edit" data-participant-id="${participant.id}" value="${participant.name}" style="display: none; width: 100%; padding: 0.5rem; border: 1px solid var(--festival-primary); border-radius: 4px;">
+                        </div>
+
+                        <!-- Notes -->
+                        <div>
+                            <p style="color: #6b7280; font-size: 0.75rem; margin: 0 0 0.25rem 0; font-weight: 600; text-transform: uppercase;">Notizen</p>
+                            <p class="participant-notes-display" data-participant-id="${participant.id}" style="margin: 0; color: #6b7280; font-size: 0.85rem; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: all 0.3s ease;" onmouseover="this.style.color='var(--festival-primary)';" onmouseout="this.style.color='#6b7280';">${participant.notes || '–'}</p>
+                            <textarea class="participant-notes-edit" data-participant-id="${participant.id}" style="display: none; width: 100%; padding: 0.5rem; border: 1px solid var(--festival-primary); border-radius: 4px; min-height: 60px; font-family: inherit;">${participant.notes || ''}</textarea>
+                        </div>
+
+                        <!-- Delete Button -->
+                        <div style="text-align: right;">
+                            <button class="participant-delete-btn" data-participant-id="${participant.id}" style="padding: 0.5rem 0.75rem; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s ease;" onmouseover="this.style.opacity='0.8';" onmouseout="this.style.opacity='1';">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+
+                        <!-- Hidden save buttons (shown on edit) -->
+                        <div class="participant-edit-buttons" data-participant-id="${participant.id}" style="display: none; grid-column: 1 / -1; grid-template-columns: auto auto auto; gap: 0.5rem;">
+                            <button class="participant-save-btn" data-participant-id="${participant.id}" style="padding: 0.4rem 0.8rem; background: var(--festival-success); color: white; border: none; border-radius: 4px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">
+                                <i class="bi bi-check-circle"></i> Speichern
+                            </button>
+                            <button class="participant-cancel-btn" data-participant-id="${participant.id}" style="padding: 0.4rem 0.8rem; background: #6b7280; color: white; border: none; border-radius: 4px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">
+                                <i class="bi bi-x-circle"></i> Abbrechen
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                // Insert the new participant before the form
+                const form = document.querySelector(`.add-participant-form[data-task-id="${taskId}"]`);
+                form.parentElement.insertAdjacentHTML('beforebegin', participantHtml);
+
+                // Re-attach event listeners to the new elements
+                attachParticipantEventListeners();
+
+                // Reset form
+                document.querySelector(`.add-participant-name-input[data-task-id="${taskId}"]`).value = '';
+                document.querySelector(`.add-participant-notes-input[data-task-id="${taskId}"]`).value = '';
+                form.style.display = 'none';
+
+                showNotification('Teilnehmer erfolgreich erstellt');
+            } else {
+                const error = await response.json();
+                showNotification(error.error || 'Fehler beim Erstellen des Teilnehmers', false);
+            }
+
+            this.disabled = false;
+            this.innerHTML = '<i class="bi bi-check-circle"></i> Teilnehmer erstellen';
+        });
+    });
 
     // Delete Modal Setup
     const modal = document.getElementById('deleteModal');

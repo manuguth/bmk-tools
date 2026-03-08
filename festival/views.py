@@ -574,6 +574,43 @@ def api_delete_task(request, festival_slug, task_id):
 
 @staff_member_required
 @require_http_methods(["POST"])
+def api_create_participant(request, festival_slug, task_id):
+    """API endpoint to create a new participant for a task."""
+    festival = get_object_or_404(Festival, slug=festival_slug)
+    task = get_object_or_404(Task, id=task_id, shift__festival=festival)
+
+    try:
+        data = json.loads(request.body)
+
+        # Validate required field
+        if not data.get('name'):
+            return JsonResponse({'success': False, 'error': 'Participant name is required'}, status=400)
+
+        # Create the participant
+        participant = Participant.objects.create(
+            task=task,
+            name=data['name'].strip(),
+            notes=data.get('notes', '').strip()
+        )
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Participant created successfully',
+            'data': {
+                'id': participant.id,
+                'name': participant.name,
+                'notes': participant.notes,
+                'attended': participant.attended,
+            }
+        })
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@staff_member_required
+@require_http_methods(["POST"])
 def api_delete_festival(request, festival_slug):
     """API endpoint to delete a festival and all associated shifts, tasks, and participants."""
     festival = get_object_or_404(Festival, slug=festival_slug)
