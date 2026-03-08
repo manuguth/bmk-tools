@@ -81,3 +81,20 @@ class Participant(models.Model):
     class Meta:
         ordering = ["signed_up_at"]
 
+
+class TaskTemplate(models.Model):
+    """Reusable task template for quick task creation across festivals."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    required_helpers = models.IntegerField(default=1)
+    special_requirements = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ["name"]
+

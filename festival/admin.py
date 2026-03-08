@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Festival, Shift, Task, Participant
+from .models import Festival, Shift, Task, Participant, TaskTemplate
 
 
 class ShiftInline(admin.TabularInline):
@@ -61,3 +61,10 @@ class ParticipantAdmin(admin.ModelAdmin):
         self.message_user(request, f"{updated} participants marked as not attended.")
 
     mark_not_attended.short_description = "Mark selected as not attended"
+
+
+@admin.register(TaskTemplate)
+class TaskTemplateAdmin(admin.ModelAdmin):
+    list_display = ("name", "required_helpers", "created_at", "updated_at")
+    search_fields = ("name", "description")
+    readonly_fields = ("created_at", "updated_at")

@@ -67,6 +67,34 @@
         </p>
     </div>
 
+    <!-- Current Participants -->
+    <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); margin-bottom: 2rem;">
+        <h2 style="margin-top: 0; color: var(--festival-dark); font-weight: 600; margin-bottom: 1.5rem;">
+            <i class="bi bi-people" style="color: var(--festival-primary); margin-right: 0.5rem;"></i>
+            Anmeldungen ({{ task.participants.all|length }})
+        </h2>
+
+        {% if task.participants.all %}
+            <div style="display: grid; gap: 1rem;">
+                {% for participant in task.participants.all %}
+                    <div style="padding: 1rem; background: #f9fafb; border-radius: 8px; border-left: 3px solid var(--festival-primary);">
+                        <p style="margin: 0 0 0.5rem 0; color: var(--festival-dark); font-weight: 600;">{{ participant.name }}</p>
+                        {% if participant.notes %}
+                            <p style="margin: 0; color: #6b7280; font-size: 0.9rem; white-space: pre-wrap;">{{ participant.notes }}</p>
+                        {% else %}
+                            <p style="margin: 0; color: #9ca3af; font-size: 0.9rem; font-style: italic;">Keine Notiz hinzugefügt</p>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p style="color: #9ca3af; text-align: center; padding: 2rem 0; margin: 0;">
+                <i class="bi bi-inbox" style="font-size: 1.5rem; display: block; margin-bottom: 0.5rem; opacity: 0.5;"></i>
+                Noch keine Teilnehmer angemeldet
+            </p>
+        {% endif %}
+    </div>
+
     <!-- Sign Up Form -->
     <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);">
         <h2 style="margin-top: 0; color: var(--festival-dark); font-weight: 600; margin-bottom: 1.5rem;">
@@ -84,6 +112,18 @@
                 {% if form.name.errors %}
                     <div style="color: #dc2626; font-size: 0.9rem; margin-top: 0.5rem;">
                         {{ form.name.errors|join:', ' }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div style="margin-bottom: 1.5rem;">
+                <label for="{{ form.notes.id_for_label }}" style="display: block; color: var(--festival-dark); font-weight: 600; margin-bottom: 0.5rem;">
+                    {{ form.notes.label }}
+                </label>
+                {{ form.notes }}
+                {% if form.notes.errors %}
+                    <div style="color: #dc2626; font-size: 0.9rem; margin-top: 0.5rem;">
+                        {{ form.notes.errors|join:', ' }}
                     </div>
                 {% endif %}
             </div>
@@ -112,6 +152,23 @@
     }
 
     #id_name:focus {
+        outline: none !important;
+        border-color: var(--festival-primary) !important;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+    }
+
+    #id_notes {
+        width: 100% !important;
+        padding: 0.75rem 1rem !important;
+        border: 2px solid #e5e7eb !important;
+        border-radius: 8px !important;
+        font-size: 1rem !important;
+        transition: all 0.3s ease !important;
+        font-family: inherit !important;
+        resize: vertical !important;
+    }
+
+    #id_notes:focus {
         outline: none !important;
         border-color: var(--festival-primary) !important;
         box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;

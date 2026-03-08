@@ -1,0 +1,1165 @@
+{% extends "festival/base.html" %}
+
+{% block title %}Festival bearbeiten - {{ festival.name }}{% endblock title %}
+
+{% block page_content %}
+<div style="margin-bottom: 2rem;">
+    <a href="{% url 'festival:admin_overview' festival.slug %}" style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--festival-primary); text-decoration: none; font-weight: 600; margin-bottom: 1.5rem; transition: all 0.3s ease;" onmouseover="this.style.opacity='0.7';" onmouseout="this.style.opacity='1';">
+        <i class="bi bi-arrow-left"></i> Zurück zur Übersicht
+    </a>
+
+    <h1 style="font-size: 2rem; font-weight: 700; color: var(--festival-dark); margin-bottom: 0.5rem;">
+        <i class="bi bi-pencil-square"></i> Festival bearbeiten
+    </h1>
+    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+        <p id="festivalNameDisplay" style="color: #6b7280; font-size: 1rem; margin: 0; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.color='var(--festival-primary)';" onmouseout="this.style.color='#6b7280';">{{ festival.name }}</p>
+        <button id="editFestivalNameBtn" style="padding: 0.25rem 0.5rem; background: none; border: 1px solid #e5e7eb; color: #6b7280; border-radius: 4px; cursor: pointer; font-size: 0.85rem; transition: all 0.3s ease;" onmouseover="this.style.color='var(--festival-primary)';" onmouseout="this.style.color='#6b7280';">
+            <i class="bi bi-pencil" style="font-size: 0.75rem;"></i>
+        </button>
+    </div>
+    <div id="festivalNameEditDiv" style="display: none; gap: 0.5rem; margin-bottom: 1rem;">
+        <input type="text" id="festivalNameInput" value="{{ festival.name }}" style="padding: 0.5rem; border: 2px solid var(--festival-primary); border-radius: 6px; font-size: 1rem; flex: 1;">
+        <button id="festivalNameSaveBtn" style="padding: 0.5rem 1rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Speichern</button>
+        <button id="festivalNameCancelBtn" style="padding: 0.5rem 1rem; background: #6b7280; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Abbrechen</button>
+    </div>
+</div>
+
+{% if shifts_data %}
+    <div style="display: grid; gap: 2rem;">
+        {% for shift_item in shifts_data %}
+            <!-- Shift Card -->
+            <div style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); border-top: 4px solid var(--festival-primary);">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.5rem;">
+                    <div style="flex: 1;">
+                        <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--festival-dark); margin: 0 0 0.5rem 0;">{{ shift_item.shift.name }}</h2>
+                        <div style="display: flex; flex-wrap: wrap; gap: 1rem; color: #6b7280; font-size: 0.9rem;">
+                            <span>
+                                <i class="bi bi-calendar3" style="color: var(--festival-primary); margin-right: 0.25rem;"></i>
+                                {{ shift_item.shift.date|date:"l, j. F Y" }}
+                            </span>
+                            <span>
+                                <i class="bi bi-clock" style="color: var(--festival-primary); margin-right: 0.25rem;"></i>
+                                {{ shift_item.shift.start_time|time:"H:i" }} – {{ shift_item.shift.end_time|time:"H:i" }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Shift Description -->
+                <div style="margin-bottom: 1.5rem;">
+                    <p style="color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Beschreibung</p>
+                    <div class="shift-description-display" data-shift-id="{{ shift_item.shift.id }}" style="padding: 1rem; background: #f8fafc; border-radius: 8px; border-left: 3px solid var(--festival-primary); cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.backgroundColor='#eef2ff';" onmouseout="this.style.backgroundColor='#f8fafc';">
+                        <p style="margin: 0; color: var(--festival-dark); white-space: pre-wrap;">{{ shift_item.shift.description|default:"(keine Beschreibung)" }}</p>
+                    </div>
+                    <textarea class="shift-description-edit" data-shift-id="{{ shift_item.shift.id }}" style="display: none; width: 100%; padding: 1rem; border: 2px solid var(--festival-primary); border-radius: 8px; font-family: inherit; font-size: 1rem; min-height: 100px; margin-top: 0.5rem; margin-bottom: 0.5rem;">{{ shift_item.shift.description }}</textarea>
+                    <div class="shift-description-buttons" data-shift-id="{{ shift_item.shift.id }}" style="display: none; gap: 0.5rem;">
+                        <button class="shift-save-btn" data-shift-id="{{ shift_item.shift.id }}" style="padding: 0.5rem 1rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                            <i class="bi bi-check-circle"></i> Speichern
+                        </button>
+                        <button class="shift-cancel-btn" data-shift-id="{{ shift_item.shift.id }}" style="padding: 0.5rem 1rem; background: #6b7280; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                            <i class="bi bi-x-circle"></i> Abbrechen
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tasks for this Shift -->
+                {% if shift_item.tasks %}
+                    <div style="display: grid; gap: 1.5rem;">
+                        {% for task_item in shift_item.tasks %}
+                            <!-- Task Card -->
+                            <div style="padding: 1.5rem; background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 8px; border-left: 4px solid #8b5cf6;">
+                                <div style="display: grid; gap: 1rem; margin-bottom: 1.5rem;">
+                                    <!-- Task Name (read-only) -->
+                                    <div>
+                                        <p style="color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Aufgabe</p>
+                                        <p style="font-size: 1.25rem; font-weight: 700; color: var(--festival-dark); margin: 0;">{{ task_item.task.name }}</p>
+                                    </div>
+
+                                    <!-- Task Description (editable) -->
+                                    <div>
+                                        <p style="color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Beschreibung</p>
+                                        <div class="task-description-display" data-task-id="{{ task_item.task.id }}" style="padding: 0.75rem; background: white; border-radius: 6px; cursor: pointer; border: 1px solid #e5e7eb; transition: all 0.3s ease;" onmouseover="this.style.borderColor='var(--festival-primary)';" onmouseout="this.style.borderColor='#e5e7eb';">
+                                            <p style="margin: 0; color: var(--festival-dark); white-space: pre-wrap; font-size: 0.95rem;">{{ task_item.task.description|default:"(keine Beschreibung)" }}</p>
+                                        </div>
+                                        <textarea class="task-description-edit" data-task-id="{{ task_item.task.id }}" style="display: none; width: 100%; padding: 0.75rem; border: 2px solid var(--festival-primary); border-radius: 6px; font-family: inherit; font-size: 0.95rem; min-height: 80px; margin-top: 0.5rem;">{{ task_item.task.description }}</textarea>
+                                        <div class="task-description-buttons" data-task-id="{{ task_item.task.id }}" style="display: none; gap: 0.5rem; margin-top: 0.5rem;">
+                                            <button class="task-desc-save-btn" data-task-id="{{ task_item.task.id }}" style="padding: 0.4rem 0.8rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">Speichern</button>
+                                            <button class="task-desc-cancel-btn" data-task-id="{{ task_item.task.id }}" style="padding: 0.4rem 0.8rem; background: #6b7280; color: white; border: none; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">Abbrechen</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Required Helpers (editable number) -->
+                                    <div>
+                                        <p style="color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Erforderliche Freiwillige</p>
+                                        <div class="helpers-display" data-task-id="{{ task_item.task.id }}" style="padding: 0.75rem; background: white; border-radius: 6px; border: 1px solid #e5e7eb; cursor: pointer; display: inline-block; min-width: 100px; text-align: center; transition: all 0.3s ease;" onmouseover="this.style.borderColor='var(--festival-primary)';" onmouseout="this.style.borderColor='#e5e7eb';">
+                                            <p style="margin: 0; color: var(--festival-dark); font-size: 1.25rem; font-weight: 700;">{{ task_item.task.required_helpers }}</p>
+                                        </div>
+                                        <div class="helpers-edit" data-task-id="{{ task_item.task.id }}" style="display: none; margin-top: 0.5rem;">
+                                            <input type="number" class="helpers-input" data-task-id="{{ task_item.task.id }}" value="{{ task_item.task.required_helpers }}" min="1" style="width: 120px; padding: 0.5rem; border: 2px solid var(--festival-primary); border-radius: 6px; font-size: 1rem;">
+                                            <button class="helpers-save-btn" data-task-id="{{ task_item.task.id }}" style="margin-left: 0.5rem; padding: 0.5rem 1rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Speichern</button>
+                                            <button class="helpers-cancel-btn" data-task-id="{{ task_item.task.id }}" style="margin-left: 0.5rem; padding: 0.5rem 1rem; background: #6b7280; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Abbrechen</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Participants List -->
+                                {% if task_item.participants %}
+                                    <div style="border-top: 1px solid #e5e7eb; padding-top: 1rem;">
+                                        <p style="color: #6b7280; font-size: 0.85rem; margin: 0 0 1rem 0; font-weight: 600; text-transform: uppercase;">Teilnehmer ({{ task_item.participants|length }})</p>
+                                        <div class="participants-list" data-task-id="{{ task_item.task.id }}" style="display: grid; gap: 0.75rem;">
+                                            {% for participant in task_item.participants %}
+                                                <div class="participant-row" data-participant-id="{{ participant.id }}" style="padding: 1rem; background: white; border-radius: 6px; border: 1px solid #e5e7eb; display: grid; grid-template-columns: 1fr 1fr 1fr 50px; gap: 1rem; align-items: center;">
+                                                    <!-- Name -->
+                                                    <div>
+                                                        <p style="color: #6b7280; font-size: 0.75rem; margin: 0 0 0.25rem 0; font-weight: 600; text-transform: uppercase;">Name</p>
+                                                        <p class="participant-name-display" data-participant-id="{{ participant.id }}" style="margin: 0; color: var(--festival-dark); font-weight: 600; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.color='var(--festival-primary)';" onmouseout="this.style.color='var(--festival-dark)';">{{ participant.name }}</p>
+                                                        <input type="text" class="participant-name-edit" data-participant-id="{{ participant.id }}" value="{{ participant.name }}" style="display: none; width: 100%; padding: 0.5rem; border: 1px solid var(--festival-primary); border-radius: 4px;">
+                                                    </div>
+
+                                                    <!-- Notes -->
+                                                    <div>
+                                                        <p style="color: #6b7280; font-size: 0.75rem; margin: 0 0 0.25rem 0; font-weight: 600; text-transform: uppercase;">Notizen</p>
+                                                        <p class="participant-notes-display" data-participant-id="{{ participant.id }}" style="margin: 0; color: #6b7280; font-size: 0.85rem; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: all 0.3s ease;" onmouseover="this.style.color='var(--festival-primary)';" onmouseout="this.style.color='#6b7280';">{{ participant.notes|default:"–" }}</p>
+                                                        <textarea class="participant-notes-edit" data-participant-id="{{ participant.id }}" style="display: none; width: 100%; padding: 0.5rem; border: 1px solid var(--festival-primary); border-radius: 4px; min-height: 60px; font-family: inherit;">{{ participant.notes }}</textarea>
+                                                    </div>
+
+                                                    <!-- Delete Button -->
+                                                    <div style="text-align: right;">
+                                                        <button class="participant-delete-btn" data-participant-id="{{ participant.id }}" style="padding: 0.5rem 0.75rem; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s ease;" onmouseover="this.style.opacity='0.8';" onmouseout="this.style.opacity='1';">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </div>
+
+                                                    <!-- Hidden save buttons (shown on edit) -->
+                                                    <div class="participant-edit-buttons" data-participant-id="{{ participant.id }}" style="display: none; grid-column: 1 / -1; display: grid; grid-template-columns: auto auto auto; gap: 0.5rem;">
+                                                        <button class="participant-save-btn" data-participant-id="{{ participant.id }}" style="padding: 0.4rem 0.8rem; background: var(--festival-success); color: white; border: none; border-radius: 4px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">
+                                                            <i class="bi bi-check-circle"></i> Speichern
+                                                        </button>
+                                                        <button class="participant-cancel-btn" data-participant-id="{{ participant.id }}" style="padding: 0.4rem 0.8rem; background: #6b7280; color: white; border: none; border-radius: 4px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">
+                                                            <i class="bi bi-x-circle"></i> Abbrechen
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <div style="border-top: 1px solid #e5e7eb; padding-top: 1rem; text-align: center; color: #9ca3af;">
+                                        <p style="margin: 0;">Keine Teilnehmer angemeldet</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <!-- Add Task Form -->
+                <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #e5e7eb;">
+                    <button class="add-task-toggle-btn" data-shift-id="{{ shift_item.shift.id }}" style="padding: 0.75rem 1.5rem; background: var(--festival-success); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 0.5rem;" onmouseover="this.style.opacity='0.9';" onmouseout="this.style.opacity='1';">
+                        <i class="bi bi-plus-circle"></i> Aufgabe hinzufügen
+                    </button>
+
+                    <div class="add-task-form" data-shift-id="{{ shift_item.shift.id }}" style="display: none; margin-top: 1rem; padding: 1.5rem; background: #f9fafb; border: 2px dashed #e5e7eb; border-radius: 8px;">
+                        <h4 style="margin-top: 0; color: var(--festival-dark); font-weight: 600; margin-bottom: 1rem;">Neue Aufgabe</h4>
+
+                        <!-- Template Selector -->
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Vorlage (optional)</label>
+                            <select class="add-task-template-select" data-shift-id="{{ shift_item.shift.id }}" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 1rem; margin-bottom: 1rem;">
+                                <option value="">– Keine Vorlage verwenden –</option>
+                            </select>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <!-- Task Name -->
+                            <div>
+                                <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Aufgabenname *</label>
+                                <input type="text" class="add-task-name-input" data-shift-id="{{ shift_item.shift.id }}" placeholder="z.B. Einlass" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 1rem;">
+                            </div>
+
+                            <!-- Required Helpers -->
+                            <div>
+                                <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Erforderliche Freiwillige *</label>
+                                <input type="number" class="add-task-helpers-input" data-shift-id="{{ shift_item.shift.id }}" value="1" min="1" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 1rem;">
+                            </div>
+                        </div>
+
+                        <!-- Task Description -->
+                        <div style="margin-top: 1rem;">
+                            <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Beschreibung</label>
+                            <textarea class="add-task-description-input" data-shift-id="{{ shift_item.shift.id }}" placeholder="Detaillierte Beschreibung der Aufgabe" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-family: inherit; font-size: 0.95rem; min-height: 60px;"></textarea>
+                        </div>
+
+                        <!-- Special Requirements -->
+                        <div style="margin-top: 1rem;">
+                            <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Besondere Anforderungen</label>
+                            <textarea class="add-task-requirements-input" data-shift-id="{{ shift_item.shift.id }}" placeholder="z.B. Erste-Hilfe-Kurs erforderlich" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-family: inherit; font-size: 0.95rem; min-height: 50px;"></textarea>
+                        </div>
+
+                        <!-- Form Buttons -->
+                        <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                            <button class="add-task-save-btn" data-shift-id="{{ shift_item.shift.id }}" style="padding: 0.75rem 1.5rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                                <i class="bi bi-check-circle"></i> Aufgabe erstellen
+                            </button>
+                            <button class="add-task-cancel-btn" data-shift-id="{{ shift_item.shift.id }}" style="padding: 0.75rem 1.5rem; background: #6b7280; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                                <i class="bi bi-x-circle"></i> Abbrechen
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Add Shift Button and Form -->
+    <div style="margin-top: 2rem;">
+        <button id="addShiftToggleBtn" style="padding: 0.75rem 1.5rem; background: linear-gradient(135deg, var(--festival-primary) 0%, var(--festival-secondary) 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 0.5rem;" onmouseover="this.style.opacity='0.9';" onmouseout="this.style.opacity='1';">
+            <i class="bi bi-plus-circle"></i> Schicht hinzufügen
+        </button>
+
+        <div id="addShiftForm" style="display: none; margin-top: 1.5rem; padding: 2rem; background: white; border-radius: 12px; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); border-top: 4px solid var(--festival-primary);">
+            <h3 style="margin-top: 0; color: var(--festival-dark); font-weight: 600; margin-bottom: 1.5rem;">Neue Schicht</h3>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                <!-- Shift Name -->
+                <div>
+                    <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Schichtname *</label>
+                    <input type="text" id="addShiftNameInput" placeholder="z.B. Morgen Schicht" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 1rem;">
+                </div>
+
+                <!-- Shift Date -->
+                <div>
+                    <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Datum *</label>
+                    <input type="date" id="addShiftDateInput" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 1rem;">
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                <!-- Start Time -->
+                <div>
+                    <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Startzeit *</label>
+                    <input type="time" id="addShiftStartTimeInput" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 1rem;">
+                </div>
+
+                <!-- End Time -->
+                <div>
+                    <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Endzeit *</label>
+                    <input type="time" id="addShiftEndTimeInput" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 1rem;">
+                </div>
+            </div>
+
+            <!-- Shift Description -->
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Beschreibung</label>
+                <textarea id="addShiftDescriptionInput" placeholder="Optionale Schichtbeschreibung" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-family: inherit; font-size: 0.95rem; min-height: 80px;"></textarea>
+            </div>
+
+            <!-- Form Buttons -->
+            <div style="display: flex; gap: 0.5rem;">
+                <button id="addShiftSaveBtn" style="padding: 0.75rem 1.5rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                    <i class="bi bi-check-circle"></i> Schicht erstellen
+                </button>
+                <button id="addShiftCancelBtn" style="padding: 0.75rem 1.5rem; background: #6b7280; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                    <i class="bi bi-x-circle"></i> Abbrechen
+                </button>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div style="background: white; border-radius: 12px; padding: 4rem 2rem; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); text-align: center;">
+        <i class="bi bi-inbox" style="font-size: 3rem; color: var(--festival-primary); opacity: 0.2; display: block; margin-bottom: 1rem;"></i>
+        <h3 style="color: var(--festival-dark); font-size: 1.25rem; margin: 0 0 0.5rem 0;">Keine Schichten verfügbar</h3>
+        <p style="color: #9ca3af; margin: 0;">Es gibt noch keine Schichten für dieses Festival.</p>
+    </div>
+{% endif %}
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); max-width: 400px;">
+        <h3 style="color: var(--festival-dark); font-size: 1.25rem; margin: 0 0 1rem 0;">
+            <i class="bi bi-exclamation-circle" style="color: #ef4444; margin-right: 0.5rem;"></i>
+            Löschen bestätigen
+        </h3>
+        <p id="deleteMessage" style="color: #6b7280; margin: 0 0 1.5rem 0;">Sind Sie sicher, dass Sie diesen Teilnehmer löschen möchten?</p>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <button id="deleteConfirmBtn" style="padding: 0.75rem 1.5rem; background: #ef4444; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                Löschen
+            </button>
+            <button id="deleteCancelBtn" style="padding: 0.75rem 1.5rem; background: #e5e7eb; color: var(--festival-dark); border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                Abbrechen
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Notification Toast -->
+<div id="notificationToast" style="display: none; position: fixed; bottom: 2rem; right: 2rem; padding: 1.5rem; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); z-index: 2000; max-width: 400px; animation: slideIn 0.3s ease;">
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <i id="notificationIcon" class="bi bi-check-circle" style="font-size: 1.5rem; color: var(--festival-success);"></i>
+        <div>
+            <p id="notificationText" style="margin: 0; color: var(--festival-dark); font-weight: 600;"></p>
+        </div>
+    </div>
+</div>
+
+<style>
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(400px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .shift-description-display:hover {
+        border-left-color: var(--festival-secondary);
+    }
+
+    .task-description-display:hover {
+        border-color: var(--festival-primary);
+        background: #ffffff;
+    }
+
+    .helpers-display:hover {
+        border-color: #8b5cf6;
+    }
+
+    .participant-name-display:hover {
+        text-decoration: underline;
+    }
+
+    input[type="checkbox"]:checked {
+        accent-color: var(--festival-success);
+    }
+</style>
+
+<script>
+    const festivalSlug = "{{ festival.slug }}";
+    let pendingDeleteId = null;
+    let templates = [];
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    function showNotification(message, isSuccess = true) {
+        const toast = document.getElementById('notificationToast');
+        const text = document.getElementById('notificationText');
+        const icon = document.getElementById('notificationIcon');
+
+        text.textContent = message;
+        if (isSuccess) {
+            icon.className = 'bi bi-check-circle';
+            icon.style.color = 'var(--festival-success)';
+        } else {
+            icon.className = 'bi bi-exclamation-circle';
+            icon.style.color = '#ef4444';
+        }
+
+        toast.style.display = 'block';
+        setTimeout(() => {
+            toast.style.display = 'none';
+        }, 3000);
+    }
+
+    // Festival Name Editing
+    const editFestivalNameBtn = document.getElementById('editFestivalNameBtn');
+    const festivalNameDisplay = document.getElementById('festivalNameDisplay');
+    const festivalNameEditDiv = document.getElementById('festivalNameEditDiv');
+    const festivalNameInput = document.getElementById('festivalNameInput');
+    const festivalNameSaveBtn = document.getElementById('festivalNameSaveBtn');
+    const festivalNameCancelBtn = document.getElementById('festivalNameCancelBtn');
+
+    editFestivalNameBtn.addEventListener('click', function() {
+        festivalNameDisplay.style.display = 'none';
+        editFestivalNameBtn.style.display = 'none';
+        festivalNameEditDiv.style.display = 'flex';
+        festivalNameInput.focus();
+    });
+
+    festivalNameCancelBtn.addEventListener('click', function() {
+        festivalNameEditDiv.style.display = 'none';
+        festivalNameDisplay.style.display = 'block';
+        editFestivalNameBtn.style.display = 'block';
+        festivalNameInput.value = festivalNameDisplay.textContent;
+    });
+
+    festivalNameSaveBtn.addEventListener('click', async function() {
+        const newName = festivalNameInput.value.trim();
+
+        if (!newName) {
+            showNotification('Festival name cannot be empty', false);
+            return;
+        }
+
+        this.disabled = true;
+        this.textContent = 'Speichern...';
+
+        const response = await fetch(`/festival/${festivalSlug}/api/festival/update/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({ name: newName })
+        });
+
+        if (response.ok) {
+            festivalNameDisplay.textContent = newName;
+            festivalNameEditDiv.style.display = 'none';
+            festivalNameDisplay.style.display = 'block';
+            editFestivalNameBtn.style.display = 'block';
+            showNotification('Festival name updated successfully');
+        } else {
+            const error = await response.json();
+            showNotification(error.error || 'Error saving festival name', false);
+        }
+
+        this.disabled = false;
+        this.textContent = 'Speichern';
+    });
+
+    // Load templates and populate dropdowns
+    async function loadTemplates() {
+        try {
+            const response = await fetch('/festival/api/templates/');
+            if (response.ok) {
+                const data = await response.json();
+                templates = data.data;
+
+                // Populate all template dropdowns
+                document.querySelectorAll('.add-task-template-select').forEach(select => {
+                    const currentValue = select.value;
+                    select.innerHTML = '<option value="">– Keine Vorlage verwenden –</option>';
+                    templates.forEach(template => {
+                        const option = document.createElement('option');
+                        option.value = template.id;
+                        option.textContent = template.name;
+                        select.appendChild(option);
+                    });
+                    select.value = currentValue;
+                });
+            }
+        } catch (error) {
+            console.error('Error loading templates:', error);
+        }
+    }
+
+    // Handle template selection
+    document.addEventListener('change', function(e) {
+        if (e.target.classList.contains('add-task-template-select')) {
+            const shiftId = e.target.dataset.shiftId;
+            const selectedTemplateId = e.target.value;
+
+            if (selectedTemplateId) {
+                const template = templates.find(t => t.id === selectedTemplateId);
+                if (template) {
+                    // Auto-fill form fields from template
+                    document.querySelector(`.add-task-name-input[data-shift-id="${shiftId}"]`).value = template.name;
+                    document.querySelector(`.add-task-description-input[data-shift-id="${shiftId}"]`).value = template.description;
+                    document.querySelector(`.add-task-helpers-input[data-shift-id="${shiftId}"]`).value = template.required_helpers;
+                    document.querySelector(`.add-task-requirements-input[data-shift-id="${shiftId}"]`).value = template.special_requirements;
+                }
+            } else {
+                // Clear fields if no template selected
+                document.querySelector(`.add-task-name-input[data-shift-id="${shiftId}"]`).value = '';
+                document.querySelector(`.add-task-description-input[data-shift-id="${shiftId}"]`).value = '';
+                document.querySelector(`.add-task-helpers-input[data-shift-id="${shiftId}"]`).value = '1';
+                document.querySelector(`.add-task-requirements-input[data-shift-id="${shiftId}"]`).value = '';
+            }
+        }
+    }, true);
+
+    // Shift Description Editing
+    document.querySelectorAll('.shift-description-display').forEach(display => {
+        display.addEventListener('click', function() {
+            const shiftId = this.dataset.shiftId;
+            this.style.display = 'none';
+            document.querySelector(`.shift-description-edit[data-shift-id="${shiftId}"]`).style.display = 'block';
+            document.querySelector(`.shift-description-buttons[data-shift-id="${shiftId}"]`).style.display = 'flex';
+        });
+    });
+
+    document.querySelectorAll('.shift-save-btn').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const shiftId = this.dataset.shiftId;
+            const textarea = document.querySelector(`.shift-description-edit[data-shift-id="${shiftId}"]`);
+            const description = textarea.value;
+
+            const response = await fetch(`/festival/${festivalSlug}/api/shift/${shiftId}/update/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ description })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                document.querySelector(`.shift-description-display[data-shift-id="${shiftId}"] p`).textContent = description || "(keine Beschreibung)";
+                document.querySelector(`.shift-description-display[data-shift-id="${shiftId}"]`).style.display = 'block';
+                textarea.style.display = 'none';
+                document.querySelector(`.shift-description-buttons[data-shift-id="${shiftId}"]`).style.display = 'none';
+                showNotification('Schicht aktualisiert');
+            } else {
+                const error = await response.json();
+                showNotification(error.error || 'Fehler beim Speichern', false);
+            }
+        });
+    });
+
+    document.querySelectorAll('.shift-cancel-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const shiftId = this.dataset.shiftId;
+            document.querySelector(`.shift-description-display[data-shift-id="${shiftId}"]`).style.display = 'block';
+            document.querySelector(`.shift-description-edit[data-shift-id="${shiftId}"]`).style.display = 'none';
+            document.querySelector(`.shift-description-buttons[data-shift-id="${shiftId}"]`).style.display = 'none';
+        });
+    });
+
+    // Task Description Editing
+    document.querySelectorAll('.task-description-display').forEach(display => {
+        display.addEventListener('click', function() {
+            const taskId = this.dataset.taskId;
+            this.style.display = 'none';
+            document.querySelector(`.task-description-edit[data-task-id="${taskId}"]`).style.display = 'block';
+            document.querySelector(`.task-description-buttons[data-task-id="${taskId}"]`).style.display = 'flex';
+        });
+    });
+
+    document.querySelectorAll('.task-desc-save-btn').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const taskId = this.dataset.taskId;
+            const textarea = document.querySelector(`.task-description-edit[data-task-id="${taskId}"]`);
+            const description = textarea.value;
+
+            const response = await fetch(`/festival/${festivalSlug}/api/task/${taskId}/update/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ description })
+            });
+
+            if (response.ok) {
+                document.querySelector(`.task-description-display[data-task-id="${taskId}"] p`).textContent = description || "(keine Beschreibung)";
+                document.querySelector(`.task-description-display[data-task-id="${taskId}"]`).style.display = 'block';
+                textarea.style.display = 'none';
+                document.querySelector(`.task-description-buttons[data-task-id="${taskId}"]`).style.display = 'none';
+                showNotification('Aufgabe aktualisiert');
+            } else {
+                const error = await response.json();
+                showNotification(error.error || 'Fehler beim Speichern', false);
+            }
+        });
+    });
+
+    document.querySelectorAll('.task-desc-cancel-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const taskId = this.dataset.taskId;
+            document.querySelector(`.task-description-display[data-task-id="${taskId}"]`).style.display = 'block';
+            document.querySelector(`.task-description-edit[data-task-id="${taskId}"]`).style.display = 'none';
+            document.querySelector(`.task-description-buttons[data-task-id="${taskId}"]`).style.display = 'none';
+        });
+    });
+
+    // Required Helpers Editing
+    document.querySelectorAll('.helpers-display').forEach(display => {
+        display.addEventListener('click', function() {
+            const taskId = this.dataset.taskId;
+            this.style.display = 'none';
+            document.querySelector(`.helpers-edit[data-task-id="${taskId}"]`).style.display = 'block';
+            document.querySelector(`.helpers-input[data-task-id="${taskId}"]`).focus();
+        });
+    });
+
+    document.querySelectorAll('.helpers-save-btn').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const taskId = this.dataset.taskId;
+            const input = document.querySelector(`.helpers-input[data-task-id="${taskId}"]`);
+            const requiredHelpers = parseInt(input.value);
+
+            if (requiredHelpers < 1) {
+                showNotification('Mindestens 1 Freiwilliger erforderlich', false);
+                return;
+            }
+
+            const response = await fetch(`/festival/${festivalSlug}/api/task/${taskId}/update/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ required_helpers: requiredHelpers })
+            });
+
+            if (response.ok) {
+                document.querySelector(`.helpers-display[data-task-id="${taskId}"] p`).textContent = requiredHelpers;
+                document.querySelector(`.helpers-display[data-task-id="${taskId}"]`).style.display = 'inline-block';
+                document.querySelector(`.helpers-edit[data-task-id="${taskId}"]`).style.display = 'none';
+                showNotification('Aufgabe aktualisiert');
+            } else {
+                const error = await response.json();
+                showNotification(error.error || 'Fehler beim Speichern', false);
+            }
+        });
+    });
+
+    document.querySelectorAll('.helpers-cancel-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const taskId = this.dataset.taskId;
+            document.querySelector(`.helpers-display[data-task-id="${taskId}"]`).style.display = 'inline-block';
+            document.querySelector(`.helpers-edit[data-task-id="${taskId}"]`).style.display = 'none';
+        });
+    });
+
+    // Participant Editing
+    document.querySelectorAll('.participant-name-display').forEach(display => {
+        display.addEventListener('click', function() {
+            const participantId = this.dataset.participantId;
+            this.style.display = 'none';
+            document.querySelector(`.participant-name-edit[data-participant-id="${participantId}"]`).style.display = 'block';
+            document.querySelector(`.participant-edit-buttons[data-participant-id="${participantId}"]`).style.display = 'grid';
+        });
+    });
+
+    document.querySelectorAll('.participant-notes-display').forEach(display => {
+        display.addEventListener('click', function() {
+            const participantId = this.dataset.participantId;
+            this.style.display = 'none';
+            document.querySelector(`.participant-notes-edit[data-participant-id="${participantId}"]`).style.display = 'block';
+            document.querySelector(`.participant-edit-buttons[data-participant-id="${participantId}"]`).style.display = 'grid';
+        });
+    });
+
+    document.querySelectorAll('.participant-save-btn').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const participantId = this.dataset.participantId;
+            const name = document.querySelector(`.participant-name-edit[data-participant-id="${participantId}"]`).value;
+            const notes = document.querySelector(`.participant-notes-edit[data-participant-id="${participantId}"]`).value;
+
+            const response = await fetch(`/festival/${festivalSlug}/api/participant/${participantId}/update/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ name, notes })
+            });
+
+            if (response.ok) {
+                document.querySelector(`.participant-name-display[data-participant-id="${participantId}"]`).textContent = name;
+                document.querySelector(`.participant-notes-display[data-participant-id="${participantId}"]`).textContent = notes || '–';
+                document.querySelector(`.participant-name-display[data-participant-id="${participantId}"]`).style.display = 'block';
+                document.querySelector(`.participant-name-edit[data-participant-id="${participantId}"]`).style.display = 'none';
+                document.querySelector(`.participant-notes-display[data-participant-id="${participantId}"]`).style.display = 'block';
+                document.querySelector(`.participant-notes-edit[data-participant-id="${participantId}"]`).style.display = 'none';
+                document.querySelector(`.participant-edit-buttons[data-participant-id="${participantId}"]`).style.display = 'none';
+                showNotification('Teilnehmer aktualisiert');
+            } else {
+                const error = await response.json();
+                showNotification(error.error || 'Fehler beim Speichern', false);
+            }
+        });
+    });
+
+    document.querySelectorAll('.participant-cancel-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const participantId = this.dataset.participantId;
+            document.querySelector(`.participant-name-display[data-participant-id="${participantId}"]`).style.display = 'block';
+            document.querySelector(`.participant-name-edit[data-participant-id="${participantId}"]`).style.display = 'none';
+            document.querySelector(`.participant-notes-display[data-participant-id="${participantId}"]`).style.display = 'block';
+            document.querySelector(`.participant-notes-edit[data-participant-id="${participantId}"]`).style.display = 'none';
+            document.querySelector(`.participant-edit-buttons[data-participant-id="${participantId}"]`).style.display = 'none';
+        });
+    });
+
+    // Delete Participant
+    const modal = document.getElementById('deleteModal');
+    const confirmBtn = document.getElementById('deleteConfirmBtn');
+    const cancelBtn = document.getElementById('deleteCancelBtn');
+
+    document.querySelectorAll('.participant-delete-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            pendingDeleteId = this.dataset.participantId;
+            const participantName = document.querySelector(`.participant-name-display[data-participant-id="${pendingDeleteId}"]`).textContent;
+            document.getElementById('deleteMessage').textContent = `Sind Sie sicher, dass Sie den Teilnehmer "${participantName}" löschen möchten?`;
+            modal.style.display = 'flex';
+        });
+    });
+
+    confirmBtn.addEventListener('click', async function() {
+        if (!pendingDeleteId) return;
+
+        const response = await fetch(`/festival/${festivalSlug}/api/participant/${pendingDeleteId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        });
+
+        if (response.ok) {
+            const participantRow = document.querySelector(`.participant-row[data-participant-id="${pendingDeleteId}"]`);
+            participantRow.style.opacity = '0';
+            setTimeout(() => {
+                participantRow.remove();
+                showNotification('Teilnehmer gelöscht');
+                modal.style.display = 'none';
+            }, 300);
+        } else {
+            const error = await response.json();
+            showNotification(error.error || 'Fehler beim Löschen', false);
+        }
+
+        pendingDeleteId = null;
+    });
+
+    cancelBtn.addEventListener('click', function() {
+        modal.style.display = 'none';
+        pendingDeleteId = null;
+    });
+
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+            pendingDeleteId = null;
+        }
+    });
+
+    // Add Task Form
+    document.querySelectorAll('.add-task-toggle-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const shiftId = this.dataset.shiftId;
+            const form = document.querySelector(`.add-task-form[data-shift-id="${shiftId}"]`);
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        });
+    });
+
+    document.querySelectorAll('.add-task-cancel-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const shiftId = this.dataset.shiftId;
+            const form = document.querySelector(`.add-task-form[data-shift-id="${shiftId}"]`);
+            form.style.display = 'none';
+            // Clear form inputs
+            document.querySelector(`.add-task-name-input[data-shift-id="${shiftId}"]`).value = '';
+            document.querySelector(`.add-task-helpers-input[data-shift-id="${shiftId}"]`).value = '1';
+            document.querySelector(`.add-task-description-input[data-shift-id="${shiftId}"]`).value = '';
+            document.querySelector(`.add-task-requirements-input[data-shift-id="${shiftId}"]`).value = '';
+            document.querySelector(`.add-task-template-select[data-shift-id="${shiftId}"]`).value = '';
+        });
+    });
+
+    document.querySelectorAll('.add-task-save-btn').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const shiftId = this.dataset.shiftId;
+            const name = document.querySelector(`.add-task-name-input[data-shift-id="${shiftId}"]`).value.trim();
+            const description = document.querySelector(`.add-task-description-input[data-shift-id="${shiftId}"]`).value.trim();
+            const requiredHelpers = parseInt(document.querySelector(`.add-task-helpers-input[data-shift-id="${shiftId}"]`).value);
+            const specialRequirements = document.querySelector(`.add-task-requirements-input[data-shift-id="${shiftId}"]`).value.trim();
+            const templateId = document.querySelector(`.add-task-template-select[data-shift-id="${shiftId}"]`).value;
+
+            // Validation
+            if (!name) {
+                showNotification('Aufgabenname ist erforderlich', false);
+                return;
+            }
+
+            if (requiredHelpers < 1) {
+                showNotification('Mindestens 1 Freiwilliger erforderlich', false);
+                return;
+            }
+
+            this.disabled = true;
+            this.textContent = 'Wird erstellt...';
+
+            const responseData = {
+                name,
+                description,
+                required_helpers: requiredHelpers,
+                special_requirements: specialRequirements
+            };
+
+            // Add template_id if a template is selected
+            if (templateId) {
+                responseData.template_id = templateId;
+            }
+
+            const response = await fetch(`/festival/${festivalSlug}/api/shift/${shiftId}/task/create/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify(responseData)
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const taskId = data.data.id;
+
+                // Build the new task HTML
+                const taskHtml = `
+                    <div style="padding: 1.5rem; background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 8px; border-left: 4px solid #8b5cf6;">
+                        <div style="display: grid; gap: 1rem; margin-bottom: 1.5rem;">
+                            <div>
+                                <p style="color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Aufgabe</p>
+                                <p style="font-size: 1.25rem; font-weight: 700; color: var(--festival-dark); margin: 0;">${name}</p>
+                            </div>
+                            <div>
+                                <p style="color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Beschreibung</p>
+                                <div class="task-description-display" data-task-id="${taskId}" style="padding: 0.75rem; background: white; border-radius: 6px; cursor: pointer; border: 1px solid #e5e7eb; transition: all 0.3s ease;" onmouseover="this.style.borderColor='var(--festival-primary)';" onmouseout="this.style.borderColor='#e5e7eb';">
+                                    <p style="margin: 0; color: var(--festival-dark); white-space: pre-wrap; font-size: 0.95rem;">${description || '(keine Beschreibung)'}</p>
+                                </div>
+                                <textarea class="task-description-edit" data-task-id="${taskId}" style="display: none; width: 100%; padding: 0.75rem; border: 2px solid var(--festival-primary); border-radius: 6px; font-family: inherit; font-size: 0.95rem; min-height: 80px; margin-top: 0.5rem;">${description}</textarea>
+                                <div class="task-description-buttons" data-task-id="${taskId}" style="display: none; gap: 0.5rem; margin-top: 0.5rem;">
+                                    <button class="task-desc-save-btn" data-task-id="${taskId}" style="padding: 0.4rem 0.8rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">Speichern</button>
+                                    <button class="task-desc-cancel-btn" data-task-id="${taskId}" style="padding: 0.4rem 0.8rem; background: #6b7280; color: white; border: none; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">Abbrechen</button>
+                                </div>
+                            </div>
+                            <div>
+                                <p style="color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Erforderliche Freiwillige</p>
+                                <div class="helpers-display" data-task-id="${taskId}" style="padding: 0.75rem; background: white; border-radius: 6px; border: 1px solid #e5e7eb; cursor: pointer; display: inline-block; min-width: 100px; text-align: center; transition: all 0.3s ease;" onmouseover="this.style.borderColor='#8b5cf6';" onmouseout="this.style.borderColor='#e5e7eb';">
+                                    <p style="margin: 0; color: var(--festival-dark); font-size: 1.25rem; font-weight: 700;">${requiredHelpers}</p>
+                                </div>
+                                <div class="helpers-edit" data-task-id="${taskId}" style="display: none; margin-top: 0.5rem;">
+                                    <input type="number" class="helpers-input" data-task-id="${taskId}" value="${requiredHelpers}" min="1" style="width: 120px; padding: 0.5rem; border: 2px solid var(--festival-primary); border-radius: 6px; font-size: 1rem;">
+                                    <button class="helpers-save-btn" data-task-id="${taskId}" style="margin-left: 0.5rem; padding: 0.5rem 1rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Speichern</button>
+                                    <button class="helpers-cancel-btn" data-task-id="${taskId}" style="margin-left: 0.5rem; padding: 0.5rem 1rem; background: #6b7280; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Abbrechen</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="border-top: 1px solid #e5e7eb; padding-top: 1rem; text-align: center; color: #9ca3af;">
+                            <p style="margin: 0;">Keine Teilnehmer angemeldet</p>
+                        </div>
+                    </div>
+                `;
+
+                // Insert the new task before the add task form
+                const tasksList = document.querySelector(`.add-task-form[data-shift-id="${shiftId}"]`).parentElement.previousElementSibling;
+                if (tasksList && tasksList.classList.contains('participants-list')) {
+                    // Find the actual tasks container (could be wrapped differently)
+                    const shiftCard = document.querySelector(`.add-task-form[data-shift-id="${shiftId}"]`).closest('[style*="border-top"]').parentElement;
+                    const tasksContainer = shiftCard.querySelector('[style*="display: grid; gap: 1rem;"]');
+                    if (tasksContainer) {
+                        tasksContainer.insertAdjacentHTML('beforeend', taskHtml);
+                    }
+                } else {
+                    // Fallback: insert before the form section
+                    document.querySelector(`.add-task-form[data-shift-id="${shiftId}"]`).parentElement.insertAdjacentHTML('beforebegin', taskHtml);
+                }
+
+                // Re-attach event listeners to the new elements
+                attachTaskEventListeners();
+
+                // Reset form
+                document.querySelector(`.add-task-name-input[data-shift-id="${shiftId}"]`).value = '';
+                document.querySelector(`.add-task-helpers-input[data-shift-id="${shiftId}"]`).value = '1';
+                document.querySelector(`.add-task-description-input[data-shift-id="${shiftId}"]`).value = '';
+                document.querySelector(`.add-task-requirements-input[data-shift-id="${shiftId}"]`).value = '';
+                document.querySelector(`.add-task-template-select[data-shift-id="${shiftId}"]`).value = '';
+                document.querySelector(`.add-task-form[data-shift-id="${shiftId}"]`).style.display = 'none';
+
+                showNotification('Aufgabe erfolgreich erstellt');
+            } else {
+                const error = await response.json();
+                showNotification(error.error || 'Fehler beim Erstellen der Aufgabe', false);
+            }
+
+            this.disabled = false;
+            this.textContent = '✓ Aufgabe erstellen';
+        });
+    });
+
+    // Helper function to reattach event listeners to dynamically added elements
+    function attachTaskEventListeners() {
+        document.querySelectorAll('.task-description-display').forEach(display => {
+            if (!display.dataset.listenerAttached) {
+                display.addEventListener('click', function() {
+                    const taskId = this.dataset.taskId;
+                    this.style.display = 'none';
+                    document.querySelector(`.task-description-edit[data-task-id="${taskId}"]`).style.display = 'block';
+                    document.querySelector(`.task-description-buttons[data-task-id="${taskId}"]`).style.display = 'flex';
+                });
+                display.dataset.listenerAttached = true;
+            }
+        });
+
+        document.querySelectorAll('.helpers-display').forEach(display => {
+            if (!display.dataset.listenerAttached) {
+                display.addEventListener('click', function() {
+                    const taskId = this.dataset.taskId;
+                    this.style.display = 'none';
+                    document.querySelector(`.helpers-edit[data-task-id="${taskId}"]`).style.display = 'block';
+                    document.querySelector(`.helpers-input[data-task-id="${taskId}"]`).focus();
+                });
+                display.dataset.listenerAttached = true;
+            }
+        });
+    }
+
+    // Shift Creation
+    const addShiftToggleBtn = document.getElementById('addShiftToggleBtn');
+    const addShiftForm = document.getElementById('addShiftForm');
+    const addShiftSaveBtn = document.getElementById('addShiftSaveBtn');
+    const addShiftCancelBtn = document.getElementById('addShiftCancelBtn');
+
+    addShiftToggleBtn.addEventListener('click', function() {
+        addShiftForm.style.display = addShiftForm.style.display === 'none' ? 'block' : 'none';
+    });
+
+    addShiftCancelBtn.addEventListener('click', function() {
+        addShiftForm.style.display = 'none';
+        // Clear form inputs
+        document.getElementById('addShiftNameInput').value = '';
+        document.getElementById('addShiftDateInput').value = '';
+        document.getElementById('addShiftStartTimeInput').value = '';
+        document.getElementById('addShiftEndTimeInput').value = '';
+        document.getElementById('addShiftDescriptionInput').value = '';
+    });
+
+    addShiftSaveBtn.addEventListener('click', async function() {
+        const name = document.getElementById('addShiftNameInput').value.trim();
+        const date = document.getElementById('addShiftDateInput').value;
+        const startTime = document.getElementById('addShiftStartTimeInput').value;
+        const endTime = document.getElementById('addShiftEndTimeInput').value;
+        const description = document.getElementById('addShiftDescriptionInput').value.trim();
+
+        // Validation
+        if (!name) {
+            showNotification('Schichtname ist erforderlich', false);
+            return;
+        }
+
+        if (!date) {
+            showNotification('Datum ist erforderlich', false);
+            return;
+        }
+
+        if (!startTime) {
+            showNotification('Startzeit ist erforderlich', false);
+            return;
+        }
+
+        if (!endTime) {
+            showNotification('Endzeit ist erforderlich', false);
+            return;
+        }
+
+        this.disabled = true;
+        this.textContent = 'Wird erstellt...';
+
+        const response = await fetch(`/festival/${festivalSlug}/api/shift/create/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                name,
+                date,
+                start_time: startTime,
+                end_time: endTime,
+                description
+            })
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            const shift = data.data;
+
+            // Build the new shift HTML
+            const shiftHtml = `
+                <div style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); border-top: 4px solid var(--festival-primary);">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.5rem;">
+                        <div style="flex: 1;">
+                            <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--festival-dark); margin: 0 0 0.5rem 0;">${shift.name}</h2>
+                            <div style="display: flex; flex-wrap: wrap; gap: 1rem; color: #6b7280; font-size: 0.9rem;">
+                                <span>
+                                    <i class="bi bi-calendar3" style="color: var(--festival-primary); margin-right: 0.25rem;"></i>
+                                    ${new Date(shift.date).toLocaleDateString('de-DE', { weekday: 'long', month: 'numeric', day: 'numeric', year: 'numeric' })}
+                                </span>
+                                <span>
+                                    <i class="bi bi-clock" style="color: var(--festival-primary); margin-right: 0.25rem;"></i>
+                                    ${shift.start_time} – ${shift.end_time}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 1.5rem;">
+                        <p style="color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Beschreibung</p>
+                        <div class="shift-description-display" data-shift-id="${shift.id}" style="padding: 1rem; background: #f8fafc; border-radius: 8px; border-left: 3px solid var(--festival-primary); cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.backgroundColor='#eef2ff';" onmouseout="this.style.backgroundColor='#f8fafc';">
+                            <p style="margin: 0; color: var(--festival-dark); white-space: pre-wrap;">${shift.description || '(keine Beschreibung)'}</p>
+                        </div>
+                        <textarea class="shift-description-edit" data-shift-id="${shift.id}" style="display: none; width: 100%; padding: 1rem; border: 2px solid var(--festival-primary); border-radius: 8px; font-family: inherit; font-size: 1rem; min-height: 100px; margin-top: 0.5rem; margin-bottom: 0.5rem;">${shift.description}</textarea>
+                        <div class="shift-description-buttons" data-shift-id="${shift.id}" style="display: none; gap: 0.5rem;">
+                            <button class="shift-save-btn" data-shift-id="${shift.id}" style="padding: 0.5rem 1rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                                <i class="bi bi-check-circle"></i> Speichern
+                            </button>
+                            <button class="shift-cancel-btn" data-shift-id="${shift.id}" style="padding: 0.5rem 1rem; background: #6b7280; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                                <i class="bi bi-x-circle"></i> Abbrechen
+                            </button>
+                        </div>
+                    </div>
+
+                    <div style="border-top: 1px solid #e5e7eb; padding-top: 1.5rem; text-align: center; color: #9ca3af;">
+                        <p style="margin: 0;">Keine Aufgaben für diese Schicht</p>
+                    </div>
+
+                    <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #e5e7eb;">
+                        <button class="add-task-toggle-btn" data-shift-id="${shift.id}" style="padding: 0.75rem 1.5rem; background: var(--festival-success); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 0.5rem;" onmouseover="this.style.opacity='0.9';" onmouseout="this.style.opacity='1';">
+                            <i class="bi bi-plus-circle"></i> Aufgabe hinzufügen
+                        </button>
+
+                        <div class="add-task-form" data-shift-id="${shift.id}" style="display: none; margin-top: 1rem; padding: 1.5rem; background: #f9fafb; border: 2px dashed #e5e7eb; border-radius: 8px;">
+                            <h4 style="margin-top: 0; color: var(--festival-dark); font-weight: 600; margin-bottom: 1rem;">Neue Aufgabe</h4>
+
+                            <div style="margin-bottom: 1.5rem;">
+                                <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Vorlage (optional)</label>
+                                <select class="add-task-template-select" data-shift-id="${shift.id}" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 1rem; margin-bottom: 1rem;">
+                                    <option value="">– Keine Vorlage verwenden –</option>
+                                </select>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div>
+                                    <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Aufgabenname *</label>
+                                    <input type="text" class="add-task-name-input" data-shift-id="${shift.id}" placeholder="z.B. Einlass" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 1rem;">
+                                </div>
+
+                                <div>
+                                    <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Erforderliche Freiwillige *</label>
+                                    <input type="number" class="add-task-helpers-input" data-shift-id="${shift.id}" value="1" min="1" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 1rem;">
+                                </div>
+                            </div>
+
+                            <div style="margin-top: 1rem;">
+                                <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Beschreibung</label>
+                                <textarea class="add-task-description-input" data-shift-id="${shift.id}" placeholder="Detaillierte Beschreibung der Aufgabe" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-family: inherit; font-size: 0.95rem; min-height: 60px;"></textarea>
+                            </div>
+
+                            <div style="margin-top: 1rem;">
+                                <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Besondere Anforderungen</label>
+                                <textarea class="add-task-requirements-input" data-shift-id="${shift.id}" placeholder="z.B. Erste-Hilfe-Kurs erforderlich" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-family: inherit; font-size: 0.95rem; min-height: 50px;"></textarea>
+                            </div>
+
+                            <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                                <button class="add-task-save-btn" data-shift-id="${shift.id}" style="padding: 0.75rem 1.5rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                                    <i class="bi bi-check-circle"></i> Aufgabe erstellen
+                                </button>
+                                <button class="add-task-cancel-btn" data-shift-id="${shift.id}" style="padding: 0.75rem 1.5rem; background: #6b7280; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                                    <i class="bi bi-x-circle"></i> Abbrechen
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Insert the new shift at the end of the shifts grid
+            const shiftsGrid = document.querySelector('[style*="display: grid; gap: 2rem;"]');
+            if (shiftsGrid) {
+                shiftsGrid.insertAdjacentHTML('beforeend', shiftHtml);
+            }
+
+            // Re-attach event listeners
+            attachTaskEventListeners();
+            attachShiftEventListeners();
+
+            // Clear and hide form
+            document.getElementById('addShiftNameInput').value = '';
+            document.getElementById('addShiftDateInput').value = '';
+            document.getElementById('addShiftStartTimeInput').value = '';
+            document.getElementById('addShiftEndTimeInput').value = '';
+            document.getElementById('addShiftDescriptionInput').value = '';
+            addShiftForm.style.display = 'none';
+
+            showNotification('Schicht erfolgreich erstellt');
+        } else {
+            const error = await response.json();
+            showNotification(error.error || 'Fehler beim Erstellen der Schicht', false);
+        }
+
+        this.disabled = false;
+        this.innerHTML = '<i class="bi bi-check-circle"></i> Schicht erstellen';
+    });
+
+    // Helper function to attach shift event listeners (shift description editing)
+    function attachShiftEventListeners() {
+        document.querySelectorAll('.shift-description-display').forEach(display => {
+            if (!display.dataset.listenerAttached) {
+                display.addEventListener('click', function() {
+                    const shiftId = this.dataset.shiftId;
+                    this.style.display = 'none';
+                    document.querySelector(`.shift-description-edit[data-shift-id="${shiftId}"]`).style.display = 'block';
+                    document.querySelector(`.shift-description-buttons[data-shift-id="${shiftId}"]`).style.display = 'flex';
+                });
+                display.dataset.listenerAttached = true;
+            }
+        });
+
+        document.querySelectorAll('.shift-save-btn').forEach(btn => {
+            if (!btn.dataset.listenerAttached) {
+                btn.addEventListener('click', async function() {
+                    const shiftId = this.dataset.shiftId;
+                    const textarea = document.querySelector(`.shift-description-edit[data-shift-id="${shiftId}"]`);
+                    const description = textarea.value;
+
+                    const response = await fetch(`/festival/${festivalSlug}/api/shift/${shiftId}/update/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        body: JSON.stringify({ description })
+                    });
+
+                    if (response.ok) {
+                        document.querySelector(`.shift-description-display[data-shift-id="${shiftId}"] p`).textContent = description || "(keine Beschreibung)";
+                        document.querySelector(`.shift-description-display[data-shift-id="${shiftId}"]`).style.display = 'block';
+                        textarea.style.display = 'none';
+                        document.querySelector(`.shift-description-buttons[data-shift-id="${shiftId}"]`).style.display = 'none';
+                        showNotification('Schicht aktualisiert');
+                    } else {
+                        const error = await response.json();
+                        showNotification(error.error || 'Fehler beim Speichern', false);
+                    }
+                });
+                btn.dataset.listenerAttached = true;
+            }
+        });
+
+        document.querySelectorAll('.shift-cancel-btn').forEach(btn => {
+            if (!btn.dataset.listenerAttached) {
+                btn.addEventListener('click', function() {
+                    const shiftId = this.dataset.shiftId;
+                    document.querySelector(`.shift-description-display[data-shift-id="${shiftId}"]`).style.display = 'block';
+                    document.querySelector(`.shift-description-edit[data-shift-id="${shiftId}"]`).style.display = 'none';
+                    document.querySelector(`.shift-description-buttons[data-shift-id="${shiftId}"]`).style.display = 'none';
+                });
+                btn.dataset.listenerAttached = true;
+            }
+        });
+    }
+
+    // Load templates on page load
+    document.addEventListener('DOMContentLoaded', loadTemplates);
+</script>
+
+{% endblock %}

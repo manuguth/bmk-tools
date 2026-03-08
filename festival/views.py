@@ -653,3 +653,90 @@ def admin_print_overview(request, festival_slug):
         'matrix_data': matrix_data,
     }
     return render(request, 'festival/admin_print_overview.html', context)
+
+
+@staff_member_required
+@require_http_methods(["POST"])
+def api_update_festival(request, festival_slug):
+    """API endpoint to update festival details."""
+    festival = get_object_or_404(Festival, slug=festival_slug)
+
+    try:
+        data = json.loads(request.body)
+
+        # Update name
+        if 'name' in data:
+            new_name = data['name'].strip()
+            if not new_name:
+                return JsonResponse({'success': False, 'error': 'Festival name cannot be empty'}, status=400)
+            festival.name = new_name
+
+        festival.save()
+        return JsonResponse({
+            'success': True,
+            'message': 'Festival updated successfully',
+            'data': {
+                'name': festival.name,
+            }
+        })
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@staff_member_required
+@require_http_methods(["POST"])
+def api_create_shift(request, festival_slug):
+    """API endpoint to create a new shift."""
+    festival = get_object_or_404(Festival, slug=festival_slug)
+
+    try:
+        data = json.loads(request.body)
+
+        # Validate required fields
+        if not data.get('name'):
+            return JsonResponse({'success': False, 'error': 'Shift name is required'}, status=400)
+
+        if not data.get('date'):
+            return JsonResponse({'success': False, 'error': 'Date is required'}, status=400)
+
+        if not data.get('start_time'):
+            return JsonResponse({'success': False, 'error': 'Start time is required'}, status=400)
+
+        if not data.get('end_time'):
+            return JsonResponse({'success': False, 'error': 'End time is required'}, status=400)
+
+        # Create the shift
+        shift = Shift.objects.create(
+            festival=festival,
+            name=data['name'],
+            date=data['date'],
+            start_time=data['start_time'],
+            end_time=data['end_time'],
+            description=data.get('description', '')
+        )
+
+        # Format date and time for response
+        date_str = shift.date.isoformat() if hasattr(shift.date, 'isoformat') else str(shift.date)
+        start_time_str = shift.start_time.isoformat() if hasattr(shift.start_time, 'isoformat') else str(shift.start_time)
+        end_time_str = shift.end_time.isoformat() if hasattr(shift.end_time, 'isoformat') else str(shift.end_time)
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Shift created successfully',
+            'data': {
+                'id': str(shift.id),
+                'name': shift.name,
+                'date': date_str,
+                'start_time': start_time_str,
+                'end_time': end_time_str,
+                'description': shift.description,
+            }
+        })
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+    except ValueError as e:
+        return JsonResponse({'success': False, 'error': f'Invalid field format: {str(e)}'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)

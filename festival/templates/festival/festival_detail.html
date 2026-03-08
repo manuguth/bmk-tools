@@ -52,9 +52,6 @@
                     <div class="task-card {% if task.is_full %}task-full{% endif %}">
                         <div class="task-card-header">
                             <h3>{{ task.name }}</h3>
-                            {% if task.description %}
-                                <p>{{ task.description|truncatewords:15 }}</p>
-                            {% endif %}
                         </div>
 
                         <div class="task-card-body">
@@ -95,7 +92,7 @@
                                     <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
                                         {% for participant in task.participants.all %}
                                             <span style="display: inline-block; background: white; color: #1e40af; padding: 0.4rem 0.75rem; border-radius: 20px; font-size: 0.85rem; font-weight: 500;">
-                                                {{ participant.name }}
+                                                {{ participant.name }}{% if participant.notes %} <span style="font-weight: 400; opacity: 0.8;">({{ participant.notes|truncatewords:10 }})</span>{% endif %}
                                             </span>
                                         {% endfor %}
                                     </div>
