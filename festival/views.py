@@ -30,9 +30,9 @@ def admin_festival_list(request):
     show_archived = request.GET.get('show_archived', 'false').lower() == 'true'
 
     if show_archived:
-        festivals = Festival.objects.all().order_by("-start_date")
+        festivals = Festival.objects.all().order_by("start_date")
     else:
-        festivals = Festival.objects.filter(status__in=['active', 'draft']).order_by("-start_date")
+        festivals = Festival.objects.filter(status__in=['active', 'draft']).order_by("start_date")
 
     festivals_data = []
     total_all_participants = 0
