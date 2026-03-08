@@ -75,3 +75,12 @@ jobs:
         with:
           app-name: 'bmk-tools'
           slot-name: 'Production'
+
+      - name: 'Run database migrations'
+        uses: azure/cli@v2
+        with:
+          azcliversion: latest
+          inlineScript: |
+            az webapp remote-debugging -g bmk-tools -n bmk-tools --slot Production --status off
+            az webapp config appsettings set -g bmk-tools -n bmk-tools --slot Production --settings DJANGO_ENV=production
+            az webapp ssh -g bmk-tools -n bmk-tools --slot Production --command "cd $HOME/site/wwwroot && python manage.py migrate"
