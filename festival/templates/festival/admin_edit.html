@@ -22,6 +22,34 @@
         <button id="festivalNameSaveBtn" style="padding: 0.5rem 1rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Speichern</button>
         <button id="festivalNameCancelBtn" style="padding: 0.5rem 1rem; background: #6b7280; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Abbrechen</button>
     </div>
+
+    <!-- Festival Status Section -->
+    <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); margin-bottom: 2rem;">
+        <h3 style="font-size: 1.1rem; font-weight: 600; color: var(--festival-dark); margin: 0 0 1rem 0;">Status des Festivals</h3>
+        <div style="display: flex; align-items: center; gap: 1.5rem;">
+            <!-- Status Badge -->
+            <span id="status-badge-edit" style="display: inline-block; padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">
+                <i class="bi bi-circle-fill" style="margin-right: 0.25rem;"></i>
+                <span id="status-text-edit">
+                    {% if festival.status == 'active' %}
+                        Aktiv
+                    {% elif festival.status == 'draft' %}
+                        Entwurf
+                    {% else %}
+                        Abgeschlossen
+                    {% endif %}
+                </span>
+            </span>
+
+            <!-- Status Switcher -->
+            <select id="status-switcher-edit" style="padding: 0.4rem 0.8rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.9rem; background: white; cursor: pointer;" onchange="updateFestivalStatusEdit()">
+                <option value="">– Status ändern –</option>
+                <option value="draft">Entwurf</option>
+                <option value="active">Aktiv</option>
+                <option value="completed">Abgeschlossen</option>
+            </select>
+        </div>
+    </div>
 </div>
 
 {% if shifts_data %}
@@ -1160,6 +1188,64 @@
 
     // Load templates on page load
     document.addEventListener('DOMContentLoaded', loadTemplates);
+
+    // Status badge and switcher functions
+    function updateStatusBadgeStyleEdit() {
+        const badge = document.getElementById('status-badge-edit');
+        const statusText = document.getElementById('status-text-edit').textContent.trim();
+
+        if (statusText === 'Aktiv') {
+            badge.style.background = '#d1fae5';
+            badge.style.color = '#10b981';
+        } else if (statusText === 'Entwurf') {
+            badge.style.background = '#fef3c7';
+            badge.style.color = '#f59e0b';
+        } else {
+            badge.style.background = '#e5e7eb';
+            badge.style.color = '#6b7280';
+        }
+    }
+
+    function updateFestivalStatusEdit() {
+        const switcher = document.getElementById('status-switcher-edit');
+        const newStatus = switcher.value;
+
+        if (!newStatus) return;
+
+        fetch('{% url "festival:api_update_festival" festival.slug %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+            body: JSON.stringify({
+                status: newStatus,
+            })
+        }).then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update the status text and badge style
+                    const statusMap = {
+                        'active': 'Aktiv',
+                        'draft': 'Entwurf',
+                        'completed': 'Abgeschlossen',
+                    };
+
+                    document.getElementById('status-text-edit').textContent = statusMap[newStatus];
+                    updateStatusBadgeStyleEdit();
+                    switcher.value = '';
+                    showNotification('Status aktualisiert');
+                } else {
+                    showNotification('Fehler beim Aktualisieren des Status: ' + (data.error || 'Unbekannter Fehler'), false);
+                }
+            })
+            .catch(error => {
+                showNotification('Fehler beim Senden der Anfrage: ' + error, false);
+            });
+    }
+
+    // Initialize status badge styling on page load
+    document.addEventListener('DOMContentLoaded', updateStatusBadgeStyleEdit);
 </script>
 
 {% endblock %}

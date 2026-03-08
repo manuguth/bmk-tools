@@ -8,7 +8,34 @@
         <i class="bi bi-speedometer2"></i> Admin-Übersicht
     </h1>
     {% if festival %}
-        <p style="color: #6b7280; font-size: 1rem;">{{ festival.name }}</p>
+        <div style="display: flex; align-items: center; gap: 1.5rem;">
+            <p style="color: #6b7280; font-size: 1rem; margin: 0;">{{ festival.name }}</p>
+
+            <!-- Status Badge and Switcher -->
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <!-- Status Badge -->
+                <span id="status-badge" style="display: inline-block; padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">
+                    <i class="bi bi-circle-fill" style="margin-right: 0.25rem;"></i>
+                    <span id="status-text">
+                        {% if festival.status == 'active' %}
+                            Aktiv
+                        {% elif festival.status == 'draft' %}
+                            Entwurf
+                        {% else %}
+                            Abgeschlossen
+                        {% endif %}
+                    </span>
+                </span>
+
+                <!-- Status Switcher -->
+                <select id="status-switcher" style="padding: 0.4rem 0.8rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.9rem; background: white; cursor: pointer;" onchange="updateFestivalStatus()">
+                    <option value="">– Status ändern –</option>
+                    <option value="draft">Entwurf</option>
+                    <option value="active">Aktiv</option>
+                    <option value="completed">Abgeschlossen</option>
+                </select>
+            </div>
+        </div>
     {% else %}
         <p style="color: #9ca3af; font-size: 1rem;">Kein Festival ausgewählt</p>
     {% endif %}
@@ -120,4 +147,80 @@
         </div>
     </div>
 {% endif %}
+
+<script>
+// Update status badge styling based on status
+function updateStatusBadgeStyle() {
+    const badge = document.getElementById('status-badge');
+    const statusText = document.getElementById('status-text').textContent.trim();
+
+    if (statusText === 'Aktiv') {
+        badge.style.background = '#d1fae5';
+        badge.style.color = '#10b981';
+    } else if (statusText === 'Entwurf') {
+        badge.style.background = '#fef3c7';
+        badge.style.color = '#f59e0b';
+    } else {
+        badge.style.background = '#e5e7eb';
+        badge.style.color = '#6b7280';
+    }
+}
+
+// Update festival status via API
+function updateFestivalStatus() {
+    const switcher = document.getElementById('status-switcher');
+    const newStatus = switcher.value;
+
+    if (!newStatus) return;
+
+    fetch('{% url "festival:api_update_festival" festival.slug %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken'),
+        },
+        body: JSON.stringify({
+            status: newStatus,
+        })
+    }).then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update the status text and badge style
+                const statusMap = {
+                    'active': 'Aktiv',
+                    'draft': 'Entwurf',
+                    'completed': 'Abgeschlossen',
+                };
+
+                document.getElementById('status-text').textContent = statusMap[newStatus];
+                updateStatusBadgeStyle();
+                switcher.value = '';
+            } else {
+                alert('Fehler beim Aktualisieren des Status: ' + (data.error || 'Unbekannter Fehler'));
+            }
+        })
+        .catch(error => {
+            alert('Fehler beim Senden der Anfrage: ' + error);
+        });
+}
+
+// Helper function to get CSRF token from cookies
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Initialize status badge styling on page load
+document.addEventListener('DOMContentLoaded', updateStatusBadgeStyle);
+</script>
 {% endblock %}

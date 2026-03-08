@@ -35,6 +35,16 @@
         {% endif %}
     </div>
 
+    <!-- Completion Banner -->
+    {% if festival.status == 'completed' %}
+        <div style="padding: 1rem; background: #fef3c7; border-left: 4px solid #f59e0b; margin-bottom: 2rem; border-radius: 6px;">
+            <p style="color: #92400e; margin: 0; font-weight: 600;">
+                <i class="bi bi-exclamation-circle" style="margin-right: 0.5rem;"></i>
+                Dieses Festival ist abgeschlossen. Anmeldungen sind nicht mehr möglich.
+            </p>
+        </div>
+    {% endif %}
+
     <div style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); margin-bottom: 2rem;">
         <h2 style="font-size: 1.5rem; font-weight: 600; color: var(--festival-dark); margin: 0 0 1.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
             <i class="bi bi-list-check" style="color: var(--festival-primary);"></i> Verfügbare Aufgaben
@@ -95,7 +105,11 @@
                         </div>
 
                         <div class="task-card-footer">
-                            {% if task.is_full %}
+                            {% if festival.status == 'completed' %}
+                                <button class="signup-btn full" disabled>
+                                    <i class="bi bi-lock"></i> Festival abgeschlossen
+                                </button>
+                            {% elif task.is_full %}
                                 <button class="signup-btn full" disabled>
                                     <i class="bi bi-check-circle"></i> Voll ({{ task.current_helpers }}/{{ task.required_helpers }})
                                 </button>

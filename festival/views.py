@@ -3,16 +3,31 @@ import json
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from django.db import models
+from django.conf import settings
 from .models import Festival, Shift, Task, Participant, TaskTemplate
 from .forms import ParticipantSignUpForm
+
+
+def check_festival_draft_access(request, festival):
+    """Check if user can access draft festival. Redirects to login if needed."""
+    if festival.status == 'draft' and not request.user.is_authenticated:
+        return redirect(f"{settings.LOGIN_URL}?next={request.path}")
+    return None
 
 
 @staff_member_required
 def admin_festival_list(request):
     """Admin view to list all festivals with stats."""
-    festivals = Festival.objects.all().order_by("-start_date")
+    show_archived = request.GET.get('show_archived', 'false').lower() == 'true'
+
+    if show_archived:
+        festivals = Festival.objects.all().order_by("-start_date")
+    else:
+        festivals = Festival.objects.filter(status__in=['active', 'draft']).order_by("-start_date")
+
     festivals_data = []
     total_all_participants = 0
     total_all_required_helpers = 0
@@ -44,6 +59,7 @@ def admin_festival_list(request):
         "total_all_participants": total_all_participants,
         "total_all_required_helpers": total_all_required_helpers,
         "total_all_shifts": total_all_shifts,
+        "show_archived": show_archived,
     }
     return render(request, "festival/admin_festival_list.html", context)
 
@@ -51,6 +67,10 @@ def admin_festival_list(request):
 def festival_detail(request, festival_slug):
     """Display festival details and list of shifts."""
     festival = get_object_or_404(Festival, slug=festival_slug)
+    draft_check = check_festival_draft_access(request, festival)
+    if draft_check:
+        return draft_check
+
     shifts = festival.shifts.all()
 
     context = {
@@ -63,6 +83,10 @@ def festival_detail(request, festival_slug):
 def shift_detail(request, festival_slug, shift_id):
     """Display shift details and available tasks."""
     festival = get_object_or_404(Festival, slug=festival_slug)
+    draft_check = check_festival_draft_access(request, festival)
+    if draft_check:
+        return draft_check
+
     shift = get_object_or_404(Shift, id=shift_id, festival=festival)
     tasks = shift.tasks.all()
 
@@ -77,6 +101,18 @@ def shift_detail(request, festival_slug, shift_id):
 def task_signup(request, festival_slug, task_id):
     """Sign up a participant for a task."""
     festival = get_object_or_404(Festival, slug=festival_slug)
+    draft_check = check_festival_draft_access(request, festival)
+    if draft_check:
+        return draft_check
+
+    # Check if festival is completed
+    if festival.status == 'completed':
+        context = {
+            "festival": festival,
+            "error": "Dieses Festival ist abgeschlossen. Anmeldungen sind nicht mehr möglich.",
+        }
+        return render(request, "festival/festival_completed.html", context)
+
     task = get_object_or_404(Task, id=task_id, shift__festival=festival)
 
     # Check if task is full
@@ -109,6 +145,10 @@ def task_signup(request, festival_slug, task_id):
 def signup_confirmation(request, festival_slug, participant_id):
     """Display confirmation after successful sign-up."""
     festival = get_object_or_404(Festival, slug=festival_slug)
+    draft_check = check_festival_draft_access(request, festival)
+    if draft_check:
+        return draft_check
+
     participant = get_object_or_404(Participant, id=participant_id, task__shift__festival=festival)
 
     context = {
@@ -671,12 +711,21 @@ def api_update_festival(request, festival_slug):
                 return JsonResponse({'success': False, 'error': 'Festival name cannot be empty'}, status=400)
             festival.name = new_name
 
+        # Update status
+        if 'status' in data:
+            new_status = data['status'].strip()
+            valid_statuses = ['draft', 'active', 'completed']
+            if new_status not in valid_statuses:
+                return JsonResponse({'success': False, 'error': f'Invalid status. Must be one of: {", ".join(valid_statuses)}'}, status=400)
+            festival.status = new_status
+
         festival.save()
         return JsonResponse({
             'success': True,
             'message': 'Festival updated successfully',
             'data': {
                 'name': festival.name,
+                'status': festival.status,
             }
         })
     except json.JSONDecodeError:

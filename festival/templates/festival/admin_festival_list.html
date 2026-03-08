@@ -73,9 +73,15 @@
 
         <!-- Festivals List -->
         <div style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);">
-            <h2 style="font-size: 1.5rem; font-weight: 600; color: var(--festival-dark); margin: 0 0 1.5rem 0;">
-                <i class="bi bi-list-check"></i> Alle Festivals
-            </h2>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 style="font-size: 1.5rem; font-weight: 600; color: var(--festival-dark); margin: 0;">
+                    <i class="bi bi-list-check"></i> Alle Festivals
+                </h2>
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; user-select: none;">
+                    <input type="checkbox" id="show-archived-toggle" {% if show_archived %}checked{% endif %} style="width: 18px; height: 18px; cursor: pointer;" onchange="toggleArchived()">
+                    <span style="color: #6b7280; font-size: 0.95rem;">Archivierte anzeigen</span>
+                </label>
+            </div>
 
             <div style="display: grid; gap: 1.5rem;">
                 {% for item in festivals_data %}
@@ -149,4 +155,19 @@
         </div>
     {% endif %}
 </div>
+
+<script>
+function toggleArchived() {
+    const showArchived = document.getElementById('show-archived-toggle').checked;
+    const url = new URL(window.location);
+
+    if (showArchived) {
+        url.searchParams.set('show_archived', 'true');
+    } else {
+        url.searchParams.delete('show_archived');
+    }
+
+    window.location = url.toString();
+}
+</script>
 {% endblock page_content %}
