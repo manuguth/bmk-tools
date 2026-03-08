@@ -206,6 +206,19 @@ def sync_participants_for_task(task) -> Dict:
 
                 matched_participant.konzertmeister_user_id = km_user_id
                 matched_participant.konzertmeister_response_status = response_status
+
+                # Update notes based on response status change
+                if response_status == 'maybe':
+                    # Status is "maybe" - ensure "vielleicht" is in notes
+                    if 'vielleicht' not in matched_participant.notes:
+                        if matched_participant.notes:
+                            matched_participant.notes += "\nvielleicht"
+                        else:
+                            matched_participant.notes = "vielleicht"
+                elif response_status == 'positive':
+                    # Status is "positive" - remove "vielleicht" from notes if present
+                    matched_participant.notes = matched_participant.notes.replace('\nvielleicht', '').replace('vielleicht', '').strip()
+
                 matched_participant.save(update_fields=[
                     'konzertmeister_user_id',
                     'konzertmeister_response_status',
