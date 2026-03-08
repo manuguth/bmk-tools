@@ -140,19 +140,61 @@
         {% for shift_item in shifts_data %}
             <!-- Shift Card -->
             <div style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); border-top: 4px solid var(--festival-primary);">
-                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.5rem;">
+                <!-- Shift Header - Display Mode -->
+                <div class="shift-header-display" data-shift-id="{{ shift_item.shift.id }}" style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.5rem; cursor: pointer; padding: 1rem; background: #f9fafb; border-radius: 8px; border-left: 3px solid var(--festival-primary); transition: all 0.3s ease;" onmouseover="this.style.backgroundColor='#eef2ff';" onmouseout="this.style.backgroundColor='#f9fafb';">
                     <div style="flex: 1;">
-                        <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--festival-dark); margin: 0 0 0.5rem 0;">{{ shift_item.shift.name }}</h2>
+                        <h2 class="shift-name-display" data-shift-id="{{ shift_item.shift.id }}" style="font-size: 1.5rem; font-weight: 700; color: var(--festival-dark); margin: 0 0 0.5rem 0;">{{ shift_item.shift.name }}</h2>
                         <div style="display: flex; flex-wrap: wrap; gap: 1rem; color: #6b7280; font-size: 0.9rem;">
                             <span>
                                 <i class="bi bi-calendar3" style="color: var(--festival-primary); margin-right: 0.25rem;"></i>
-                                {{ shift_item.shift.date|date:"l, j. F Y" }}
+                                <span class="shift-date-display" data-shift-id="{{ shift_item.shift.id }}">{{ shift_item.shift.date|date:"l, j. F Y" }}</span>
                             </span>
                             <span>
                                 <i class="bi bi-clock" style="color: var(--festival-primary); margin-right: 0.25rem;"></i>
-                                {{ shift_item.shift.start_time|time:"H:i" }} – {{ shift_item.shift.end_time|time:"H:i" }}
+                                <span class="shift-time-display" data-shift-id="{{ shift_item.shift.id }}">{{ shift_item.shift.start_time|time:"H:i" }} – {{ shift_item.shift.end_time|time:"H:i" }}</span>
                             </span>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Shift Header - Edit Mode -->
+                <div class="shift-header-edit" data-shift-id="{{ shift_item.shift.id }}" style="display: none; margin-bottom: 1.5rem; padding: 1.5rem; background: white; border-radius: 12px; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); border-top: 4px solid var(--festival-primary);">
+                    <h3 style="margin-top: 0; color: var(--festival-dark); font-weight: 600; margin-bottom: 1.5rem;">Schicht bearbeiten</h3>
+
+                    <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                        <!-- Shift Name -->
+                        <div>
+                            <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Schichtname *</label>
+                            <input type="text" class="shift-name-input" data-shift-id="{{ shift_item.shift.id }}" value="{{ shift_item.shift.name }}" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 1rem;">
+                        </div>
+
+                        <!-- Shift Date -->
+                        <div>
+                            <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Datum *</label>
+                            <input type="date" class="shift-date-input" data-shift-id="{{ shift_item.shift.id }}" value="{{ shift_item.shift.date|date:'Y-m-d' }}" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 1rem;">
+                        </div>
+
+                        <!-- Start Time -->
+                        <div>
+                            <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Startzeit *</label>
+                            <input type="time" class="shift-start-time-input" data-shift-id="{{ shift_item.shift.id }}" value="{{ shift_item.shift.start_time|time:'H:i' }}" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 1rem;">
+                        </div>
+
+                        <!-- End Time -->
+                        <div>
+                            <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Endzeit *</label>
+                            <input type="time" class="shift-end-time-input" data-shift-id="{{ shift_item.shift.id }}" value="{{ shift_item.shift.end_time|time:'H:i' }}" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 1rem;">
+                        </div>
+                    </div>
+
+                    <!-- Edit Buttons -->
+                    <div class="shift-header-buttons" data-shift-id="{{ shift_item.shift.id }}" style="display: flex; gap: 0.5rem;">
+                        <button class="shift-header-save-btn" data-shift-id="{{ shift_item.shift.id }}" style="padding: 0.75rem 1.5rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                            <i class="bi bi-check-circle"></i> Speichern
+                        </button>
+                        <button class="shift-header-cancel-btn" data-shift-id="{{ shift_item.shift.id }}" style="padding: 0.75rem 1.5rem; background: #6b7280; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                            <i class="bi bi-x-circle"></i> Abbrechen
+                        </button>
                     </div>
                 </div>
 
@@ -594,6 +636,92 @@
             }
         }
     }, true);
+
+    // Shift Header Editing (Name, Date, Start Time, End Time)
+    document.querySelectorAll('.shift-header-display').forEach(display => {
+        display.addEventListener('click', function() {
+            const shiftId = this.dataset.shiftId;
+            this.style.display = 'none';
+            document.querySelector(`.shift-header-edit[data-shift-id="${shiftId}"]`).style.display = 'block';
+        });
+    });
+
+    document.querySelectorAll('.shift-header-save-btn').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const shiftId = this.dataset.shiftId;
+            const name = document.querySelector(`.shift-name-input[data-shift-id="${shiftId}"]`).value.trim();
+            const date = document.querySelector(`.shift-date-input[data-shift-id="${shiftId}"]`).value;
+            const startTime = document.querySelector(`.shift-start-time-input[data-shift-id="${shiftId}"]`).value;
+            const endTime = document.querySelector(`.shift-end-time-input[data-shift-id="${shiftId}"]`).value;
+
+            // Validation
+            if (!name) {
+                showNotification('Schichtname ist erforderlich', false);
+                return;
+            }
+            if (!date) {
+                showNotification('Datum ist erforderlich', false);
+                return;
+            }
+            if (!startTime) {
+                showNotification('Startzeit ist erforderlich', false);
+                return;
+            }
+            if (!endTime) {
+                showNotification('Endzeit ist erforderlich', false);
+                return;
+            }
+
+            this.disabled = true;
+            this.textContent = 'Speichern...';
+
+            const response = await fetch(`/festival/${festivalSlug}/api/shift/${shiftId}/update/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    name: name,
+                    date: date,
+                    start_time: startTime,
+                    end_time: endTime
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const shiftData = data.data;
+
+                // Update display with new values
+                document.querySelector(`.shift-name-display[data-shift-id="${shiftId}"]`).textContent = shiftData.name;
+                document.querySelector(`.shift-date-display[data-shift-id="${shiftId}"]`).textContent =
+                    new Date(shiftData.date).toLocaleDateString('de-DE', { weekday: 'long', month: 'numeric', day: 'numeric', year: 'numeric' });
+                document.querySelector(`.shift-time-display[data-shift-id="${shiftId}"]`).textContent =
+                    shiftData.start_time + ' – ' + shiftData.end_time;
+
+                // Hide edit mode, show display mode
+                document.querySelector(`.shift-header-display[data-shift-id="${shiftId}"]`).style.display = 'flex';
+                document.querySelector(`.shift-header-edit[data-shift-id="${shiftId}"]`).style.display = 'none';
+
+                showNotification('Schicht aktualisiert');
+            } else {
+                const error = await response.json();
+                showNotification(error.error || 'Fehler beim Speichern', false);
+            }
+
+            this.disabled = false;
+            this.textContent = 'Speichern';
+        });
+    });
+
+    document.querySelectorAll('.shift-header-cancel-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const shiftId = this.dataset.shiftId;
+            document.querySelector(`.shift-header-display[data-shift-id="${shiftId}"]`).style.display = 'flex';
+            document.querySelector(`.shift-header-edit[data-shift-id="${shiftId}"]`).style.display = 'none';
+        });
+    });
 
     // Shift Description Editing
     document.querySelectorAll('.shift-description-display').forEach(display => {
@@ -1213,6 +1341,104 @@
 
     // Helper function to attach shift event listeners (shift description editing)
     function attachShiftEventListeners() {
+        // Attach header display click listeners
+        document.querySelectorAll('.shift-header-display').forEach(display => {
+            if (!display.dataset.listenerAttached) {
+                display.addEventListener('click', function() {
+                    const shiftId = this.dataset.shiftId;
+                    this.style.display = 'none';
+                    document.querySelector(`.shift-header-edit[data-shift-id="${shiftId}"]`).style.display = 'block';
+                });
+                display.dataset.listenerAttached = true;
+            }
+        });
+
+        // Attach header save button listeners
+        document.querySelectorAll('.shift-header-save-btn').forEach(btn => {
+            if (!btn.dataset.listenerAttached) {
+                btn.addEventListener('click', async function() {
+                    const shiftId = this.dataset.shiftId;
+                    const name = document.querySelector(`.shift-name-input[data-shift-id="${shiftId}"]`).value.trim();
+                    const date = document.querySelector(`.shift-date-input[data-shift-id="${shiftId}"]`).value;
+                    const startTime = document.querySelector(`.shift-start-time-input[data-shift-id="${shiftId}"]`).value;
+                    const endTime = document.querySelector(`.shift-end-time-input[data-shift-id="${shiftId}"]`).value;
+
+                    // Validation
+                    if (!name) {
+                        showNotification('Schichtname ist erforderlich', false);
+                        return;
+                    }
+                    if (!date) {
+                        showNotification('Datum ist erforderlich', false);
+                        return;
+                    }
+                    if (!startTime) {
+                        showNotification('Startzeit ist erforderlich', false);
+                        return;
+                    }
+                    if (!endTime) {
+                        showNotification('Endzeit ist erforderlich', false);
+                        return;
+                    }
+
+                    this.disabled = true;
+                    const originalText = this.innerHTML;
+                    this.textContent = 'Speichern...';
+
+                    const response = await fetch(`/festival/${festivalSlug}/api/shift/${shiftId}/update/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        body: JSON.stringify({
+                            name: name,
+                            date: date,
+                            start_time: startTime,
+                            end_time: endTime
+                        })
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        const shiftData = data.data;
+
+                        // Update display with new values
+                        document.querySelector(`.shift-name-display[data-shift-id="${shiftId}"]`).textContent = shiftData.name;
+                        document.querySelector(`.shift-date-display[data-shift-id="${shiftId}"]`).textContent =
+                            new Date(shiftData.date).toLocaleDateString('de-DE', { weekday: 'long', month: 'numeric', day: 'numeric', year: 'numeric' });
+                        document.querySelector(`.shift-time-display[data-shift-id="${shiftId}"]`).textContent =
+                            shiftData.start_time + ' – ' + shiftData.end_time;
+
+                        // Hide edit mode, show display mode
+                        document.querySelector(`.shift-header-display[data-shift-id="${shiftId}"]`).style.display = 'flex';
+                        document.querySelector(`.shift-header-edit[data-shift-id="${shiftId}"]`).style.display = 'none';
+
+                        showNotification('Schicht aktualisiert');
+                    } else {
+                        const error = await response.json();
+                        showNotification(error.error || 'Fehler beim Speichern', false);
+                    }
+
+                    this.disabled = false;
+                    this.innerHTML = originalText;
+                });
+                btn.dataset.listenerAttached = true;
+            }
+        });
+
+        // Attach header cancel button listeners
+        document.querySelectorAll('.shift-header-cancel-btn').forEach(btn => {
+            if (!btn.dataset.listenerAttached) {
+                btn.addEventListener('click', function() {
+                    const shiftId = this.dataset.shiftId;
+                    document.querySelector(`.shift-header-display[data-shift-id="${shiftId}"]`).style.display = 'flex';
+                    document.querySelector(`.shift-header-edit[data-shift-id="${shiftId}"]`).style.display = 'none';
+                });
+                btn.dataset.listenerAttached = true;
+            }
+        });
+
         document.querySelectorAll('.shift-description-display').forEach(display => {
             if (!display.dataset.listenerAttached) {
                 display.addEventListener('click', function() {

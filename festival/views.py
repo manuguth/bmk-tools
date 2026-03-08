@@ -377,11 +377,48 @@ def api_update_task(request, festival_slug, task_id):
 @require_http_methods(["POST"])
 def api_update_shift(request, festival_slug, shift_id):
     """API endpoint to update shift details."""
+    from datetime import time
+
     festival = get_object_or_404(Festival, slug=festival_slug)
     shift = get_object_or_404(Shift, id=shift_id, festival=festival)
 
     try:
         data = json.loads(request.body)
+
+        # Update name
+        if 'name' in data:
+            name = data['name'].strip()
+            if not name:
+                return JsonResponse({'success': False, 'error': 'Shift name cannot be empty'}, status=400)
+            shift.name = name
+
+        # Update date
+        if 'date' in data:
+            try:
+                date_str = data['date']
+                shift.date = datetime.strptime(date_str, '%Y-%m-%d').date()
+            except ValueError:
+                return JsonResponse({'success': False, 'error': 'Invalid date format. Use YYYY-MM-DD'}, status=400)
+
+        # Update start_time
+        if 'start_time' in data:
+            try:
+                time_str = data['start_time']
+                shift.start_time = datetime.strptime(time_str, '%H:%M').time()
+            except ValueError:
+                return JsonResponse({'success': False, 'error': 'Invalid start time format. Use HH:MM'}, status=400)
+
+        # Update end_time
+        if 'end_time' in data:
+            try:
+                time_str = data['end_time']
+                shift.end_time = datetime.strptime(time_str, '%H:%M').time()
+            except ValueError:
+                return JsonResponse({'success': False, 'error': 'Invalid end time format. Use HH:MM'}, status=400)
+
+        # Validate that end_time is after start_time
+        if shift.start_time >= shift.end_time:
+            return JsonResponse({'success': False, 'error': 'End time must be after start time'}, status=400)
 
         # Update description
         if 'description' in data:
@@ -392,6 +429,10 @@ def api_update_shift(request, festival_slug, shift_id):
             'success': True,
             'message': 'Shift updated successfully',
             'data': {
+                'name': shift.name,
+                'date': shift.date.isoformat(),
+                'start_time': shift.start_time.strftime('%H:%M'),
+                'end_time': shift.end_time.strftime('%H:%M'),
                 'description': shift.description,
             }
         })
