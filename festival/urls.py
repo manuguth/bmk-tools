@@ -65,5 +65,7 @@ urlpatterns = [
     path('<slug:festival_slug>/api/festival/export/yaml/', views.api_export_festival_yaml, name='api_export_yaml'),
     path('<slug:festival_slug>/api/festival/import/yaml/', views.api_import_festival_yaml, name='api_import_yaml'),
     path('<slug:festival_slug>/api/festival/import/yaml-file/', views.api_import_festival_yaml_file, name='api_import_yaml_file'),
+    # Festival creation
+    path('api/festival/create/', views.api_create_festival, name='api_create_festival'),
 ]
 

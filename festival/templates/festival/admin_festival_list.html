@@ -77,10 +77,63 @@
                 <h2 style="font-size: 1.5rem; font-weight: 600; color: var(--festival-dark); margin: 0;">
                     <i class="bi bi-list-check"></i> Alle Festivals
                 </h2>
-                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; user-select: none;">
-                    <input type="checkbox" id="show-archived-toggle" {% if show_archived %}checked{% endif %} style="width: 18px; height: 18px; cursor: pointer;" onchange="toggleArchived()">
-                    <span style="color: #6b7280; font-size: 0.95rem;">Archivierte anzeigen</span>
-                </label>
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <button id="createFestivalToggleBtn" style="padding: 0.6rem 1.2rem; background: linear-gradient(135deg, var(--festival-primary) 0%, var(--festival-secondary) 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.95rem; transition: all 0.3s ease;" onclick="toggleCreateFestivalForm()" onmouseover="this.style.boxShadow='0 4px 12px rgba(99, 102, 241, 0.4)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.boxShadow='none'; this.style.transform='translateY(0)';">
+                        <i class="bi bi-plus-circle" style="margin-right: 0.5rem;"></i> Festival erstellen
+                    </button>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; user-select: none;">
+                        <input type="checkbox" id="show-archived-toggle" {% if show_archived %}checked{% endif %} style="width: 18px; height: 18px; cursor: pointer;" onchange="toggleArchived()">
+                        <span style="color: #6b7280; font-size: 0.95rem;">Archivierte anzeigen</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Create Festival Form (Hidden by default) -->
+            <div id="festival-form-container" class="festival-form-container" style="display: none; background: white; border-radius: 12px; padding: 2rem; margin-bottom: 2rem; border-top: 5px solid var(--festival-primary); box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);">
+                <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--festival-dark); margin: 0 0 1.5rem 0;">Neues Festival erstellen</h3>
+
+                <form onsubmit="return createFestival(event)" style="display: grid; gap: 1.5rem;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                        <!-- Festival Name -->
+                        <div>
+                            <label for="festival-name" style="display: block; font-weight: 600; color: var(--festival-dark); margin-bottom: 0.5rem; font-size: 0.95rem;">Festival Name <span style="color: #ef4444;">*</span></label>
+                            <input type="text" id="festival-name" placeholder="z.B. Sommerfest 2024" style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 0.95rem; transition: all 0.3s ease;" onfocus="this.style.borderColor='var(--festival-primary)'; this.style.boxShadow='0 0 0 3px rgba(99, 102, 241, 0.1)';" onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none';">
+                            <span id="festival-name-error" style="display: none; color: #ef4444; font-size: 0.85rem; margin-top: 0.25rem;"></span>
+                        </div>
+
+                        <!-- Start Date -->
+                        <div>
+                            <label for="festival-start-date" style="display: block; font-weight: 600; color: var(--festival-dark); margin-bottom: 0.5rem; font-size: 0.95rem;">Startdatum <span style="color: #ef4444;">*</span></label>
+                            <input type="date" id="festival-start-date" style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 0.95rem; transition: all 0.3s ease;" onfocus="this.style.borderColor='var(--festival-primary)'; this.style.boxShadow='0 0 0 3px rgba(99, 102, 241, 0.1)';" onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none';">
+                            <span id="festival-start-date-error" style="display: none; color: #ef4444; font-size: 0.85rem; margin-top: 0.25rem;"></span>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                        <!-- End Date -->
+                        <div>
+                            <label for="festival-end-date" style="display: block; font-weight: 600; color: var(--festival-dark); margin-bottom: 0.5rem; font-size: 0.95rem;">Enddatum <span style="color: #ef4444;">*</span></label>
+                            <input type="date" id="festival-end-date" style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 0.95rem; transition: all 0.3s ease;" onfocus="this.style.borderColor='var(--festival-primary)'; this.style.boxShadow='0 0 0 3px rgba(99, 102, 241, 0.1)';" onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none';">
+                            <span id="festival-end-date-error" style="display: none; color: #ef4444; font-size: 0.85rem; margin-top: 0.25rem;"></span>
+                        </div>
+
+                        <!-- Description -->
+                        <div>
+                            <label for="festival-description" style="display: block; font-weight: 600; color: var(--festival-dark); margin-bottom: 0.5rem; font-size: 0.95rem;">Beschreibung</label>
+                            <textarea id="festival-description" placeholder="Optionale Beschreibung..." style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 0.95rem; resize: vertical; min-height: 80px; transition: all 0.3s ease;" onfocus="this.style.borderColor='var(--festival-primary)'; this.style.boxShadow='0 0 0 3px rgba(99, 102, 241, 0.1)';" onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none';"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Form Buttons -->
+                    <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1rem;">
+                        <button type="button" onclick="cancelCreateFestival()" style="padding: 0.75rem 1.5rem; background: #e5e7eb; color: var(--festival-dark); border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.backgroundColor='#d1d5db';" onmouseout="this.style.backgroundColor='#e5e7eb';">
+                            Abbrechen
+                        </button>
+                        <button type="submit" style="padding: 0.75rem 1.5rem; background: linear-gradient(135deg, var(--festival-primary) 0%, var(--festival-secondary) 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.boxShadow='0 4px 12px rgba(99, 102, 241, 0.4)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.boxShadow='none'; this.style.transform='translateY(0)';">
+                            <i class="bi bi-check-circle" style="margin-right: 0.5rem;"></i> Festival erstellen
+                        </button>
+                    </div>
+                </form>
             </div>
 
             <div style="display: grid; gap: 1.5rem;">
@@ -157,6 +210,21 @@
 </div>
 
 <script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
 function toggleArchived() {
     const showArchived = document.getElementById('show-archived-toggle').checked;
     const url = new URL(window.location);
@@ -168,6 +236,204 @@ function toggleArchived() {
     }
 
     window.location = url.toString();
+}
+
+function toggleCreateFestivalForm() {
+    const formContainer = document.getElementById('festival-form-container');
+    if (formContainer.style.display === 'none') {
+        formContainer.style.display = 'block';
+        document.getElementById('festival-name').focus();
+    } else {
+        formContainer.style.display = 'none';
+    }
+}
+
+function cancelCreateFestival() {
+    document.getElementById('festival-name').value = '';
+    document.getElementById('festival-start-date').value = '';
+    document.getElementById('festival-end-date').value = '';
+    document.getElementById('festival-description').value = '';
+    clearAllErrors();
+    toggleCreateFestivalForm();
+}
+
+function clearAllErrors() {
+    document.getElementById('festival-name-error').textContent = '';
+    document.getElementById('festival-name-error').style.display = 'none';
+    document.getElementById('festival-start-date-error').textContent = '';
+    document.getElementById('festival-start-date-error').style.display = 'none';
+    document.getElementById('festival-end-date-error').textContent = '';
+    document.getElementById('festival-end-date-error').style.display = 'none';
+}
+
+function showError(fieldId, message) {
+    const errorElement = document.getElementById(fieldId + '-error');
+    errorElement.textContent = message;
+    errorElement.style.display = 'block';
+}
+
+function createFestival(event) {
+    event.preventDefault();
+    clearAllErrors();
+
+    const name = document.getElementById('festival-name').value.trim();
+    const startDate = document.getElementById('festival-start-date').value;
+    const endDate = document.getElementById('festival-end-date').value;
+    const description = document.getElementById('festival-description').value;
+
+    // Client-side validation
+    let hasError = false;
+
+    if (!name) {
+        showError('festival-name', 'Festival name is required');
+        hasError = true;
+    } else if (name.length > 255) {
+        showError('festival-name', 'Festival name cannot exceed 255 characters');
+        hasError = true;
+    }
+
+    if (!startDate) {
+        showError('festival-start-date', 'Start date is required');
+        hasError = true;
+    }
+
+    if (!endDate) {
+        showError('festival-end-date', 'End date is required');
+        hasError = true;
+    }
+
+    if (startDate && endDate) {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        if (end < start) {
+            showError('festival-end-date', 'End date must be on or after start date');
+            hasError = true;
+        }
+    }
+
+    if (hasError) {
+        return false;
+    }
+
+    // Prepare data
+    const data = {
+        name: name,
+        start_date: startDate,
+        end_date: endDate,
+        description: description
+    };
+
+    // Get CSRF token
+    const csrftoken = getCookie('csrftoken');
+
+    // Send request
+    fetch('{% url "festival:api_create_festival" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast('Festival created successfully', 'success');
+            addFestivalToList(data.data);
+            cancelCreateFestival();
+            // Refresh the page after a short delay to ensure the new festival is displayed correctly
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
+        } else {
+            showToast(data.error || 'An error occurred', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('An error occurred while creating the festival', 'error');
+    });
+
+    return false;
+}
+
+function showToast(message, type) {
+    // Remove existing toast if present
+    const existingToast = document.getElementById('toast-notification');
+    if (existingToast) {
+        existingToast.remove();
+    }
+
+    const toastContainer = document.createElement('div');
+    toastContainer.id = 'toast-notification';
+    toastContainer.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 1rem 1.5rem;
+        background: ${type === 'success' ? '#10b981' : '#ef4444'};
+        color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-weight: 500;
+        animation: slideIn 0.3s ease;
+    `;
+
+    const icon = document.createElement('i');
+    icon.className = type === 'success' ? 'bi bi-check-circle' : 'bi bi-exclamation-circle';
+    icon.style.fontSize = '1.25rem';
+
+    const messageText = document.createElement('span');
+    messageText.textContent = message;
+
+    toastContainer.appendChild(icon);
+    toastContainer.appendChild(messageText);
+
+    document.body.appendChild(toastContainer);
+
+    // Add animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+    `;
+    if (!document.querySelector('style[data-toast-styles]')) {
+        style.dataset.toastStyles = 'true';
+        document.head.appendChild(style);
+    }
+
+    // Auto-dismiss after 3 seconds
+    setTimeout(() => {
+        toastContainer.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => toastContainer.remove(), 300);
+    }, 3000);
+}
+
+function addFestivalToList(festivalData) {
+    // This function could dynamically add the new festival to the list
+    // For now, we'll just refresh the page, but this is a placeholder for future enhancement
 }
 </script>
 {% endblock page_content %}

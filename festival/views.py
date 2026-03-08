@@ -832,6 +832,65 @@ def api_create_shift(request, festival_slug):
 
 
 @staff_member_required
+@require_http_methods(["POST"])
+def api_create_festival(request):
+    """API endpoint to create a new festival."""
+    try:
+        data = json.loads(request.body)
+
+        # Validate required fields
+        if not data.get('name'):
+            return JsonResponse({'success': False, 'error': 'Festival name is required'}, status=400)
+
+        name = data['name'].strip()
+        if len(name) > 255:
+            return JsonResponse({'success': False, 'error': 'Festival name cannot exceed 255 characters'}, status=400)
+
+        if not data.get('start_date'):
+            return JsonResponse({'success': False, 'error': 'Start date is required'}, status=400)
+
+        if not data.get('end_date'):
+            return JsonResponse({'success': False, 'error': 'End date is required'}, status=400)
+
+        try:
+            from datetime import datetime
+            start_date = datetime.strptime(data['start_date'], '%Y-%m-%d').date()
+            end_date = datetime.strptime(data['end_date'], '%Y-%m-%d').date()
+        except ValueError:
+            return JsonResponse({'success': False, 'error': 'Invalid date format. Use YYYY-MM-DD'}, status=400)
+
+        if end_date < start_date:
+            return JsonResponse({'success': False, 'error': 'End date must be on or after start date'}, status=400)
+
+        # Create the festival
+        festival = Festival.objects.create(
+            name=name,
+            start_date=start_date,
+            end_date=end_date,
+            description=data.get('description', ''),
+            status='draft'
+        )
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Festival created successfully',
+            'data': {
+                'id': festival.id,
+                'name': festival.name,
+                'slug': festival.slug,
+                'start_date': festival.start_date.isoformat(),
+                'end_date': festival.end_date.isoformat(),
+                'description': festival.description,
+                'status': festival.status,
+            }
+        })
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@staff_member_required
 @require_http_methods(["GET"])
 def api_export_festival_yaml(request, festival_slug):
     """API endpoint to export festival data as YAML file."""
