@@ -24,6 +24,7 @@ python manage.py createsuperuser
 
 http://192.168.1.93:8000/festival/admin
 http://192.168.1.93:8000/festival/bugginger-fescht-2026/
+http://192.168.1.93:8000/festival/vorspielnachmittag-2026/
 
 local dev user
 admin
