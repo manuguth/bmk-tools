@@ -282,76 +282,76 @@
 
                 <!-- Tasks for this Shift -->
                 {% if shift_item.tasks %}
-                    <div style="display: grid; gap: 1rem;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 0.75rem;">
                         {% for task_item in shift_item.tasks %}
                             <!-- Task Card -->
-                            <div style="padding: 1rem; background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 8px; border-left: 4px solid #8b5cf6;">
-                                <div style="display: grid; gap: 1rem; margin-bottom: 1rem;">
+                            <div style="padding: 0.75rem; background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 8px; border-left: 4px solid #8b5cf6; display: flex; flex-direction: column;">
+                                <div style="display: grid; gap: 0.75rem; margin-bottom: 0.75rem; flex: 1;">
                                     <!-- Delete Button -->
-                                    <div style="display: flex; justify-content: flex-end;">
-                                        <button class="task-delete-btn" data-task-id="{{ task_item.task.id }}" style="padding: 0.4rem 0.75rem; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; transition: all 0.3s ease;" onmouseover="this.style.opacity='0.8';" onmouseout="this.style.opacity='1';">
+                                    <div style="display: flex; justify-content: flex-end; align-self: start;">
+                                        <button class="task-delete-btn" data-task-id="{{ task_item.task.id }}" style="padding: 0.3rem 0.6rem; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem; transition: all 0.3s ease; white-space: nowrap; height: auto; line-height: 1;" onmouseover="this.style.opacity='0.8';" onmouseout="this.style.opacity='1';">
                                             <i class="bi bi-trash"></i> Löschen
                                         </button>
                                     </div>
 
                                     <!-- Task Name (editable) -->
                                     <div>
-                                        <p style="color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Aufgabe</p>
-                                        <div class="task-name-display" data-task-id="{{ task_item.task.id }}" style="padding: 0.75rem; background: white; border-radius: 6px; cursor: pointer; border: 1px solid #e5e7eb; transition: all 0.3s ease; display: inline-block;" onmouseover="this.style.borderColor='var(--festival-primary)';" onmouseout="this.style.borderColor='#e5e7eb';">
-                                            <p style="margin: 0; color: var(--festival-dark); font-size: 1.25rem; font-weight: 700;">{{ task_item.task.name }}</p>
+                                        <p style="color: #6b7280; font-size: 0.75rem; margin: 0 0 0.25rem 0; font-weight: 600; text-transform: uppercase;">Aufgabe</p>
+                                        <div class="task-name-display" data-task-id="{{ task_item.task.id }}" style="padding: 0.5rem; background: white; border-radius: 6px; cursor: pointer; border: 1px solid #e5e7eb; transition: all 0.3s ease; display: inline-block;" onmouseover="this.style.borderColor='var(--festival-primary)';" onmouseout="this.style.borderColor='#e5e7eb';">
+                                            <p style="margin: 0; color: var(--festival-dark); font-size: 1rem; font-weight: 700;">{{ task_item.task.name }}</p>
                                         </div>
-                                        <input type="text" class="task-name-edit" data-task-id="{{ task_item.task.id }}" value="{{ task_item.task.name }}" style="display: none; width: 100%; padding: 0.75rem; border: 2px solid var(--festival-primary); border-radius: 6px; font-size: 1.25rem; font-weight: 700; margin-top: 0.5rem;">
-                                        <div class="task-name-buttons" data-task-id="{{ task_item.task.id }}" style="display: none; gap: 0.5rem; margin-top: 0.5rem;">
-                                            <button class="task-name-save-btn" data-task-id="{{ task_item.task.id }}" style="padding: 0.4rem 0.8rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">Speichern</button>
-                                            <button class="task-name-cancel-btn" data-task-id="{{ task_item.task.id }}" style="padding: 0.4rem 0.8rem; background: #6b7280; color: white; border: none; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">Abbrechen</button>
+                                        <input type="text" class="task-name-edit" data-task-id="{{ task_item.task.id }}" value="{{ task_item.task.name }}" style="display: none; width: 100%; padding: 0.5rem; border: 2px solid var(--festival-primary); border-radius: 6px; font-size: 1rem; font-weight: 700; margin-top: 0.3rem;">
+                                        <div class="task-name-buttons" data-task-id="{{ task_item.task.id }}" style="display: none; gap: 0.3rem; margin-top: 0.3rem;">
+                                            <button class="task-name-save-btn" data-task-id="{{ task_item.task.id }}" style="padding: 0.3rem 0.6rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer;">Speichern</button>
+                                            <button class="task-name-cancel-btn" data-task-id="{{ task_item.task.id }}" style="padding: 0.3rem 0.6rem; background: #6b7280; color: white; border: none; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer;">Abbrechen</button>
                                         </div>
                                     </div>
 
                                     <!-- Task Description (editable) -->
                                     <div>
-                                        <p style="color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Beschreibung</p>
-                                        <div class="task-description-display" data-task-id="{{ task_item.task.id }}" style="padding: 0.75rem; background: white; border-radius: 6px; cursor: pointer; border: 1px solid #e5e7eb; transition: all 0.3s ease;" onmouseover="this.style.borderColor='var(--festival-primary)';" onmouseout="this.style.borderColor='#e5e7eb';">
-                                            <p style="margin: 0; color: var(--festival-dark); white-space: pre-wrap; font-size: 0.95rem;">{{ task_item.task.description|default:"(keine Beschreibung)" }}</p>
+                                        <p style="color: #6b7280; font-size: 0.75rem; margin: 0 0 0.25rem 0; font-weight: 600; text-transform: uppercase;">Beschreibung</p>
+                                        <div class="task-description-display" data-task-id="{{ task_item.task.id }}" style="padding: 0.5rem; background: white; border-radius: 6px; cursor: pointer; border: 1px solid #e5e7eb; transition: all 0.3s ease; max-height: 80px; overflow: hidden; text-overflow: ellipsis;" onmouseover="this.style.borderColor='var(--festival-primary)';" onmouseout="this.style.borderColor='#e5e7eb';">
+                                            <p style="margin: 0; color: var(--festival-dark); white-space: pre-wrap; font-size: 0.85rem;">{{ task_item.task.description|default:"(keine Beschreibung)" }}</p>
                                         </div>
-                                        <textarea class="task-description-edit" data-task-id="{{ task_item.task.id }}" style="display: none; width: 100%; padding: 0.75rem; border: 2px solid var(--festival-primary); border-radius: 6px; font-family: inherit; font-size: 0.95rem; min-height: 80px; margin-top: 0.5rem;">{{ task_item.task.description }}</textarea>
-                                        <div class="task-description-buttons" data-task-id="{{ task_item.task.id }}" style="display: none; gap: 0.5rem; margin-top: 0.5rem;">
-                                            <button class="task-desc-save-btn" data-task-id="{{ task_item.task.id }}" style="padding: 0.4rem 0.8rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">Speichern</button>
-                                            <button class="task-desc-cancel-btn" data-task-id="{{ task_item.task.id }}" style="padding: 0.4rem 0.8rem; background: #6b7280; color: white; border: none; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">Abbrechen</button>
+                                        <textarea class="task-description-edit" data-task-id="{{ task_item.task.id }}" style="display: none; width: 100%; padding: 0.5rem; border: 2px solid var(--festival-primary); border-radius: 6px; font-family: inherit; font-size: 0.85rem; min-height: 60px; margin-top: 0.3rem;">{{ task_item.task.description }}</textarea>
+                                        <div class="task-description-buttons" data-task-id="{{ task_item.task.id }}" style="display: none; gap: 0.3rem; margin-top: 0.3rem;">
+                                            <button class="task-desc-save-btn" data-task-id="{{ task_item.task.id }}" style="padding: 0.3rem 0.6rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer;">Speichern</button>
+                                            <button class="task-desc-cancel-btn" data-task-id="{{ task_item.task.id }}" style="padding: 0.3rem 0.6rem; background: #6b7280; color: white; border: none; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer;">Abbrechen</button>
                                         </div>
                                     </div>
 
                                     <!-- Required Helpers (editable number) -->
                                     <div>
-                                        <p style="color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Erforderliche Freiwillige</p>
-                                        <div class="helpers-display" data-task-id="{{ task_item.task.id }}" style="padding: 0.75rem; background: white; border-radius: 6px; border: 1px solid #e5e7eb; cursor: pointer; display: inline-block; min-width: 100px; text-align: center; transition: all 0.3s ease;" onmouseover="this.style.borderColor='var(--festival-primary)';" onmouseout="this.style.borderColor='#e5e7eb';">
-                                            <p style="margin: 0; color: var(--festival-dark); font-size: 1.25rem; font-weight: 700;">{{ task_item.task.required_helpers }}</p>
+                                        <p style="color: #6b7280; font-size: 0.75rem; margin: 0 0 0.25rem 0; font-weight: 600; text-transform: uppercase;">Freiwillige</p>
+                                        <div class="helpers-display" data-task-id="{{ task_item.task.id }}" style="padding: 0.4rem; background: white; border-radius: 6px; border: 1px solid #e5e7eb; cursor: pointer; display: inline-block; min-width: 60px; text-align: center; transition: all 0.3s ease;" onmouseover="this.style.borderColor='var(--festival-primary)';" onmouseout="this.style.borderColor='#e5e7eb';">
+                                            <p style="margin: 0; color: var(--festival-dark); font-size: 1rem; font-weight: 700;">{{ task_item.task.required_helpers }}</p>
                                         </div>
-                                        <div class="helpers-edit" data-task-id="{{ task_item.task.id }}" style="display: none; margin-top: 0.5rem;">
-                                            <input type="number" class="helpers-input" data-task-id="{{ task_item.task.id }}" value="{{ task_item.task.required_helpers }}" min="1" style="width: 120px; padding: 0.5rem; border: 2px solid var(--festival-primary); border-radius: 6px; font-size: 1rem;">
-                                            <button class="helpers-save-btn" data-task-id="{{ task_item.task.id }}" style="margin-left: 0.5rem; padding: 0.5rem 1rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Speichern</button>
-                                            <button class="helpers-cancel-btn" data-task-id="{{ task_item.task.id }}" style="margin-left: 0.5rem; padding: 0.5rem 1rem; background: #6b7280; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Abbrechen</button>
+                                        <div class="helpers-edit" data-task-id="{{ task_item.task.id }}" style="display: none; margin-top: 0.3rem;">
+                                            <input type="number" class="helpers-input" data-task-id="{{ task_item.task.id }}" value="{{ task_item.task.required_helpers }}" min="1" style="width: 100px; padding: 0.4rem; border: 2px solid var(--festival-primary); border-radius: 6px; font-size: 0.9rem;">
+                                            <button class="helpers-save-btn" data-task-id="{{ task_item.task.id }}" style="margin-left: 0.3rem; padding: 0.3rem 0.6rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer;">Speichern</button>
+                                            <button class="helpers-cancel-btn" data-task-id="{{ task_item.task.id }}" style="margin-left: 0.3rem; padding: 0.3rem 0.6rem; background: #6b7280; color: white; border: none; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer;">Abbrechen</button>
                                         </div>
                                     </div>
 
                                     <!-- Konzertmeister Event ID (editable) -->
                                     <div>
-                                        <p style="color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Konzertmeister Event ID</p>
-                                        <div class="km-id-display" data-task-id="{{ task_item.task.id }}" style="padding: 0.75rem; background: white; border-radius: 6px; border: 1px solid #e5e7eb; cursor: pointer; display: inline-block; transition: all 0.3s ease;" onmouseover="this.style.borderColor='var(--festival-primary)';" onmouseout="this.style.borderColor='#e5e7eb';">
-                                            <p style="margin: 0; color: var(--festival-dark); font-size: 0.95rem;">{% if task_item.task.konzertmeister_event_id %}{{ task_item.task.konzertmeister_event_id }}{% else %}<span style="color: #9ca3af; font-style: italic;">(nicht verknüpft)</span>{% endif %}</p>
+                                        <p style="color: #6b7280; font-size: 0.75rem; margin: 0 0 0.25rem 0; font-weight: 600; text-transform: uppercase;">KM Event ID</p>
+                                        <div class="km-id-display" data-task-id="{{ task_item.task.id }}" style="padding: 0.4rem; background: white; border-radius: 6px; border: 1px solid #e5e7eb; cursor: pointer; display: inline-block; transition: all 0.3s ease;" onmouseover="this.style.borderColor='var(--festival-primary)';" onmouseout="this.style.borderColor='#e5e7eb';">
+                                            <p style="margin: 0; color: var(--festival-dark); font-size: 0.85rem;">{% if task_item.task.konzertmeister_event_id %}{{ task_item.task.konzertmeister_event_id }}{% else %}<span style="color: #9ca3af; font-style: italic;">(—)</span>{% endif %}</p>
                                         </div>
-                                        <div class="km-id-edit" data-task-id="{{ task_item.task.id }}" style="display: none; margin-top: 0.5rem;">
-                                            <input type="number" class="km-id-input" data-task-id="{{ task_item.task.id }}" value="{{ task_item.task.konzertmeister_event_id }}" min="1" placeholder="z.B. 12345" style="width: 150px; padding: 0.5rem; border: 2px solid var(--festival-primary); border-radius: 6px; font-size: 1rem;">
-                                            <button class="km-id-save-btn" data-task-id="{{ task_item.task.id }}" style="margin-left: 0.5rem; padding: 0.5rem 1rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Speichern</button>
-                                            <button class="km-id-clear-btn" data-task-id="{{ task_item.task.id }}" style="margin-left: 0.5rem; padding: 0.5rem 1rem; background: #f59e0b; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Löschen</button>
-                                            <button class="km-id-cancel-btn" data-task-id="{{ task_item.task.id }}" style="margin-left: 0.5rem; padding: 0.5rem 1rem; background: #6b7280; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Abbrechen</button>
+                                        <div class="km-id-edit" data-task-id="{{ task_item.task.id }}" style="display: none; margin-top: 0.3rem;">
+                                            <input type="number" class="km-id-input" data-task-id="{{ task_item.task.id }}" value="{{ task_item.task.konzertmeister_event_id }}" min="1" placeholder="z.B. 12345" style="width: 120px; padding: 0.4rem; border: 2px solid var(--festival-primary); border-radius: 6px; font-size: 0.9rem;">
+                                            <button class="km-id-save-btn" data-task-id="{{ task_item.task.id }}" style="margin-left: 0.3rem; padding: 0.3rem 0.6rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer;">Speichern</button>
+                                            <button class="km-id-clear-btn" data-task-id="{{ task_item.task.id }}" style="margin-left: 0.3rem; padding: 0.3rem 0.6rem; background: #f59e0b; color: white; border: none; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer;">Löschen</button>
+                                            <button class="km-id-cancel-btn" data-task-id="{{ task_item.task.id }}" style="margin-left: 0.3rem; padding: 0.3rem 0.6rem; background: #6b7280; color: white; border: none; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer;">Abbruch</button>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Participants List -->
                                 {% if task_item.participants %}
-                                    <div style="border-top: 1px solid #e5e7eb; padding-top: 1rem;">
-                                        <p style="color: #6b7280; font-size: 0.85rem; margin: 0 0 1rem 0; font-weight: 600; text-transform: uppercase;">Teilnehmer ({{ task_item.participants|length }})</p>
+                                    <div style="border-top: 1px solid #e5e7eb; padding-top: 0.75rem;">
+                                        <p style="color: #6b7280; font-size: 0.75rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Teilnehmer ({{ task_item.participants|length }})</p>
                                         <div class="participants-list" data-task-id="{{ task_item.task.id }}" style="display: grid; gap: 0.75rem;">
                                             {% for participant in task_item.participants %}
                                                 <div class="participant-row" data-participant-id="{{ participant.id }}" style="padding: 0.5rem; background: white; border-radius: 6px; border: 1px solid #e5e7eb; display: grid; grid-template-columns: 1fr 1.2fr auto; gap: 0.75rem; align-items: center;">
@@ -399,14 +399,14 @@
                                         </div>
                                     </div>
                                 {% else %}
-                                    <div style="border-top: 1px solid #e5e7eb; padding-top: 1rem; text-align: center; color: #9ca3af;">
-                                        <p style="margin: 0;">Keine Teilnehmer angemeldet</p>
+                                    <div style="border-top: 1px solid #e5e7eb; padding-top: 0.75rem; text-align: center; color: #9ca3af;">
+                                        <p style="margin: 0; font-size: 0.85rem;">Keine Teilnehmer angemeldet</p>
                                     </div>
                                 {% endif %}
 
                                 <!-- Add Participant Form -->
-                                <div style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid #e5e7eb;">
-                                    <button class="add-participant-toggle-btn" data-task-id="{{ task_item.task.id }}" style="padding: 0.65rem 1.25rem; background: var(--festival-success); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 0.5rem;" onmouseover="this.style.opacity='0.9';" onmouseout="this.style.opacity='1';">
+                                <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #e5e7eb;">
+                                    <button class="add-participant-toggle-btn" data-task-id="{{ task_item.task.id }}" style="padding: 0.5rem 1rem; background: var(--festival-success); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.85rem;" onmouseover="this.style.opacity='0.9';" onmouseout="this.style.opacity='1';">
                                         <i class="bi bi-plus-circle"></i> Teilnehmer hinzufügen
                                     </button>
 
@@ -416,23 +416,23 @@
                                         <div style="display: grid; grid-template-columns: 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
                                             <!-- Participant Name -->
                                             <div>
-                                                <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.25rem 0; font-weight: 600; text-transform: uppercase;">Name *</label>
-                                                <input type="text" class="add-participant-name-input" data-task-id="{{ task_item.task.id }}" placeholder="z.B. Max Mustermann" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 1rem;">
+                                                <label style="display: block; color: #6b7280; font-size: 0.75rem; margin: 0 0 0.25rem 0; font-weight: 600; text-transform: uppercase;">Name *</label>
+                                                <input type="text" class="add-participant-name-input" data-task-id="{{ task_item.task.id }}" placeholder="z.B. Max Mustermann" style="width: 100%; padding: 0.6rem; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 0.9rem;">
                                             </div>
 
                                             <!-- Participant Notes -->
                                             <div>
-                                                <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.25rem 0; font-weight: 600; text-transform: uppercase;">Notizen</label>
-                                                <textarea class="add-participant-notes-input" data-task-id="{{ task_item.task.id }}" placeholder="Optional: Notizen zu diesem Teilnehmer" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-family: inherit; font-size: 0.95rem; min-height: 50px;"></textarea>
+                                                <label style="display: block; color: #6b7280; font-size: 0.75rem; margin: 0 0 0.25rem 0; font-weight: 600; text-transform: uppercase;">Notizen</label>
+                                                <textarea class="add-participant-notes-input" data-task-id="{{ task_item.task.id }}" placeholder="Optional: Notizen zu diesem Teilnehmer" style="width: 100%; padding: 0.6rem; border: 1px solid #e5e7eb; border-radius: 6px; font-family: inherit; font-size: 0.85rem; min-height: 40px;"></textarea>
                                             </div>
                                         </div>
 
                                         <!-- Form Buttons -->
                                         <div style="display: flex; gap: 0.5rem;">
-                                            <button class="add-participant-save-btn" data-task-id="{{ task_item.task.id }}" style="padding: 0.65rem 1.25rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
-                                                <i class="bi bi-check-circle"></i> Teilnehmer erstellen
+                                            <button class="add-participant-save-btn" data-task-id="{{ task_item.task.id }}" style="padding: 0.5rem 0.8rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; font-size: 0.8rem;">
+                                                <i class="bi bi-check-circle"></i> Erstellen
                                             </button>
-                                            <button class="add-participant-cancel-btn" data-task-id="{{ task_item.task.id }}" style="padding: 0.65rem 1.25rem; background: #6b7280; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                                            <button class="add-participant-cancel-btn" data-task-id="{{ task_item.task.id }}" style="padding: 0.5rem 0.8rem; background: #6b7280; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; font-size: 0.8rem;">
                                                 <i class="bi bi-x-circle"></i> Abbrechen
                                             </button>
                                         </div>
