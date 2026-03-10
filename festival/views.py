@@ -54,9 +54,6 @@ def admin_festival_list(request):
         total_required_helpers = Task.objects.filter(shift__festival=festival).aggregate(
             total=models.Sum('required_helpers')
         )['total'] or 0
-        attended_count = Participant.objects.filter(
-            task__shift__festival=festival, attended=True
-        ).count()
         total_shifts = festival.shifts.count()
         total_all_participants += total_participants
         total_all_required_helpers += total_required_helpers
@@ -66,7 +63,6 @@ def admin_festival_list(request):
             "festival": festival,
             "total_participants": total_participants,
             "total_required_helpers": total_required_helpers,
-            "attended_count": attended_count,
             "total_shifts": total_shifts,
         })
 
@@ -265,10 +261,6 @@ def admin_overview(request, festival_slug=None):
     total_required_helpers = Task.objects.filter(shift__festival=festival).aggregate(
         total=models.Sum('required_helpers')
     )['total'] or 0
-    attended_count = Participant.objects.filter(
-        task__shift__festival=festival, attended=True
-    ).count()
-    pending_count = total_participants - attended_count
     total_shifts = shifts.count()
 
     from django.utils import timezone
@@ -279,8 +271,6 @@ def admin_overview(request, festival_slug=None):
         "total_participants": total_participants,
         "total_required_helpers": total_required_helpers,
         "total_shifts": total_shifts,
-        "attended_count": attended_count,
-        "pending_count": pending_count,
         "now": timezone.now(),
         "api_base_url": get_api_base_url(request),
     }
@@ -294,13 +284,6 @@ def participant_list_admin(request, festival_slug):
     participants = Participant.objects.filter(task__shift__festival=festival).select_related(
         "task", "task__shift"
     )
-
-    # Filter by attended status if specified
-    attended_filter = request.GET.get("attended")
-    if attended_filter == "true":
-        participants = participants.filter(attended=True)
-    elif attended_filter == "false":
-        participants = participants.filter(attended=False)
 
     context = {
         "festival": festival,
@@ -507,10 +490,6 @@ def api_update_participant(request, festival_slug, participant_id):
         if 'name' in data:
             participant.name = data['name']
 
-        # Update attended status
-        if 'attended' in data:
-            participant.attended = data['attended'] in ['true', True, 'True', '1', 1]
-
         # Update masked status
         if 'masked' in data:
             participant.masked = data['masked'] in ['true', True, 'True', '1', 1]
@@ -525,7 +504,6 @@ def api_update_participant(request, festival_slug, participant_id):
             'message': 'Participant updated successfully',
             'data': {
                 'name': participant.name,
-                'attended': participant.attended,
                 'masked': participant.masked,
                 'notes': participant.notes,
             }
@@ -618,7 +596,6 @@ def api_create_participant(request, festival_slug, task_id):
                 'id': participant.id,
                 'name': participant.name,
                 'notes': participant.notes,
-                'attended': participant.attended,
                 'masked': participant.masked,
             }
         })

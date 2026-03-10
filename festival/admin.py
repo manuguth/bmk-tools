@@ -63,13 +63,13 @@ class TaskAdmin(admin.ModelAdmin):
 
 @admin.register(Participant)
 class ParticipantAdmin(admin.ModelAdmin):
-    list_display = ("name", "task", "signed_up_at", "attended", "km_response_display")
-    list_filter = ("attended", "task__shift__festival", "task__shift__date", "signed_up_at", "konzertmeister_response_status")
+    list_display = ("name", "task", "signed_up_at", "km_response_display")
+    list_filter = ("task__shift__festival", "task__shift__date", "signed_up_at", "konzertmeister_response_status")
     search_fields = ("name", "task__name", "task__shift__name")
     readonly_fields = ("signed_up_at", "konzertmeister_user_id", "konzertmeister_response_status")
     fieldsets = (
         ("Basic Information", {
-            'fields': ('task', 'name', 'notes', 'attended', 'signed_up_at')
+            'fields': ('task', 'name', 'notes', 'signed_up_at')
         }),
         ("Konzertmeister Data", {
             'fields': ('konzertmeister_user_id', 'konzertmeister_response_status'),
@@ -77,7 +77,6 @@ class ParticipantAdmin(admin.ModelAdmin):
             'description': 'Read-only data from Konzertmeister sync'
         }),
     )
-    actions = ["mark_attended", "mark_not_attended"]
 
     def km_response_display(self, obj):
         if obj.konzertmeister_response_status == 'positive':
@@ -87,18 +86,6 @@ class ParticipantAdmin(admin.ModelAdmin):
         return "-"
 
     km_response_display.short_description = "KM Response"
-
-    def mark_attended(self, request, queryset):
-        updated = queryset.update(attended=True)
-        self.message_user(request, f"{updated} participants marked as attended.")
-
-    mark_attended.short_description = "Mark selected as attended"
-
-    def mark_not_attended(self, request, queryset):
-        updated = queryset.update(attended=False)
-        self.message_user(request, f"{updated} participants marked as not attended.")
-
-    mark_not_attended.short_description = "Mark selected as not attended"
 
 
 @admin.register(TaskTemplate)
