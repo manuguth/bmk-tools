@@ -103,9 +103,15 @@
                                     </p>
                                     <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
                                         {% for participant in task.participants.all %}
-                                            <span style="display: inline-block; background: white; color: #1e40af; padding: 0.4rem 0.75rem; border-radius: 20px; font-size: 0.85rem; font-weight: 500;">
-                                                {{ participant.name }}{% if participant.notes %} <span style="font-weight: 400; opacity: 0.8;">({{ participant.notes|truncatewords:10 }})</span>{% endif %}
-                                            </span>
+                                            {% if participant.masked %}
+                                                <span style="display: inline-block; background: white; color: #1e40af; padding: 0.4rem 0.75rem; border-radius: 20px; font-size: 0.85rem; font-weight: 500;">
+                                                    Helfer{% if participant.notes %} <span style="font-weight: 400; opacity: 0.8;">({{ participant.notes|truncatewords:10 }})</span>{% endif %}
+                                                </span>
+                                            {% else %}
+                                                <span style="display: inline-block; background: white; color: #1e40af; padding: 0.4rem 0.75rem; border-radius: 20px; font-size: 0.85rem; font-weight: 500;">
+                                                    {{ participant.name }}{% if participant.notes %} <span style="font-weight: 400; opacity: 0.8;">({{ participant.notes|truncatewords:10 }})</span>{% endif %}
+                                                </span>
+                                            {% endif %}
                                         {% endfor %}
                                     </div>
                                 </div>

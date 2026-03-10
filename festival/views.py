@@ -511,6 +511,10 @@ def api_update_participant(request, festival_slug, participant_id):
         if 'attended' in data:
             participant.attended = data['attended'] in ['true', True, 'True', '1', 1]
 
+        # Update masked status
+        if 'masked' in data:
+            participant.masked = data['masked'] in ['true', True, 'True', '1', 1]
+
         # Update notes
         if 'notes' in data:
             participant.notes = data['notes']
@@ -522,6 +526,7 @@ def api_update_participant(request, festival_slug, participant_id):
             'data': {
                 'name': participant.name,
                 'attended': participant.attended,
+                'masked': participant.masked,
                 'notes': participant.notes,
             }
         })
@@ -614,6 +619,7 @@ def api_create_participant(request, festival_slug, task_id):
                 'name': participant.name,
                 'notes': participant.notes,
                 'attended': participant.attended,
+                'masked': participant.masked,
             }
         })
     except json.JSONDecodeError:

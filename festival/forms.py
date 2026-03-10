@@ -54,10 +54,11 @@ class InlineParticipantForm(forms.ModelForm):
     """Form for inline editing of participant details."""
     class Meta:
         model = Participant
-        fields = ['name', 'attended', 'notes']
+        fields = ['name', 'attended', 'masked', 'notes']
         widgets = {
             'name': forms.TextInput(),
             'attended': forms.CheckboxInput(),
+            'masked': forms.CheckboxInput(),
             'notes': forms.Textarea(attrs={'rows': 3}),
         }
 
