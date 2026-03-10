@@ -637,7 +637,7 @@
         this.disabled = true;
         this.textContent = 'Speichern...';
 
-        const response = await fetch(`/festival/${festivalSlug}/api/festival/update/`, {
+        const response = await fetch(`{{ api_base_url }}${festivalSlug}/api/festival/update/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -664,7 +664,7 @@
     // Load templates and populate dropdowns
     async function loadTemplates() {
         try {
-            const response = await fetch('/festival/api/templates/');
+            const response = await fetch('{{ api_base_url }}api/templates/');
             if (response.ok) {
                 const data = await response.json();
                 templates = data.data;
@@ -754,7 +754,7 @@
             this.disabled = true;
             this.textContent = 'Speichern...';
 
-            const response = await fetch(`/festival/${festivalSlug}/api/shift/${shiftId}/update/`, {
+            const response = await fetch(`{{ api_base_url }}${festivalSlug}/api/shift/${shiftId}/update/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -818,7 +818,7 @@
             const textarea = document.querySelector(`.shift-description-edit[data-shift-id="${shiftId}"]`);
             const description = textarea.value;
 
-            const response = await fetch(`/festival/${festivalSlug}/api/shift/${shiftId}/update/`, {
+            const response = await fetch(`{{ api_base_url }}${festivalSlug}/api/shift/${shiftId}/update/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -866,7 +866,7 @@
             const textarea = document.querySelector(`.task-description-edit[data-task-id="${taskId}"]`);
             const description = textarea.value;
 
-            const response = await fetch(`/festival/${festivalSlug}/api/task/${taskId}/update/`, {
+            const response = await fetch(`{{ api_base_url }}${festivalSlug}/api/task/${taskId}/update/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -919,7 +919,7 @@
                 return;
             }
 
-            const response = await fetch(`/festival/${festivalSlug}/api/task/${taskId}/update/`, {
+            const response = await fetch(`{{ api_base_url }}${festivalSlug}/api/task/${taskId}/update/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -971,7 +971,7 @@
                 return;
             }
 
-            const response = await fetch(`/festival/${festivalSlug}/api/task/${taskId}/update/`, {
+            const response = await fetch(`{{ api_base_url }}${festivalSlug}/api/task/${taskId}/update/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1033,7 +1033,7 @@
                     const name = document.querySelector(`.participant-name-edit[data-participant-id="${participantId}"]`).value;
                     const notes = document.querySelector(`.participant-notes-edit[data-participant-id="${participantId}"]`).value;
 
-                    const response = await fetch(`/festival/${festivalSlug}/api/participant/${participantId}/update/`, {
+                    const response = await fetch(`{{ api_base_url }}${festivalSlug}/api/participant/${participantId}/update/`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -1125,7 +1125,7 @@
             this.disabled = true;
             this.textContent = 'Wird erstellt...';
 
-            const response = await fetch(`/festival/${festivalSlug}/api/task/${taskId}/participant/create/`, {
+            const response = await fetch(`{{ api_base_url }}${festivalSlug}/api/task/${taskId}/participant/create/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1210,13 +1210,13 @@
 
         let url;
         if (pendingDeleteType === 'participant') {
-            url = `/festival/${festivalSlug}/api/participant/${pendingDeleteId}/delete/`;
+            url = `{{ api_base_url }}${festivalSlug}/api/participant/${pendingDeleteId}/delete/`;
         } else if (pendingDeleteType === 'shift') {
-            url = `/festival/${festivalSlug}/api/shift/${pendingDeleteId}/delete/`;
+            url = `{{ api_base_url }}${festivalSlug}/api/shift/${pendingDeleteId}/delete/`;
         } else if (pendingDeleteType === 'task') {
-            url = `/festival/${festivalSlug}/api/task/${pendingDeleteId}/delete/`;
+            url = `{{ api_base_url }}${festivalSlug}/api/task/${pendingDeleteId}/delete/`;
         } else if (pendingDeleteType === 'festival') {
-            url = `/festival/${festivalSlug}/api/festival/delete/`;
+            url = `{{ api_base_url }}${festivalSlug}/api/festival/delete/`;
         }
 
         const response = await fetch(url, {
@@ -1259,7 +1259,7 @@
                 showNotification('Festival gelöscht. Sie werden umgeleitet...');
                 modal.style.display = 'none';
                 setTimeout(() => {
-                    window.location.href = '/festival/admin/';
+                    window.location.href = '{{ api_base_url }}admin/';
                 }, 1500);
             }
         } else {
@@ -1383,7 +1383,7 @@
                 responseData.template_id = templateId;
             }
 
-            const response = await fetch(`/festival/${festivalSlug}/api/shift/${shiftId}/task/create/`, {
+            const response = await fetch(`{{ api_base_url }}${festivalSlug}/api/shift/${shiftId}/task/create/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1547,7 +1547,7 @@
                     const originalText = this.textContent;
                     this.textContent = 'Wird validiert...';
 
-                    const response = await fetch(`/festival/${festivalSlug}/api/task/${taskId}/update/`, {
+                    const response = await fetch(`{{ api_base_url }}${festivalSlug}/api/task/${taskId}/update/`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -1584,7 +1584,7 @@
                     const originalText = this.textContent;
                     this.textContent = 'Wird gelöscht...';
 
-                    const response = await fetch(`/festival/${festivalSlug}/api/task/${taskId}/update/`, {
+                    const response = await fetch(`{{ api_base_url }}${festivalSlug}/api/task/${taskId}/update/`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -1674,7 +1674,7 @@
         this.disabled = true;
         this.textContent = 'Wird erstellt...';
 
-        const response = await fetch(`/festival/${festivalSlug}/api/shift/create/`, {
+        const response = await fetch(`{{ api_base_url }}${festivalSlug}/api/shift/create/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -1878,7 +1878,7 @@
                     const originalText = this.innerHTML;
                     this.textContent = 'Speichern...';
 
-                    const response = await fetch(`/festival/${festivalSlug}/api/shift/${shiftId}/update/`, {
+                    const response = await fetch(`{{ api_base_url }}${festivalSlug}/api/shift/${shiftId}/update/`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -1951,7 +1951,7 @@
                     const textarea = document.querySelector(`.shift-description-edit[data-shift-id="${shiftId}"]`);
                     const description = textarea.value;
 
-                    const response = await fetch(`/festival/${festivalSlug}/api/shift/${shiftId}/update/`, {
+                    const response = await fetch(`{{ api_base_url }}${festivalSlug}/api/shift/${shiftId}/update/`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -2087,7 +2087,7 @@
                 'include_participants': includeParticipants.toString()
             });
 
-            const url = `/festival/${festivalSlug}/api/festival/export/yaml/?${params}`;
+            const url = `{{ api_base_url }}${festivalSlug}/api/festival/export/yaml/?${params}`;
 
             fetch(url, {
                 method: 'GET',
@@ -2176,7 +2176,7 @@
                 const dryRun = importDryRunCheckbox.checked;
 
                 // Send validation request
-                fetch(`/festival/${festivalSlug}/api/festival/import/yaml/`, {
+                fetch(`{{ api_base_url }}${festivalSlug}/api/festival/import/yaml/`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

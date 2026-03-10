@@ -247,7 +247,7 @@
         this.disabled = true;
         this.textContent = 'Wird gespeichert...';
 
-        const response = await fetch('/festival/api/templates/create/', {
+        const response = await fetch('{{ api_base_url }}api/templates/create/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -317,7 +317,7 @@
             this.disabled = true;
             this.textContent = 'Wird gespeichert...';
 
-            const response = await fetch(`/festival/api/templates/${templateId}/update/`, {
+            const response = await fetch(`{{ api_base_url }}api/templates/${templateId}/update/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -362,7 +362,7 @@
     confirmBtn.addEventListener('click', async function() {
         if (!pendingDeleteId) return;
 
-        const response = await fetch(`/festival/api/templates/${pendingDeleteId}/delete/`, {
+        const response = await fetch(`{{ api_base_url }}api/templates/${pendingDeleteId}/delete/`, {
             method: 'POST',
             headers: {
                 'X-CSRFToken': getCookie('csrftoken')
