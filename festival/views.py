@@ -3,6 +3,7 @@ import logging
 from datetime import datetime
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
+from django.urls import reverse
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
@@ -15,6 +16,15 @@ from .serializers import serialize_festival_to_yaml, parse_yaml_to_dict, validat
 from .utils_km import sync_participants_for_task
 
 logger = logging.getLogger(__name__)
+
+
+def get_api_base_url(request):
+    """Determine API base URL based on current request path."""
+    if request.path.startswith('/event/'):
+        return '/event/'
+    elif request.path.startswith('/festival/'):
+        return '/festival/'
+    return '/festival/'  # default fallback
 
 
 def check_festival_draft_access(request, festival):
@@ -66,6 +76,7 @@ def admin_festival_list(request):
         "total_all_required_helpers": total_all_required_helpers,
         "total_all_shifts": total_all_shifts,
         "show_archived": show_archived,
+        "api_base_url": get_api_base_url(request),
     }
     return render(request, "festival/admin_festival_list.html", context)
 
@@ -231,7 +242,7 @@ def admin_overview(request, festival_slug=None):
             festival = Festival.objects.order_by("-start_date").first()
 
     if not festival:
-        context = {"festival": None, "shifts_data": []}
+        context = {"festival": None, "shifts_data": [], "api_base_url": get_api_base_url(request)}
         return render(request, "festival/admin_overview.html", context)
 
     # Get all shifts with their tasks and participants
@@ -271,6 +282,7 @@ def admin_overview(request, festival_slug=None):
         "attended_count": attended_count,
         "pending_count": pending_count,
         "now": timezone.now(),
+        "api_base_url": get_api_base_url(request),
     }
     return render(request, "festival/admin_overview.html", context)
 
@@ -331,6 +343,7 @@ def admin_edit(request, festival_slug):
     context = {
         'festival': festival,
         'shifts_data': shifts_data,
+        'api_base_url': get_api_base_url(request),
     }
     return render(request, 'festival/admin_edit.html', context)
 
@@ -618,10 +631,11 @@ def api_delete_festival(request, festival_slug):
     try:
         festival_name = festival.name
         festival.delete()
+        api_base_url = get_api_base_url(request)
         return JsonResponse({
             'success': True,
             'message': f'Festival "{festival_name}" and all associated data deleted successfully',
-            'redirect': '/festival/admin/',
+            'redirect': f'{api_base_url}admin/',
         })
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
@@ -692,6 +706,7 @@ def admin_templates(request):
     templates = TaskTemplate.objects.all()
     context = {
         'templates': templates,
+        'api_base_url': get_api_base_url(request),
     }
     return render(request, 'festival/admin_templates.html', context)
 
