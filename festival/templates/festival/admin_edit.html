@@ -54,6 +54,34 @@
         </div>
     </div>
 
+    <!-- Festival Dates Section -->
+    <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); margin-bottom: 2rem;">
+        <h3 style="font-size: 1.1rem; font-weight: 600; color: var(--festival-dark); margin: 0 0 1rem 0;">Festival Daten</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+            <!-- Start Date -->
+            <div>
+                <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Startdatum</label>
+                <div style="display: flex; gap: 0.5rem;">
+                    <input type="date" id="festivalStartDateInput" value="{{ festival.start_date|date:'Y-m-d'|default:'' }}" style="flex: 1; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 1rem;">
+                    <button id="festivalStartDateSaveBtn" style="padding: 0.5rem 1rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem;">
+                        <i class="bi bi-check"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- End Date -->
+            <div>
+                <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Enddatum</label>
+                <div style="display: flex; gap: 0.5rem;">
+                    <input type="date" id="festivalEndDateInput" value="{{ festival.end_date|date:'Y-m-d'|default:'' }}" style="flex: 1; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 1rem;">
+                    <button id="festivalEndDateSaveBtn" style="padding: 0.5rem 1rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem;">
+                        <i class="bi bi-check"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- YAML Export/Import Section -->
     <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); margin-bottom: 2rem;">
         <h3 style="font-size: 1.1rem; font-weight: 600; color: var(--festival-dark); margin: 0 0 1rem 0;">
@@ -668,6 +696,66 @@
 
         this.disabled = false;
         this.textContent = 'Speichern';
+    });
+
+    // Festival Dates Editing
+    const festivalStartDateInput = document.getElementById('festivalStartDateInput');
+    const festivalEndDateInput = document.getElementById('festivalEndDateInput');
+    const festivalStartDateSaveBtn = document.getElementById('festivalStartDateSaveBtn');
+    const festivalEndDateSaveBtn = document.getElementById('festivalEndDateSaveBtn');
+
+    festivalStartDateSaveBtn.addEventListener('click', async function() {
+        const startDate = festivalStartDateInput.value;
+
+        this.disabled = true;
+        const originalIcon = this.innerHTML;
+        this.innerHTML = '<i class="bi bi-hourglass"></i>';
+
+        const response = await fetch(`{{ api_base_url }}${festivalSlug}/api/festival/update/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({ start_date: startDate })
+        });
+
+        if (response.ok) {
+            showNotification('Startdatum aktualisiert');
+        } else {
+            const error = await response.json();
+            showNotification(error.error || 'Fehler beim Speichern', false);
+        }
+
+        this.disabled = false;
+        this.innerHTML = originalIcon;
+    });
+
+    festivalEndDateSaveBtn.addEventListener('click', async function() {
+        const endDate = festivalEndDateInput.value;
+
+        this.disabled = true;
+        const originalIcon = this.innerHTML;
+        this.innerHTML = '<i class="bi bi-hourglass"></i>';
+
+        const response = await fetch(`{{ api_base_url }}${festivalSlug}/api/festival/update/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({ end_date: endDate })
+        });
+
+        if (response.ok) {
+            showNotification('Enddatum aktualisiert');
+        } else {
+            const error = await response.json();
+            showNotification(error.error || 'Fehler beim Speichern', false);
+        }
+
+        this.disabled = false;
+        this.innerHTML = originalIcon;
     });
 
     // Load templates and populate dropdowns

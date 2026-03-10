@@ -927,6 +927,26 @@ def api_update_festival(request, festival_slug):
                 return JsonResponse({'success': False, 'error': f'Invalid status. Must be one of: {", ".join(valid_statuses)}'}, status=400)
             festival.status = new_status
 
+        # Update start_date
+        if 'start_date' in data:
+            if data['start_date']:
+                try:
+                    festival.start_date = datetime.strptime(data['start_date'], '%Y-%m-%d').date()
+                except ValueError:
+                    return JsonResponse({'success': False, 'error': 'Invalid start date format. Use YYYY-MM-DD'}, status=400)
+            else:
+                festival.start_date = None
+
+        # Update end_date
+        if 'end_date' in data:
+            if data['end_date']:
+                try:
+                    festival.end_date = datetime.strptime(data['end_date'], '%Y-%m-%d').date()
+                except ValueError:
+                    return JsonResponse({'success': False, 'error': 'Invalid end date format. Use YYYY-MM-DD'}, status=400)
+            else:
+                festival.end_date = None
+
         festival.save()
         return JsonResponse({
             'success': True,
@@ -934,6 +954,8 @@ def api_update_festival(request, festival_slug):
             'data': {
                 'name': festival.name,
                 'status': festival.status,
+                'start_date': festival.start_date.isoformat() if festival.start_date else None,
+                'end_date': festival.end_date.isoformat() if festival.end_date else None,
             }
         })
     except json.JSONDecodeError:
