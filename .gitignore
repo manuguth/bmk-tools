@@ -138,3 +138,5 @@ staticfiles/
 .DS_Store
 .*_venv/
 pw_convert-hex.py
+
+*.pdf

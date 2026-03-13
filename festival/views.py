@@ -155,8 +155,16 @@ def task_signup(request, festival_slug, task_id):
     if draft_check:
         return draft_check
 
+    # Check if this is an AJAX request
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.GET.get('ajax') == 'true'
+
     # Check if festival is completed
     if festival.status == 'completed':
+        if is_ajax:
+            return JsonResponse({
+                'success': False,
+                'error': 'Dieses Festival ist abgeschlossen. Anmeldungen sind nicht mehr möglich.'
+            }, status=400)
         context = {
             "festival": festival,
             "error": "Dieses Festival ist abgeschlossen. Anmeldungen sind nicht mehr möglich.",
@@ -167,6 +175,11 @@ def task_signup(request, festival_slug, task_id):
 
     # Check if task has Konzertmeister integration - if so, sign up is locked
     if task.has_km_integration:
+        if is_ajax:
+            return JsonResponse({
+                'success': False,
+                'error': 'Die Anmeldung für diese Aufgabe wird über Konzertmeister verwaltet. Manuelle Anmeldungen sind nicht möglich.'
+            }, status=400)
         context = {
             "festival": festival,
             "task": task,
@@ -184,6 +197,11 @@ def task_signup(request, festival_slug, task_id):
 
     # Check if task is full
     if task.is_full:
+        if is_ajax:
+            return JsonResponse({
+                'success': False,
+                'error': 'Diese Aufgabe ist bereits voll. Keine weiteren Anmeldungen möglich.'
+            }, status=400)
         context = {
             "festival": festival,
             "task": task,
@@ -197,9 +215,44 @@ def task_signup(request, festival_slug, task_id):
             participant = form.save(commit=False)
             participant.task = task
             participant.save()
-            return redirect("festival:signup_confirmation", festival_slug=festival_slug, participant_id=participant.id)
+
+            if is_ajax:
+                # Return JSON response for AJAX requests
+                return JsonResponse({
+                    'success': True,
+                    'participant': {
+                        'id': participant.id,
+                        'name': participant.name,
+                        'notes': participant.notes,
+                    },
+                    'task': {
+                        'id': str(task.id),
+                        'name': task.name,
+                    },
+                    'festival': {
+                        'name': festival.name,
+                        'slug': festival.slug,
+                    }
+                })
+            else:
+                # Redirect for non-AJAX requests
+                return redirect("festival:signup_confirmation", festival_slug=festival_slug, participant_id=participant.id)
+        else:
+            if is_ajax:
+                # Return validation errors as JSON
+                return JsonResponse({
+                    'success': False,
+                    'errors': form.errors
+                }, status=400)
     else:
         form = ParticipantSignUpForm()
+
+    if is_ajax:
+        # AJAX GET request should not reach here, but handle it gracefully
+        return JsonResponse({
+            'success': False,
+            'error': 'Invalid request method'
+        }, status=400)
 
     context = {
         "festival": festival,

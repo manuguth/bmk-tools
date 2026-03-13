@@ -133,10 +133,19 @@
                                     <i class="bi bi-check-circle"></i> Voll ({{ task.current_helpers }}/{{ task.required_helpers }})
                                 </button>
                             {% else %}
-                                <a href="{% url 'festival:task_signup' festival_slug=festival.slug task_id=task.id %}"
-                                   class="signup-btn available">
+                                <button type="button"
+                                        class="signup-btn available"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#signupModal"
+                                        data-task-id="{{ task.id }}"
+                                        data-task-name="{{ task.name }}"
+                                        data-shift-name="{{ shift.name }}"
+                                        data-shift-date="{{ shift.date|date:'j. F Y' }}"
+                                        data-shift-start-time="{{ shift.start_time|time:'H:i' }}"
+                                        data-shift-end-time="{{ shift.end_time|time:'H:i' }}"
+                                        data-festival-slug="{{ festival.slug }}">
                                     <i class="bi bi-plus-circle"></i> Jetzt anmelden
-                                </a>
+                                </button>
                             {% endif %}
                         </div>
                     </div>
@@ -159,4 +168,240 @@
         <p>Bitte schauen Sie später nach Updates.</p>
     </div>
 {% endfor %}
+
+<!-- Signup Modal -->
+<div class="modal fade" id="signupModal" tabindex="-1" role="dialog" aria-labelledby="signupModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="signupModalLabel">Anmeldung</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Task Details Summary -->
+                <div style="padding: 1rem; background: #f0f9ff; border-left: 4px solid var(--festival-primary); border-radius: 6px; margin-bottom: 1.5rem;">
+                    <div style="font-size: 0.85rem; color: #666; margin-bottom: 0.5rem;">
+                        <strong id="modalTaskName"></strong>
+                    </div>
+                    <div style="font-size: 0.85rem; color: #666;">
+                        <i class="bi bi-clock"></i> <span id="modalShiftInfo"></span>
+                    </div>
+                </div>
+
+                <!-- Signup Form -->
+                <form id="signupForm">
+                    {% csrf_token %}
+                    <div class="form-group mb-3">
+                        <label for="participantName" class="form-label">Name (erforderlich)</label>
+                        <input type="text"
+                               class="form-control form-control-lg"
+                               id="participantName"
+                               name="name"
+                               placeholder="Ihr Name"
+                               required>
+                        <div class="invalid-feedback" id="nameErrorMsg"></div>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="participantNotes" class="form-label">Kommentar (optional)</label>
+                        <textarea class="form-control"
+                                  id="participantNotes"
+                                  name="notes"
+                                  placeholder="Besondere Anforderungen oder Anmerkungen"
+                                  rows="3"></textarea>
+                    </div>
+
+                    <input type="hidden" id="taskIdInput" name="task_id">
+                    <input type="hidden" id="festivalSlugInput" name="festival_slug">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+                <button type="button" class="btn btn-primary" id="submitSignupBtn">Anmeldung bestätigen</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmationModal" tabindex="-1" role="dialog" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmationModalLabel">Anmeldung erfolgreich!</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div style="margin-bottom: 1.5rem;">
+                    <i class="bi bi-check-circle" style="font-size: 3rem; color: #10b981;"></i>
+                </div>
+                <h6 id="confirmationName" style="margin-bottom: 1rem;"></h6>
+
+                <!-- Signup Details Card -->
+                <div style="padding: 1.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; color: white; margin-bottom: 1rem;">
+                    <div style="text-align: left;">
+                        <div style="margin-bottom: 1rem;">
+                            <div style="font-size: 0.85rem; opacity: 0.9;">Festival</div>
+                            <div style="font-weight: 600; font-size: 1.1rem;" id="confirmationFestival"></div>
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <div style="font-size: 0.85rem; opacity: 0.9;">Aufgabe</div>
+                            <div style="font-weight: 600;" id="confirmationTask"></div>
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <div style="font-size: 0.85rem; opacity: 0.9;">Schicht</div>
+                            <div style="font-weight: 600;" id="confirmationShift"></div>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.85rem; opacity: 0.9;">Datum & Zeit</div>
+                            <div style="font-weight: 600;" id="confirmationDateTime"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <p style="color: #666; font-size: 0.9rem; margin: 0;">Vielen Dank für deine Anmeldung! Deine Teilnahme ist wichtig.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Zurück zur Übersicht</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const signupModal = new bootstrap.Modal(document.getElementById('signupModal'), {
+        backdrop: 'static',
+        keyboard: false
+    });
+    const confirmationModal = new bootstrap.Modal(document.getElementById('confirmationModal'), {
+        backdrop: 'static',
+        keyboard: false
+    });
+
+    const signupForm = document.getElementById('signupForm');
+    const submitSignupBtn = document.getElementById('submitSignupBtn');
+
+    // Handle signup modal trigger
+    document.getElementById('signupModal').addEventListener('show.bs.modal', function(e) {
+        const button = e.relatedTarget;
+        const taskId = button.getAttribute('data-task-id');
+        const taskName = button.getAttribute('data-task-name');
+        const shiftName = button.getAttribute('data-shift-name');
+        const shiftDate = button.getAttribute('data-shift-date');
+        const shiftStartTime = button.getAttribute('data-shift-start-time');
+        const shiftEndTime = button.getAttribute('data-shift-end-time');
+        const festivalSlug = button.getAttribute('data-festival-slug');
+
+        // Populate form fields
+        document.getElementById('taskIdInput').value = taskId;
+        document.getElementById('festivalSlugInput').value = festivalSlug;
+        document.getElementById('modalTaskName').textContent = taskName;
+        document.getElementById('modalShiftInfo').textContent =
+            shiftName + ' • ' + shiftDate + ' • ' + shiftStartTime + '-' + shiftEndTime;
+
+        // Reset form
+        signupForm.reset();
+        document.getElementById('participantName').classList.remove('is-invalid');
+        document.getElementById('nameErrorMsg').textContent = '';
+
+        // Store data for confirmation modal
+        e.currentTarget.dataset.shiftName = shiftName;
+        e.currentTarget.dataset.shiftDate = shiftDate;
+        e.currentTarget.dataset.shiftStartTime = shiftStartTime;
+        e.currentTarget.dataset.shiftEndTime = shiftEndTime;
+    });
+
+    // Handle form submission
+    submitSignupBtn.addEventListener('click', function() {
+        const name = document.getElementById('participantName').value.trim();
+        const notes = document.getElementById('participantNotes').value.trim();
+        const taskId = document.getElementById('taskIdInput').value;
+        const festivalSlug = document.getElementById('festivalSlugInput').value;
+
+        // Client-side validation
+        if (!name) {
+            document.getElementById('participantName').classList.add('is-invalid');
+            document.getElementById('nameErrorMsg').textContent = 'Name ist erforderlich';
+            return;
+        }
+
+        // Submit form via AJAX
+        submitSignupBtn.disabled = true;
+        submitSignupBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Wird angemeldet...';
+
+        fetch(`/event/${festivalSlug}/task/${taskId}/signup/?ajax=true`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            },
+            body: new URLSearchParams({
+                'name': name,
+                'notes': notes,
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Hide signup modal
+                signupModal.hide();
+
+                // Populate confirmation modal
+                const signupModalEl = document.getElementById('signupModal');
+                document.getElementById('confirmationName').innerHTML =
+                    `Du bist angemeldet, <strong>${data.participant.name}</strong>!`;
+                document.getElementById('confirmationFestival').textContent = data.festival.name;
+                document.getElementById('confirmationTask').textContent = data.task.name;
+                document.getElementById('confirmationShift').textContent =
+                    signupModalEl.dataset.shiftName;
+                document.getElementById('confirmationDateTime').textContent =
+                    signupModalEl.dataset.shiftDate + ' • ' +
+                    signupModalEl.dataset.shiftStartTime + '-' +
+                    signupModalEl.dataset.shiftEndTime;
+
+                // Show confirmation modal
+                confirmationModal.show();
+
+                // Refresh page when confirmation modal is closed
+                document.getElementById('confirmationModal').addEventListener('hidden.bs.modal', function() {
+                    location.reload();
+                }, { once: true });
+
+                // Reset button
+                submitSignupBtn.disabled = false;
+                submitSignupBtn.innerHTML = 'Anmeldung bestätigen';
+            } else {
+                // Handle errors
+                submitSignupBtn.disabled = false;
+                submitSignupBtn.innerHTML = 'Anmeldung bestätigen';
+
+                if (data.errors) {
+                    if (data.errors.name) {
+                        document.getElementById('participantName').classList.add('is-invalid');
+                        document.getElementById('nameErrorMsg').textContent = data.errors.name[0];
+                    }
+                    if (data.errors.non_field_errors) {
+                        alert(data.errors.non_field_errors[0]);
+                    }
+                } else if (data.error) {
+                    alert('Fehler: ' + data.error);
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.');
+            submitSignupBtn.disabled = false;
+            submitSignupBtn.innerHTML = 'Anmeldung bestätigen';
+        });
+    });
+
+    // Clear validation errors on input
+    document.getElementById('participantName').addEventListener('input', function() {
+        this.classList.remove('is-invalid');
+        document.getElementById('nameErrorMsg').textContent = '';
+    });
+});
+</script>
 {% endblock %}
