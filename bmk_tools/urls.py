@@ -23,6 +23,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("festival/", include(("festival.urls", "festival"), namespace="festival")),
     path("event/", include(("festival.urls", "festival"), namespace="event")),
+    path("bestellung/", include(("orders.urls", "orders"), namespace="bestellung")),
     path("", include("info_mail.urls")),
     path("info_mails/", include("info_mail.urls")),
     path("accounts/", include("django.contrib.auth.urls")),

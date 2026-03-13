@@ -1,0 +1,128 @@
+{% extends "orders/base.html" %}
+
+{% block title %}Bestellbestätigung - BMK Festival{% endblock %}
+
+{% block content %}
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+    <i class="bi bi-check-circle"></i> <strong>Vielen Dank!</strong> Ihre Bestellung wurde erfolgreich aufgegeben.
+</div>
+
+<div class="bestellung-card mb-4">
+    <div class="bestellung-card-header success">
+        <i class="bi bi-check2-circle"></i> Bestellbestätigung
+    </div>
+    <div class="bestellung-card-body">
+        <p class="lead">Wir haben Ihre Bestellung erhalten und eine Bestätigungsemail an
+            <strong>{{ order.contact_email }}</strong> versendet.</p>
+
+        <hr>
+
+        <!-- Order Details -->
+        <div class="row mb-4">
+            <div class="col-lg-6 mb-4">
+                <h5><i class="bi bi-building"></i> Unternehmen</h5>
+                <p class="mb-1"><strong>Name:</strong> {{ order.company_name }}</p>
+                <p class="mb-1"><strong>Ansprechperson:</strong> {{ order.contact_name }}</p>
+                <p class="mb-1"><strong>E-Mail:</strong> <a href="mailto:{{ order.contact_email }}">{{ order.contact_email }}</a></p>
+                {% if order.contact_phone %}
+                    <p class="mb-1"><strong>Telefon:</strong> {{ order.contact_phone }}</p>
+                {% endif %}
+            </div>
+            <div class="col-lg-6 mb-4">
+                <h5><i class="bi bi-calendar-event"></i> Zeitangaben</h5>
+                {% if order.arrival_time %}
+                    <p class="mb-1"><strong>Ankunftszeit:</strong> {{ order.arrival_time }} Uhr</p>
+                {% else %}
+                    <p class="mb-1"><strong>Ankunftszeit:</strong> <em class="text-muted">nicht angegeben</em></p>
+                {% endif %}
+                <p class="mb-1">
+                    <strong>Bestelldatum:</strong> {{ order.created_at|date:"d.m.Y H:i" }}
+                </p>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- Order Items -->
+        <div class="mb-4">
+            <h5><i class="bi bi-basket"></i> Bestellte Artikel</h5>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Artikel</th>
+                            <th class="text-center" style="width: 80px;">Menge</th>
+                            <th class="text-right" style="width: 100px;">Preis</th>
+                            <th class="text-right" style="width: 100px;">Summe</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in line_items %}
+                            <tr>
+                                <td>{{ item.menu_item.name }}</td>
+                                <td class="text-center">{{ item.quantity }}</td>
+                                <td class="text-right">€{{ item.unit_price|floatformat:2 }}</td>
+                                <td class="text-right"><strong>€{{ item.subtotal|floatformat:2 }}</strong></td>
+                            </tr>
+                        {% endfor %}
+                        <tr style="background: var(--bestellung-light);">
+                            <td colspan="3" class="text-right"><strong>Gesamtpreis:</strong></td>
+                            <td class="text-right">
+                                <h5 class="text-success mb-0">€{{ total_price|floatformat:2 }}</h5>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- Payment Method -->
+        <div class="mb-4">
+            <h5><i class="bi bi-credit-card"></i> Zahlungsweise</h5>
+            {% if order.payment_method == 'invoice' %}
+                <div class="alert alert-info">
+                    <strong>Rechnung an folgende Adresse:</strong>
+                    <p class="mt-2 mb-0">{{ order.invoice_address|linebreaks }}</p>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <strong>Zahlung bei Abholung</strong>
+                    <p class="mt-1 mb-0">Bar oder EC-Karte</p>
+                </div>
+            {% endif %}
+        </div>
+
+        {% if order.notes %}
+            <hr>
+            <div class="mb-4">
+                <h5><i class="bi bi-chat-left-quote"></i> Ihre Anmerkungen</h5>
+                <div class="alert alert-warning">
+                    {{ order.notes|linebreaks }}
+                </div>
+            </div>
+        {% endif %}
+
+        <hr>
+
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> <strong>Nächste Schritte:</strong>
+            <ul class="mb-0 mt-2">
+                <li>Sie erhalten eine Bestätigungsemail mit allen Bestelldetails</li>
+                <li>Kommen Sie zur konfigurierten Ankunftszeit zu unserem Stand</li>
+                <li>Bringen Sie eventuell eine Kopie dieser Bestellung mit</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex flex-column flex-sm-row gap-3 mb-5">
+    <a href="/" class="btn btn-primary btn-lg flex-grow-1">
+        <i class="bi bi-house-fill"></i> Zurück zur Startseite
+    </a>
+    <button type="button" class="btn btn-outline-secondary btn-lg" onclick="window.print()">
+        <i class="bi bi-printer"></i> Drucken
+    </button>
+</div>
+{% endblock %}
