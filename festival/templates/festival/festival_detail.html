@@ -63,13 +63,20 @@
                     {% with task=task_data.task km_url=task_data.km_url %}
                     <div class="task-card {% if task.is_full %}task-full{% endif %}">
                         <div class="task-card-header">
-                            <h3>{{ task.name }}</h3>
+                            <h3>
+                                {{ task.name }}
+                                {% if task.description %}
+                                    <i class="bi bi-info-circle"
+                                       data-bs-toggle="tooltip"
+                                       data-bs-placement="top"
+                                       data-bs-html="true"
+                                       title="{{ task.description }}"
+                                       style="cursor: help; margin-left: 0.5rem; color: #0066cc; font-size: 0.9em;"></i>
+                                {% endif %}
+                            </h3>
                         </div>
 
                         <div class="task-card-body">
-                            {% if task.description %}
-                                <p class="task-description">{{ task.description }}</p>
-                            {% endif %}
 
                             {% if task.special_requirements %}
                                 <div class="task-requirements">
@@ -98,9 +105,6 @@
                             <!-- Signed Up Participants -->
                             {% if task.participants.all %}
                                 <div style="margin-top: 1.5rem; padding: 1rem; background: #f0f9ff; border-left: 4px solid var(--festival-primary); border-radius: 6px;">
-                                    <p style="margin: 0 0 0.75rem 0; font-size: 0.85rem; font-weight: 600; color: #1e40af; text-transform: uppercase; letter-spacing: 0.5px;">
-                                        <i class="bi bi-person-check" style="margin-right: 0.5rem;"></i>Bereits angemeldet
-                                    </p>
                                     <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
                                         {% for participant in task.participants.all %}
                                             {% if participant.masked %}
@@ -277,6 +281,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const confirmationModal = new bootstrap.Modal(document.getElementById('confirmationModal'), {
         backdrop: 'static',
         keyboard: false
+    });
+
+    // Initialize tooltips for task descriptions
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
     });
 
     const signupForm = document.getElementById('signupForm');
