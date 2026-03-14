@@ -28,6 +28,19 @@
     </div>
 {% endif %}
 
+<!-- Mobile Sticky Shift Header (appears on scroll, mobile only) -->
+<div class="mobile-sticky-shift-header" id="mobileStickySiftHeader" style="display: none;">
+    <div class="mobile-sticky-shift-content">
+        <div class="mobile-sticky-shift-icon">
+            <i class="bi bi-clock"></i>
+        </div>
+        <div class="mobile-sticky-shift-info">
+            <h3 id="mobileStickySiftName"></h3>
+            <span id="mobileStickySiftTime"></span>
+        </div>
+    </div>
+</div>
+
 {% for shift_data in shifts_with_tasks %}
     {% with shift=shift_data.shift %}
     <div class="shift-section">
@@ -272,6 +285,83 @@
     </div>
 </div>
 
+<style>
+/* Mobile Sticky Shift Header */
+.mobile-sticky-shift-header {
+    position: fixed;
+    left: 0;
+    right: 0;
+    background: white;
+    border-bottom: 1px solid #e5e7eb;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    z-index: 999;  /* Below navbar (1000) but above content */
+    display: none;  /* Hidden by default */
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+}
+
+.mobile-sticky-shift-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    max-width: 100%;
+}
+
+.mobile-sticky-shift-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--festival-primary) 0%, var(--festival-secondary) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.mobile-sticky-shift-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0;  /* Allow text truncation */
+    flex-grow: 1;
+}
+
+.mobile-sticky-shift-info h3 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--festival-dark);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.mobile-sticky-shift-info span {
+    font-size: 0.8rem;
+    color: #6b7280;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Mobile-only visibility */
+@media (min-width: 768px) {
+    .mobile-sticky-shift-header {
+        display: none !important;
+    }
+}
+
+@media (max-width: 767px) {
+    .mobile-sticky-shift-header {
+        display: block !important;  /* Let JS control opacity */
+    }
+}
+</style>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const signupModal = new bootstrap.Modal(document.getElementById('signupModal'), {
@@ -288,6 +378,95 @@ document.addEventListener('DOMContentLoaded', function() {
     tooltipTriggerList.map(function (tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl);
     });
+
+    // Initialize mobile sticky shift header
+    function initMobileStickySiftHeader() {
+        const mobileHeader = document.getElementById('mobileStickySiftHeader');
+        const navbar = document.querySelector('.festival-navbar');
+        const shiftHeaders = document.querySelectorAll('.shift-header');
+
+        // Only initialize on mobile
+        const isMobile = window.innerWidth < 768;
+        if (!isMobile || shiftHeaders.length === 0) {
+            return;
+        }
+
+        // Get navbar height dynamically
+        const getNavbarHeight = () => {
+            return navbar ? navbar.offsetHeight : 60;
+        };
+
+        // Set top position based on navbar height
+        const updateStickyHeaderPosition = () => {
+            const navbarHeight = getNavbarHeight();
+            mobileHeader.style.top = navbarHeight + 'px';
+        };
+
+        updateStickyHeaderPosition();
+
+        // Function to update sticky header based on current scroll position
+        const updateStickyHeader = () => {
+            // Find all shift headers that have scrolled above the viewport
+            const scrolledPastHeaders = Array.from(shiftHeaders).filter(header => {
+                return header.getBoundingClientRect().top < 0;
+            });
+
+            if (scrolledPastHeaders.length > 0) {
+                // Get the last (most recent) scrolled past header
+                const lastScrolledHeader = scrolledPastHeaders[scrolledPastHeaders.length - 1];
+                const shiftName = lastScrolledHeader.querySelector('h2')?.textContent || 'Schicht';
+                const startTime = lastScrolledHeader.nextElementSibling?.querySelector('.shift-info-item:nth-child(2) span')?.textContent || '';
+
+                // Update and show sticky header
+                document.getElementById('mobileStickySiftName').textContent = shiftName;
+                document.getElementById('mobileStickySiftTime').textContent = startTime;
+                mobileHeader.style.opacity = '1';
+                mobileHeader.style.pointerEvents = 'auto';
+            } else {
+                // No shift scrolled past - hide sticky header
+                mobileHeader.style.opacity = '0';
+                mobileHeader.style.pointerEvents = 'none';
+            }
+        };
+
+        // Create observer just for initial setup (detects when page loads)
+        const observer = new IntersectionObserver(() => {
+            updateStickyHeader();
+        }, {
+            threshold: 0,
+            rootMargin: '-1px 0px 0px 0px'
+        });
+
+        // Observe all shift headers
+        shiftHeaders.forEach(header => {
+            observer.observe(header);
+        });
+
+        // Add scroll listener for continuous updates
+        let scrollTimeout;
+        window.addEventListener('scroll', () => {
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                updateStickyHeader();
+            }, 10);
+        }, { passive: true });
+
+        // Handle window resize - reinitialize if crossing mobile breakpoint
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                const currentIsMobile = window.innerWidth < 768;
+                if (currentIsMobile !== isMobile) {
+                    location.reload();  // Reinitialize on breakpoint change
+                }
+                updateStickyHeaderPosition();
+            }, 250);
+        });
+    }
+
+    initMobileStickySiftHeader();
+
 
     const signupForm = document.getElementById('signupForm');
     const submitSignupBtn = document.getElementById('submitSignupBtn');
