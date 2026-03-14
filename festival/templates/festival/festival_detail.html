@@ -99,7 +99,6 @@
 
                             <div class="task-capacity">
                                 <div class="capacity-label">
-                                    <span>Helfer benötigt</span>
                                     <span>
                                         <span class="current">{{ task.current_helpers }}</span>
                                         <span class="total">/ {{ task.required_helpers }}</span>
@@ -161,7 +160,7 @@
                                         data-shift-start-time="{{ shift.start_time|time:'H:i' }}"
                                         data-shift-end-time="{{ shift.end_time|time:'H:i' }}"
                                         data-festival-slug="{{ festival.slug }}">
-                                    <i class="bi bi-plus-circle"></i> Jetzt anmelden
+                                    <i class="bi bi-plus-circle"></i> EINTRAGEN
                                 </button>
                             {% endif %}
                         </div>
