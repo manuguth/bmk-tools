@@ -112,7 +112,6 @@ def extract_positive_maybe_participants(event_id: int) -> list:
                     "lastname": user["kmUser"].get("lastname", ""),
                     "positive": attendance.get("positive", False),
                     "maybe": attendance.get("maybe", False),
-                    "attended": attendance.get("attending", False),
                 }
                 positive_maybe_participants.append(participant)
 

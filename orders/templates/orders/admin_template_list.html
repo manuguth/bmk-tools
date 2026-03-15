@@ -1,0 +1,100 @@
+{% extends "orders/base.html" %}
+
+{% block title %}Bestellvorlagen - Admin{% endblock %}
+
+{% block content %}
+<div class="bestellung-page-header">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h1 class="bestellung-page-title">
+                <i class="bi bi-list-check"></i> Bestellvorlagen
+            </h1>
+            <p class="bestellung-page-subtitle">Erstellen Sie Menü-Vorlagen für verschiedene Jahre</p>
+        </div>
+        <a href="{% url 'bestellung:admin_template_create' %}" class="btn btn-primary btn-lg">
+            <i class="bi bi-plus-circle"></i> Neue Vorlage
+        </a>
+    </div>
+</div>
+
+{% if templates %}
+    <div class="row g-4 mb-5">
+        {% for template in templates %}
+            <div class="col-md-6 col-lg-4">
+                <div class="bestellung-card h-100 {% if template.is_active %}border-success border-3{% endif %}">
+                    {% if template.is_active %}
+                        <div style="position: absolute; top: 10px; right: 10px; z-index: 10;">
+                            <span class="badge bg-success">
+                                <i class="bi bi-check-circle"></i> Aktiv
+                            </span>
+                        </div>
+                    {% endif %}
+                    <div class="bestellung-card-header {% if template.is_active %}success{% else %}secondary{% endif %}">
+                        <i class="bi bi-egg-fried"></i> {{ template.year }}
+                    </div>
+                    <div class="bestellung-card-body">
+                        <div class="mb-3">
+                            <small class="text-muted">Menüpunkte & Bestellungen:</small>
+                            <div class="d-flex gap-2 mt-2">
+                                <span class="badge bg-info">
+                                    <i class="bi bi-list"></i> {{ template.menu_item_count }} Artikel
+                                </span>
+                                <span class="badge bg-warning">
+                                    <i class="bi bi-cart"></i> {{ template.order_count }} Bestellungen
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="text-muted mb-3">
+                            <small>
+                                Erstellt: {{ template.created_at|date:"d.m.Y" }}<br>
+                                Aktualisiert: {{ template.updated_at|date:"d.m.Y H:i" }}
+                            </small>
+                        </div>
+
+                        <div class="d-flex gap-2 flex-wrap">
+                            <a href="{% url 'bestellung:admin_menu_items' template.id %}"
+                               class="btn btn-sm btn-primary flex-grow-1">
+                                <i class="bi bi-pencil"></i> Menü
+                            </a>
+                            <a href="{% url 'bestellung:admin_template_edit' template.id %}"
+                               class="btn btn-sm btn-outline-secondary flex-grow-1">
+                                <i class="bi bi-gear"></i> Einst.
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> Keine Bestellvorlagen vorhanden.
+        <a href="{% url 'bestellung:admin_template_create' %}" class="alert-link">
+            Erstellen Sie eine neue Vorlage.
+        </a>
+    </div>
+{% endif %}
+
+<hr class="my-5">
+
+<div class="bestellung-card">
+    <div class="bestellung-card-header" style="background: linear-gradient(135deg, #64748b 0%, #475569 100%);">
+        <h5 class="mb-0"><i class="bi bi-diagram-2"></i> Schnellzugriff</h5>
+    </div>
+    <div class="bestellung-card-body">
+        <div class="row g-2">
+            <div class="col-12 col-md-6">
+                <a href="{% url 'bestellung:admin_orders_list' %}" class="btn btn-outline-primary w-100">
+                    <i class="bi bi-box-seam"></i> Bestellungen verwalten
+                </a>
+            </div>
+            <div class="col-12 col-md-6">
+                <a href="{% url 'bestellung:admin_orders_export' %}" class="btn btn-outline-success w-100">
+                    <i class="bi bi-download"></i> Als CSV exportieren
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

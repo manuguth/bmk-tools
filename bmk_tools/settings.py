@@ -33,6 +33,7 @@ ALLOWED_HOSTS = ["*"] if DEBUG else ["host.docker.internal", "localhost", "127.0
 INSTALLED_APPS = [
     "festival.apps.FestivalConfig",
     "info_mail.apps.InfoMailConfig",
+    "orders.apps.OrdersConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",

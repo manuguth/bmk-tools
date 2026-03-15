@@ -84,8 +84,8 @@ class Participant(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="participants")
     name = models.CharField(max_length=255)
     signed_up_at = models.DateTimeField(auto_now_add=True)
-    attended = models.BooleanField(default=False)
     notes = models.TextField(blank=True)
+    masked = models.BooleanField(default=False)
     konzertmeister_user_id = models.IntegerField(null=True, blank=True)
     konzertmeister_response_status = models.CharField(
         max_length=20,

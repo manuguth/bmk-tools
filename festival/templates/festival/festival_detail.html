@@ -28,6 +28,19 @@
     </div>
 {% endif %}
 
+<!-- Mobile Sticky Shift Header (appears on scroll, mobile only) -->
+<div class="mobile-sticky-shift-header" id="mobileStickySiftHeader" style="display: none;">
+    <div class="mobile-sticky-shift-content">
+        <div class="mobile-sticky-shift-icon">
+            <i class="bi bi-clock"></i>
+        </div>
+        <div class="mobile-sticky-shift-info">
+            <h3 id="mobileStickySiftName"></h3>
+            <span id="mobileStickySiftTime"></span>
+        </div>
+    </div>
+</div>
+
 {% for shift_data in shifts_with_tasks %}
     {% with shift=shift_data.shift %}
     <div class="shift-section">
@@ -63,13 +76,20 @@
                     {% with task=task_data.task km_url=task_data.km_url %}
                     <div class="task-card {% if task.is_full %}task-full{% endif %}">
                         <div class="task-card-header">
-                            <h3>{{ task.name }}</h3>
+                            <h3>
+                                {{ task.name }}
+                                {% if task.description %}
+                                    <i class="bi bi-info-circle"
+                                       data-bs-toggle="tooltip"
+                                       data-bs-placement="top"
+                                       data-bs-html="true"
+                                       title="{{ task.description }}"
+                                       style="cursor: help; margin-left: 0.5rem; color: #0066cc; font-size: 0.9em;"></i>
+                                {% endif %}
+                            </h3>
                         </div>
 
                         <div class="task-card-body">
-                            {% if task.description %}
-                                <p class="task-description">{{ task.description }}</p>
-                            {% endif %}
 
                             {% if task.special_requirements %}
                                 <div class="task-requirements">
@@ -79,7 +99,6 @@
 
                             <div class="task-capacity">
                                 <div class="capacity-label">
-                                    <span>Helfer benötigt</span>
                                     <span>
                                         <span class="current">{{ task.current_helpers }}</span>
                                         <span class="total">/ {{ task.required_helpers }}</span>
@@ -98,14 +117,17 @@
                             <!-- Signed Up Participants -->
                             {% if task.participants.all %}
                                 <div style="margin-top: 1.5rem; padding: 1rem; background: #f0f9ff; border-left: 4px solid var(--festival-primary); border-radius: 6px;">
-                                    <p style="margin: 0 0 0.75rem 0; font-size: 0.85rem; font-weight: 600; color: #1e40af; text-transform: uppercase; letter-spacing: 0.5px;">
-                                        <i class="bi bi-person-check" style="margin-right: 0.5rem;"></i>Bereits angemeldet
-                                    </p>
                                     <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
                                         {% for participant in task.participants.all %}
-                                            <span style="display: inline-block; background: white; color: #1e40af; padding: 0.4rem 0.75rem; border-radius: 20px; font-size: 0.85rem; font-weight: 500;">
-                                                {{ participant.name }}{% if participant.notes %} <span style="font-weight: 400; opacity: 0.8;">({{ participant.notes|truncatewords:10 }})</span>{% endif %}
-                                            </span>
+                                            {% if participant.masked %}
+                                                <span style="display: inline-block; background: white; color: #1e40af; padding: 0.4rem 0.75rem; border-radius: 20px; font-size: 0.85rem; font-weight: 500;">
+                                                    Helfer{% if participant.notes %} <span style="font-weight: 400; opacity: 0.8;">({{ participant.notes|truncatewords:10 }})</span>{% endif %}
+                                                </span>
+                                            {% else %}
+                                                <span style="display: inline-block; background: white; color: #1e40af; padding: 0.4rem 0.75rem; border-radius: 20px; font-size: 0.85rem; font-weight: 500;">
+                                                    {{ participant.name }}{% if participant.notes %} <span style="font-weight: 400; opacity: 0.8;">({{ participant.notes|truncatewords:10 }})</span>{% endif %}
+                                                </span>
+                                            {% endif %}
                                         {% endfor %}
                                     </div>
                                 </div>
@@ -127,10 +149,19 @@
                                     <i class="bi bi-check-circle"></i> Voll ({{ task.current_helpers }}/{{ task.required_helpers }})
                                 </button>
                             {% else %}
-                                <a href="{% url 'festival:task_signup' festival_slug=festival.slug task_id=task.id %}"
-                                   class="signup-btn available">
-                                    <i class="bi bi-plus-circle"></i> Jetzt anmelden
-                                </a>
+                                <button type="button"
+                                        class="signup-btn available"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#signupModal"
+                                        data-task-id="{{ task.id }}"
+                                        data-task-name="{{ task.name }}"
+                                        data-shift-name="{{ shift.name }}"
+                                        data-shift-date="{{ shift.date|date:'j. F Y' }}"
+                                        data-shift-start-time="{{ shift.start_time|time:'H:i' }}"
+                                        data-shift-end-time="{{ shift.end_time|time:'H:i' }}"
+                                        data-festival-slug="{{ festival.slug }}">
+                                    <i class="bi bi-plus-circle"></i> EINTRAGEN
+                                </button>
                             {% endif %}
                         </div>
                     </div>
@@ -153,4 +184,443 @@
         <p>Bitte schauen Sie später nach Updates.</p>
     </div>
 {% endfor %}
+
+<!-- Signup Modal -->
+<div class="modal fade" id="signupModal" tabindex="-1" role="dialog" aria-labelledby="signupModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered signup-modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="signupModalLabel">Anmeldung</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Task Details Summary -->
+                <div style="padding: 1rem; background: #f0f9ff; border-left: 4px solid var(--festival-primary); border-radius: 6px; margin-bottom: 1.5rem;">
+                    <div style="font-size: 0.85rem; color: #666; margin-bottom: 0.5rem;">
+                        <strong id="modalTaskName"></strong>
+                    </div>
+                    <div style="font-size: 0.85rem; color: #666;">
+                        <i class="bi bi-clock"></i> <span id="modalShiftInfo"></span>
+                    </div>
+                </div>
+
+                <!-- Signup Form -->
+                <form id="signupForm">
+                    {% csrf_token %}
+                    <div class="form-group mb-2">
+                        <input type="text"
+                               class="form-control form-control-lg"
+                               id="participantName"
+                               name="name"
+                               placeholder="Name (erforderlich)"
+                               required>
+                        <div class="invalid-feedback" id="nameErrorMsg"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <textarea class="form-control"
+                                  id="participantNotes"
+                                  name="notes"
+                                  placeholder="Kommentar (optional)"
+                                  rows="2"></textarea>
+                    </div>
+
+                    <input type="hidden" id="taskIdInput" name="task_id">
+                    <input type="hidden" id="festivalSlugInput" name="festival_slug">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+                <button type="button" class="btn btn-primary" id="submitSignupBtn">Anmeldung bestätigen</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmationModal" tabindex="-1" role="dialog" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmationModalLabel">Anmeldung erfolgreich!</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div style="margin-bottom: 1.5rem;">
+                    <i class="bi bi-check-circle" style="font-size: 3rem; color: #10b981;"></i>
+                </div>
+                <h6 id="confirmationName" style="margin-bottom: 1rem;"></h6>
+
+                <!-- Signup Details Card -->
+                <div style="padding: 1.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; color: white; margin-bottom: 1rem;">
+                    <div style="text-align: left;">
+                        <div style="margin-bottom: 1rem;">
+                            <div style="font-size: 0.85rem; opacity: 0.9;">Festival</div>
+                            <div style="font-weight: 600; font-size: 1.1rem;" id="confirmationFestival"></div>
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <div style="font-size: 0.85rem; opacity: 0.9;">Aufgabe</div>
+                            <div style="font-weight: 600;" id="confirmationTask"></div>
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <div style="font-size: 0.85rem; opacity: 0.9;">Schicht</div>
+                            <div style="font-weight: 600;" id="confirmationShift"></div>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.85rem; opacity: 0.9;">Datum & Zeit</div>
+                            <div style="font-weight: 600;" id="confirmationDateTime"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <p style="color: #666; font-size: 0.9rem; margin: 0;">Vielen Dank für deine Anmeldung! Deine Teilnahme ist wichtig.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Zurück zur Übersicht</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Signup Modal - Mobile Adjustments */
+@media (max-width: 600px) {
+    .signup-modal-dialog {
+        margin: 0 !important;
+        width: 100% !important;
+        max-width: none !important;
+        height: 100vh !important;
+        position: absolute;
+        top: 0 !important;
+        align-items: flex-start !important;
+    }
+
+    .signup-modal-dialog .modal-content {
+        border-radius: 16px 16px 0 0;
+        max-height: 70vh;
+        margin-top: auto;
+    }
+
+    .signup-modal-dialog .modal-body {
+        padding: 1rem;
+        max-height: calc(70vh - 120px);
+        overflow-y: auto;
+    }
+
+    .signup-modal-dialog .modal-header {
+        padding: 1rem;
+    }
+
+    .signup-modal-dialog .modal-footer {
+        padding: 1rem;
+    }
+}
+
+/* Mobile Sticky Shift Header */
+.mobile-sticky-shift-header {
+    position: fixed;
+    left: 0;
+    right: 0;
+    background: white;
+    border-bottom: 1px solid #e5e7eb;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    z-index: 999;  /* Below navbar (1000) but above content */
+    display: none;  /* Hidden by default */
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+}
+
+.mobile-sticky-shift-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    max-width: 100%;
+}
+
+.mobile-sticky-shift-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--festival-primary) 0%, var(--festival-secondary) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.mobile-sticky-shift-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0;  /* Allow text truncation */
+    flex-grow: 1;
+}
+
+.mobile-sticky-shift-info h3 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--festival-dark);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.mobile-sticky-shift-info span {
+    font-size: 0.8rem;
+    color: #6b7280;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Mobile-only visibility */
+@media (min-width: 768px) {
+    .mobile-sticky-shift-header {
+        display: none !important;
+    }
+}
+
+@media (max-width: 767px) {
+    .mobile-sticky-shift-header {
+        display: block !important;  /* Let JS control opacity */
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const signupModal = new bootstrap.Modal(document.getElementById('signupModal'), {
+        backdrop: 'static',
+        keyboard: false
+    });
+    const confirmationModal = new bootstrap.Modal(document.getElementById('confirmationModal'), {
+        backdrop: 'static',
+        keyboard: false
+    });
+
+    // Initialize tooltips for task descriptions
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    // Initialize mobile sticky shift header
+    function initMobileStickySiftHeader() {
+        const mobileHeader = document.getElementById('mobileStickySiftHeader');
+        const navbar = document.querySelector('.festival-navbar');
+        const shiftHeaders = document.querySelectorAll('.shift-header');
+
+        // Only initialize on mobile
+        const isMobile = window.innerWidth < 768;
+        if (!isMobile || shiftHeaders.length === 0) {
+            return;
+        }
+
+        // Get navbar height dynamically
+        const getNavbarHeight = () => {
+            return navbar ? navbar.offsetHeight : 60;
+        };
+
+        // Set top position based on navbar height
+        const updateStickyHeaderPosition = () => {
+            const navbarHeight = getNavbarHeight();
+            mobileHeader.style.top = navbarHeight + 'px';
+        };
+
+        updateStickyHeaderPosition();
+
+        // Function to update sticky header based on current scroll position
+        const updateStickyHeader = () => {
+            // Find all shift headers that have scrolled above the viewport
+            const scrolledPastHeaders = Array.from(shiftHeaders).filter(header => {
+                return header.getBoundingClientRect().top < 0;
+            });
+
+            if (scrolledPastHeaders.length > 0) {
+                // Get the last (most recent) scrolled past header
+                const lastScrolledHeader = scrolledPastHeaders[scrolledPastHeaders.length - 1];
+                const shiftName = lastScrolledHeader.querySelector('h2')?.textContent || 'Schicht';
+                const startTime = lastScrolledHeader.nextElementSibling?.querySelector('.shift-info-item:nth-child(2) span')?.textContent || '';
+
+                // Update and show sticky header
+                document.getElementById('mobileStickySiftName').textContent = shiftName;
+                document.getElementById('mobileStickySiftTime').textContent = startTime;
+                mobileHeader.style.opacity = '1';
+                mobileHeader.style.pointerEvents = 'auto';
+            } else {
+                // No shift scrolled past - hide sticky header
+                mobileHeader.style.opacity = '0';
+                mobileHeader.style.pointerEvents = 'none';
+            }
+        };
+
+        // Create observer just for initial setup (detects when page loads)
+        const observer = new IntersectionObserver(() => {
+            updateStickyHeader();
+        }, {
+            threshold: 0,
+            rootMargin: '-1px 0px 0px 0px'
+        });
+
+        // Observe all shift headers
+        shiftHeaders.forEach(header => {
+            observer.observe(header);
+        });
+
+        // Add scroll listener for continuous updates
+        let scrollTimeout;
+        window.addEventListener('scroll', () => {
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                updateStickyHeader();
+            }, 10);
+        }, { passive: true });
+
+        // Handle window resize - reinitialize if crossing mobile breakpoint
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                const currentIsMobile = window.innerWidth < 768;
+                if (currentIsMobile !== isMobile) {
+                    location.reload();  // Reinitialize on breakpoint change
+                }
+                updateStickyHeaderPosition();
+            }, 250);
+        });
+    }
+
+    initMobileStickySiftHeader();
+
+
+    const signupForm = document.getElementById('signupForm');
+    const submitSignupBtn = document.getElementById('submitSignupBtn');
+
+    // Handle signup modal trigger
+    document.getElementById('signupModal').addEventListener('show.bs.modal', function(e) {
+        const button = e.relatedTarget;
+        const taskId = button.getAttribute('data-task-id');
+        const taskName = button.getAttribute('data-task-name');
+        const shiftName = button.getAttribute('data-shift-name');
+        const shiftDate = button.getAttribute('data-shift-date');
+        const shiftStartTime = button.getAttribute('data-shift-start-time');
+        const shiftEndTime = button.getAttribute('data-shift-end-time');
+        const festivalSlug = button.getAttribute('data-festival-slug');
+
+        // Populate form fields
+        document.getElementById('taskIdInput').value = taskId;
+        document.getElementById('festivalSlugInput').value = festivalSlug;
+        document.getElementById('modalTaskName').textContent = taskName;
+        document.getElementById('modalShiftInfo').textContent =
+            shiftName + ' • ' + shiftDate + ' • ' + shiftStartTime + '-' + shiftEndTime;
+
+        // Reset form
+        signupForm.reset();
+        document.getElementById('participantName').classList.remove('is-invalid');
+        document.getElementById('nameErrorMsg').textContent = '';
+
+        // Store data for confirmation modal
+        e.currentTarget.dataset.shiftName = shiftName;
+        e.currentTarget.dataset.shiftDate = shiftDate;
+        e.currentTarget.dataset.shiftStartTime = shiftStartTime;
+        e.currentTarget.dataset.shiftEndTime = shiftEndTime;
+    });
+
+    // Handle form submission
+    submitSignupBtn.addEventListener('click', function() {
+        const name = document.getElementById('participantName').value.trim();
+        const notes = document.getElementById('participantNotes').value.trim();
+        const taskId = document.getElementById('taskIdInput').value;
+        const festivalSlug = document.getElementById('festivalSlugInput').value;
+
+        // Client-side validation
+        if (!name) {
+            document.getElementById('participantName').classList.add('is-invalid');
+            document.getElementById('nameErrorMsg').textContent = 'Name ist erforderlich';
+            return;
+        }
+
+        // Submit form via AJAX
+        submitSignupBtn.disabled = true;
+        submitSignupBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Wird angemeldet...';
+
+        fetch(`/event/${festivalSlug}/task/${taskId}/signup/?ajax=true`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            },
+            body: new URLSearchParams({
+                'name': name,
+                'notes': notes,
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Hide signup modal
+                signupModal.hide();
+
+                // Populate confirmation modal
+                const signupModalEl = document.getElementById('signupModal');
+                document.getElementById('confirmationName').innerHTML =
+                    `Du bist angemeldet, <strong>${data.participant.name}</strong>!`;
+                document.getElementById('confirmationFestival').textContent = data.festival.name;
+                document.getElementById('confirmationTask').textContent = data.task.name;
+                document.getElementById('confirmationShift').textContent =
+                    signupModalEl.dataset.shiftName;
+                document.getElementById('confirmationDateTime').textContent =
+                    signupModalEl.dataset.shiftDate + ' • ' +
+                    signupModalEl.dataset.shiftStartTime + '-' +
+                    signupModalEl.dataset.shiftEndTime;
+
+                // Show confirmation modal
+                confirmationModal.show();
+
+                // Refresh page when confirmation modal is closed
+                document.getElementById('confirmationModal').addEventListener('hidden.bs.modal', function() {
+                    location.reload();
+                }, { once: true });
+
+                // Reset button
+                submitSignupBtn.disabled = false;
+                submitSignupBtn.innerHTML = 'Anmeldung bestätigen';
+            } else {
+                // Handle errors
+                submitSignupBtn.disabled = false;
+                submitSignupBtn.innerHTML = 'Anmeldung bestätigen';
+
+                if (data.errors) {
+                    if (data.errors.name) {
+                        document.getElementById('participantName').classList.add('is-invalid');
+                        document.getElementById('nameErrorMsg').textContent = data.errors.name[0];
+                    }
+                    if (data.errors.non_field_errors) {
+                        alert(data.errors.non_field_errors[0]);
+                    }
+                } else if (data.error) {
+                    alert('Fehler: ' + data.error);
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.');
+            submitSignupBtn.disabled = false;
+            submitSignupBtn.innerHTML = 'Anmeldung bestätigen';
+        });
+    });
+
+    // Clear validation errors on input
+    document.getElementById('participantName').addEventListener('input', function() {
+        this.classList.remove('is-invalid');
+        document.getElementById('nameErrorMsg').textContent = '';
+    });
+});
+</script>
 {% endblock %}

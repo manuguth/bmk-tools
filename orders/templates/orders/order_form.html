@@ -1,0 +1,214 @@
+{% extends "orders/base.html" %}
+
+{% block title %}Bestellung - BMK Festival{% endblock %}
+
+{% block content %}
+<div class="bestellung-page-header">
+    <h1 class="bestellung-page-title">
+        <i class="bi bi-cart-check"></i> Bestellung aufgeben
+    </h1>
+    <p class="bestellung-page-subtitle">Bestellen Sie Speisen und Getränke für Ihr Unternehmen vor</p>
+</div>
+
+{% if no_template %}
+    <div class="bestellung-card">
+        <div class="bestellung-card-header">
+            <i class="bi bi-info-circle"></i> Bestellungen nicht verfügbar
+        </div>
+        <div class="bestellung-card-body">
+            <div class="alert alert-info mb-0">
+                <i class="bi bi-exclamation-triangle"></i> {{ message }}
+            </div>
+        </div>
+    </div>
+{% else %}
+    <form method="post" class="needs-validation" novalidate>
+        {% csrf_token %}
+
+        <!-- Company Information -->
+        <div class="bestellung-card mb-4">
+            <div class="bestellung-card-header">
+                <i class="bi bi-building"></i> Unternehmensinformationen
+            </div>
+            <div class="bestellung-card-body">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label for="id_company_name" class="form-label">
+                            {{ form.company_name.label }} <span class="text-danger">*</span>
+                        </label>
+                        {{ form.company_name }}
+                        {% if form.company_name.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.company_name.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label for="id_arrival_time" class="form-label">
+                            {{ form.arrival_time.label }}
+                        </label>
+                        {{ form.arrival_time }}
+                    </div>
+                    <div class="col-md-6">
+                        <label for="id_contact_name" class="form-label">
+                            {{ form.contact_name.label }} <span class="text-danger">*</span>
+                        </label>
+                        {{ form.contact_name }}
+                        {% if form.contact_name.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.contact_name.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label for="id_contact_phone" class="form-label">
+                            {{ form.contact_phone.label }}
+                        </label>
+                        {{ form.contact_phone }}
+                    </div>
+                    <div class="col-12">
+                        <label for="id_contact_email" class="form-label">
+                            {{ form.contact_email.label }} <span class="text-danger">*</span>
+                        </label>
+                        {{ form.contact_email }}
+                        {% if form.contact_email.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.contact_email.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Menu Items -->
+        <div class="bestellung-card mb-4">
+            <div class="bestellung-card-header secondary">
+                <i class="bi bi-list-ul"></i> Bestellte Artikel
+            </div>
+            <div class="bestellung-card-body p-0">
+                {% for category, items in menu_items_by_category.items %}
+                    <div class="p-4 border-bottom">
+                        <h6 class="mb-3 text-primary">
+                            {% if category == 'Speisen' %}
+                                <i class="bi bi-egg-fried"></i>
+                            {% else %}
+                                <i class="bi bi-cup-hot-fill"></i>
+                            {% endif %}
+                            {{ category }}
+                        </h6>
+                        <div class="row g-3">
+                            {% for item in items %}
+                                <div class="col-12 col-md-6 col-lg-4">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: var(--bestellung-light); border-radius: 0.5rem; transition: all 0.3s ease;"
+                                         onmouseover="this.style.backgroundColor = '#e0e7ff'"
+                                         onmouseout="this.style.backgroundColor = 'var(--bestellung-light)'">
+                                        <div>
+                                            <strong>{{ item.name }}</strong>
+                                            <br>
+                                            <small class="text-muted">€{{ item.price }}</small>
+                                        </div>
+                                        <input type="number"
+                                               name="quantity_{{ item.id }}"
+                                               min="0"
+                                               value="0"
+                                               class="form-control form-control-sm"
+                                               style="width: 70px; text-align: center;">
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger m-3 mb-0">
+                        {% for error in form.non_field_errors %}
+                            <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Payment Method -->
+        <div class="bestellung-card mb-4">
+            <div class="bestellung-card-header warning">
+                <i class="bi bi-credit-card"></i> Zahlungsweise
+            </div>
+            <div class="bestellung-card-body">
+                <div class="mb-3">
+                    <label for="id_payment_method" class="form-label">
+                        {{ form.payment_method.label }} <span class="text-danger">*</span>
+                    </label>
+                    {% for value, label in form.payment_method.field.choices %}
+                        <div class="form-check mb-3">
+                            <input type="radio"
+                                   class="form-check-input payment-method-radio"
+                                   id="id_payment_method_{{ forloop.counter0 }}"
+                                   name="payment_method"
+                                   value="{{ value }}"
+                                   onchange="toggleInvoiceAddress()">
+                            <label class="form-check-label" for="id_payment_method_{{ forloop.counter0 }}">
+                                <strong>{{ label }}</strong>
+                            </label>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div id="invoice_address_section" class="mb-3" style="display: none;">
+                    <label for="id_invoice_address" class="form-label">
+                        {{ form.invoice_address.label }} <span class="text-danger">*</span>
+                    </label>
+                    {{ form.invoice_address }}
+                    {% if form.invoice_address.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.invoice_address.errors.0 }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="bestellung-card mb-4">
+            <div class="bestellung-card-header" style="background: linear-gradient(135deg, #64748b 0%, #475569 100%);">
+                <i class="bi bi-chat-left-text"></i> Anmerkungen (optional)
+            </div>
+            <div class="bestellung-card-body">
+                <label for="id_notes" class="form-label">
+                    {{ form.notes.label }}
+                </label>
+                {{ form.notes }}
+            </div>
+        </div>
+
+        <!-- Submit Buttons -->
+        <div class="d-flex flex-column flex-sm-row gap-3 mb-5">
+            <button type="submit" class="btn btn-primary btn-lg flex-grow-1">
+                <i class="bi bi-check-circle"></i> Bestellung absenden
+            </button>
+            <a href="/" class="btn btn-outline-secondary btn-lg">
+                <i class="bi bi-x-circle"></i> Abbrechen
+            </a>
+        </div>
+    </form>
+
+    <script>
+        function toggleInvoiceAddress() {
+            const paymentMethod = document.querySelector('input[name="payment_method"]:checked')?.value;
+            const invoiceSection = document.getElementById('invoice_address_section');
+
+            if (paymentMethod === 'invoice') {
+                invoiceSection.style.display = 'block';
+            } else {
+                invoiceSection.style.display = 'none';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            toggleInvoiceAddress();
+        });
+    </script>
+{% endif %}
+{% endblock %}

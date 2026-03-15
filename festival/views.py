@@ -54,9 +54,6 @@ def admin_festival_list(request):
         total_required_helpers = Task.objects.filter(shift__festival=festival).aggregate(
             total=models.Sum('required_helpers')
         )['total'] or 0
-        attended_count = Participant.objects.filter(
-            task__shift__festival=festival, attended=True
-        ).count()
         total_shifts = festival.shifts.count()
         total_all_participants += total_participants
         total_all_required_helpers += total_required_helpers
@@ -66,7 +63,6 @@ def admin_festival_list(request):
             "festival": festival,
             "total_participants": total_participants,
             "total_required_helpers": total_required_helpers,
-            "attended_count": attended_count,
             "total_shifts": total_shifts,
         })
 
@@ -159,8 +155,16 @@ def task_signup(request, festival_slug, task_id):
     if draft_check:
         return draft_check
 
+    # Check if this is an AJAX request
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.GET.get('ajax') == 'true'
+
     # Check if festival is completed
     if festival.status == 'completed':
+        if is_ajax:
+            return JsonResponse({
+                'success': False,
+                'error': 'Dieses Festival ist abgeschlossen. Anmeldungen sind nicht mehr möglich.'
+            }, status=400)
         context = {
             "festival": festival,
             "error": "Dieses Festival ist abgeschlossen. Anmeldungen sind nicht mehr möglich.",
@@ -171,6 +175,11 @@ def task_signup(request, festival_slug, task_id):
 
     # Check if task has Konzertmeister integration - if so, sign up is locked
     if task.has_km_integration:
+        if is_ajax:
+            return JsonResponse({
+                'success': False,
+                'error': 'Die Anmeldung für diese Aufgabe wird über Konzertmeister verwaltet. Manuelle Anmeldungen sind nicht möglich.'
+            }, status=400)
         context = {
             "festival": festival,
             "task": task,
@@ -188,6 +197,11 @@ def task_signup(request, festival_slug, task_id):
 
     # Check if task is full
     if task.is_full:
+        if is_ajax:
+            return JsonResponse({
+                'success': False,
+                'error': 'Diese Aufgabe ist bereits voll. Keine weiteren Anmeldungen möglich.'
+            }, status=400)
         context = {
             "festival": festival,
             "task": task,
@@ -201,9 +215,44 @@ def task_signup(request, festival_slug, task_id):
             participant = form.save(commit=False)
             participant.task = task
             participant.save()
-            return redirect("festival:signup_confirmation", festival_slug=festival_slug, participant_id=participant.id)
+
+            if is_ajax:
+                # Return JSON response for AJAX requests
+                return JsonResponse({
+                    'success': True,
+                    'participant': {
+                        'id': participant.id,
+                        'name': participant.name,
+                        'notes': participant.notes,
+                    },
+                    'task': {
+                        'id': str(task.id),
+                        'name': task.name,
+                    },
+                    'festival': {
+                        'name': festival.name,
+                        'slug': festival.slug,
+                    }
+                })
+            else:
+                # Redirect for non-AJAX requests
+                return redirect("festival:signup_confirmation", festival_slug=festival_slug, participant_id=participant.id)
+        else:
+            if is_ajax:
+                # Return validation errors as JSON
+                return JsonResponse({
+                    'success': False,
+                    'errors': form.errors
+                }, status=400)
     else:
         form = ParticipantSignUpForm()
+
+    if is_ajax:
+        # AJAX GET request should not reach here, but handle it gracefully
+        return JsonResponse({
+            'success': False,
+            'error': 'Invalid request method'
+        }, status=400)
 
     context = {
         "festival": festival,
@@ -265,10 +314,6 @@ def admin_overview(request, festival_slug=None):
     total_required_helpers = Task.objects.filter(shift__festival=festival).aggregate(
         total=models.Sum('required_helpers')
     )['total'] or 0
-    attended_count = Participant.objects.filter(
-        task__shift__festival=festival, attended=True
-    ).count()
-    pending_count = total_participants - attended_count
     total_shifts = shifts.count()
 
     from django.utils import timezone
@@ -279,8 +324,6 @@ def admin_overview(request, festival_slug=None):
         "total_participants": total_participants,
         "total_required_helpers": total_required_helpers,
         "total_shifts": total_shifts,
-        "attended_count": attended_count,
-        "pending_count": pending_count,
         "now": timezone.now(),
         "api_base_url": get_api_base_url(request),
     }
@@ -294,13 +337,6 @@ def participant_list_admin(request, festival_slug):
     participants = Participant.objects.filter(task__shift__festival=festival).select_related(
         "task", "task__shift"
     )
-
-    # Filter by attended status if specified
-    attended_filter = request.GET.get("attended")
-    if attended_filter == "true":
-        participants = participants.filter(attended=True)
-    elif attended_filter == "false":
-        participants = participants.filter(attended=False)
 
     context = {
         "festival": festival,
@@ -507,9 +543,9 @@ def api_update_participant(request, festival_slug, participant_id):
         if 'name' in data:
             participant.name = data['name']
 
-        # Update attended status
-        if 'attended' in data:
-            participant.attended = data['attended'] in ['true', True, 'True', '1', 1]
+        # Update masked status
+        if 'masked' in data:
+            participant.masked = data['masked'] in ['true', True, 'True', '1', 1]
 
         # Update notes
         if 'notes' in data:
@@ -521,7 +557,7 @@ def api_update_participant(request, festival_slug, participant_id):
             'message': 'Participant updated successfully',
             'data': {
                 'name': participant.name,
-                'attended': participant.attended,
+                'masked': participant.masked,
                 'notes': participant.notes,
             }
         })
@@ -613,7 +649,7 @@ def api_create_participant(request, festival_slug, task_id):
                 'id': participant.id,
                 'name': participant.name,
                 'notes': participant.notes,
-                'attended': participant.attended,
+                'masked': participant.masked,
             }
         })
     except json.JSONDecodeError:
@@ -944,6 +980,26 @@ def api_update_festival(request, festival_slug):
                 return JsonResponse({'success': False, 'error': f'Invalid status. Must be one of: {", ".join(valid_statuses)}'}, status=400)
             festival.status = new_status
 
+        # Update start_date
+        if 'start_date' in data:
+            if data['start_date']:
+                try:
+                    festival.start_date = datetime.strptime(data['start_date'], '%Y-%m-%d').date()
+                except ValueError:
+                    return JsonResponse({'success': False, 'error': 'Invalid start date format. Use YYYY-MM-DD'}, status=400)
+            else:
+                festival.start_date = None
+
+        # Update end_date
+        if 'end_date' in data:
+            if data['end_date']:
+                try:
+                    festival.end_date = datetime.strptime(data['end_date'], '%Y-%m-%d').date()
+                except ValueError:
+                    return JsonResponse({'success': False, 'error': 'Invalid end date format. Use YYYY-MM-DD'}, status=400)
+            else:
+                festival.end_date = None
+
         festival.save()
         return JsonResponse({
             'success': True,
@@ -951,6 +1007,8 @@ def api_update_festival(request, festival_slug):
             'data': {
                 'name': festival.name,
                 'status': festival.status,
+                'start_date': festival.start_date.isoformat() if festival.start_date else None,
+                'end_date': festival.end_date.isoformat() if festival.end_date else None,
             }
         })
     except json.JSONDecodeError:

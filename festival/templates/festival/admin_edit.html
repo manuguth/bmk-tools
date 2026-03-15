@@ -3,7 +3,7 @@
 {% block title %}Festival bearbeiten - {{ festival.name }}{% endblock title %}
 
 {% block page_content %}
-<div style="margin-bottom: 2rem;">
+<div style="margin-bottom: 1.5rem;">
     <a href="{% url 'festival:admin_overview' festival.slug %}" style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--festival-primary); text-decoration: none; font-weight: 600; margin-bottom: 1.5rem; transition: all 0.3s ease;" onmouseover="this.style.opacity='0.7';" onmouseout="this.style.opacity='1';">
         <i class="bi bi-arrow-left"></i> Zurück zur Übersicht
     </a>
@@ -26,91 +26,139 @@
         <button id="festivalNameCancelBtn" style="padding: 0.5rem 1rem; background: #6b7280; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Abbrechen</button>
     </div>
 
-    <!-- Festival Status Section -->
-    <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); margin-bottom: 2rem;">
-        <h3 style="font-size: 1.1rem; font-weight: 600; color: var(--festival-dark); margin: 0 0 1rem 0;">Status des Festivals</h3>
-        <div style="display: flex; align-items: center; gap: 1.5rem;">
-            <!-- Status Badge -->
-            <span id="status-badge-edit" style="display: inline-block; padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">
-                <i class="bi bi-circle-fill" style="margin-right: 0.25rem;"></i>
-                <span id="status-text-edit">
-                    {% if festival.status == 'active' %}
-                        Aktiv
-                    {% elif festival.status == 'draft' %}
-                        Entwurf
-                    {% else %}
-                        Abgeschlossen
-                    {% endif %}
-                </span>
-            </span>
-
-            <!-- Status Switcher -->
-            <select id="status-switcher-edit" style="padding: 0.4rem 0.8rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.9rem; background: white; cursor: pointer;" onchange="updateFestivalStatusEdit()">
-                <option value="">– Status ändern –</option>
-                <option value="draft">Entwurf</option>
-                <option value="active">Aktiv</option>
-                <option value="completed">Abgeschlossen</option>
-            </select>
-        </div>
-    </div>
-
-    <!-- YAML Export/Import Section -->
-    <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); margin-bottom: 2rem;">
-        <h3 style="font-size: 1.1rem; font-weight: 600; color: var(--festival-dark); margin: 0 0 1rem 0;">
-            <i class="bi bi-cloud-arrow-up-down"></i> Datenexport & -import
-        </h3>
-
-        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-            <!-- Export Buttons -->
-            <button id="exportFullBtn" style="padding: 0.75rem 1.5rem; background: var(--festival-primary); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.3s ease;" onmouseover="this.style.opacity='0.9';" onmouseout="this.style.opacity='1';">
-                <i class="bi bi-download"></i> Export (mit Teilnehmern)
-            </button>
-
-            <button id="exportStructureBtn" style="padding: 0.75rem 1.5rem; background: #06b6d4; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.3s ease;" onmouseover="this.style.opacity='0.9';" onmouseout="this.style.opacity='1';">
-                <i class="bi bi-download"></i> Export (nur Struktur)
-            </button>
-
-            <!-- Import Button -->
-            <button id="importToggleBtn" style="padding: 0.75rem 1.5rem; background: #f59e0b; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.3s ease;" onmouseover="this.style.opacity='0.9';" onmouseout="this.style.opacity='1';">
-                <i class="bi bi-upload"></i> Import
-            </button>
+    <!-- Settings Container (Collapsible) -->
+    <div id="settings-container" style="background: white; border-radius: 12px; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); margin-bottom: 1.5rem;">
+        <!-- Settings Header (Toggleable) -->
+        <div id="settings-header" onclick="toggleSettings()" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: #f9fafb; border-radius: 12px 12px 0 0; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.backgroundColor='#eef2ff';" onmouseout="this.style.backgroundColor='#f9fafb';">
+            <h2 style="margin: 0; font-size: 1.1rem; font-weight: 600; color: var(--festival-dark); display: flex; align-items: center; gap: 0.5rem;">
+                <i class="bi bi-gear"></i> Einstellungen
+            </h2>
+            <i id="settings-toggle-icon" class="bi bi-chevron-down" style="font-size: 1.25rem; color: #6b7280; transition: transform 0.3s ease;"></i>
         </div>
 
-        <!-- Import Form (hidden by default) -->
-        <div id="importForm" style="display: none; margin-top: 1.5rem; padding: 1.5rem; background: #fef3c7; border: 2px solid #f59e0b; border-radius: 8px;">
-            <h4 style="margin: 0 0 1rem 0; color: #92400e;">YAML-Datei importieren</h4>
-
+        <!-- Settings Content (Collapsible) -->
+        <div id="settings-content" style="max-height: 0px; overflow: hidden; transition: max-height 0.3s ease; padding: 1rem;">
+            <!-- Festival Status Section -->
             <div style="margin-bottom: 1rem;">
-                <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">YAML-Datei</label>
-                <input type="file" id="importFileInput" accept=".yaml,.yml" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; box-sizing: border-box;">
+                <h3 style="font-size: 1.1rem; font-weight: 600; color: var(--festival-dark); margin: 0 0 1rem 0;">Status des Festivals</h3>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <!-- Status Badge -->
+                    <span id="status-badge-edit" style="display: inline-block; padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">
+                        <i class="bi bi-circle-fill" style="margin-right: 0.25rem;"></i>
+                        <span id="status-text-edit">
+                            {% if festival.status == 'active' %}
+                                Aktiv
+                            {% elif festival.status == 'draft' %}
+                                Entwurf
+                            {% else %}
+                                Abgeschlossen
+                            {% endif %}
+                        </span>
+                    </span>
+
+                    <!-- Status Switcher -->
+                    <select id="status-switcher-edit" style="padding: 0.4rem 0.8rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.9rem; background: white; cursor: pointer;" onchange="updateFestivalStatusEdit()">
+                        <option value="">– Status ändern –</option>
+                        <option value="draft">Entwurf</option>
+                        <option value="active">Aktiv</option>
+                        <option value="completed">Abgeschlossen</option>
+                    </select>
+                </div>
             </div>
 
+            <!-- Divider -->
+            <div style="height: 1px; background: #e5e7eb; margin: 1rem 0;"></div>
+
+            <!-- Festival Dates Section -->
             <div style="margin-bottom: 1rem;">
-                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                    <input type="checkbox" id="importIncludeParticipantsCheckbox" checked style="cursor: pointer;">
-                    <span style="color: #6b7280; font-size: 0.9rem;">Teilnehmer importieren (wenn in Datei enthalten)</span>
-                </label>
+                <h3 style="font-size: 1.1rem; font-weight: 600; color: var(--festival-dark); margin: 0 0 1rem 0;">Festival Daten</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <!-- Start Date -->
+                    <div>
+                        <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Startdatum</label>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <input type="date" id="festivalStartDateInput" value="{{ festival.start_date|date:'Y-m-d'|default:'' }}" style="flex: 1; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 1rem;">
+                            <button id="festivalStartDateSaveBtn" style="padding: 0.5rem 1rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem;">
+                                <i class="bi bi-check"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- End Date -->
+                    <div>
+                        <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Enddatum</label>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <input type="date" id="festivalEndDateInput" value="{{ festival.end_date|date:'Y-m-d'|default:'' }}" style="flex: 1; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 1rem;">
+                            <button id="festivalEndDateSaveBtn" style="padding: 0.5rem 1rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem;">
+                                <i class="bi bi-check"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div style="margin-bottom: 1rem;">
-                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                    <input type="checkbox" id="importDryRunCheckbox" style="cursor: pointer;">
-                    <span style="color: #6b7280; font-size: 0.9rem;">Trockentest durchführen (keine Daten ändern)</span>
-                </label>
-            </div>
+            <!-- Divider -->
+            <div style="height: 1px; background: #e5e7eb; margin: 1rem 0;"></div>
 
-            <div id="importValidationMessages" style="display: none; margin-bottom: 1rem; padding: 1rem; background: white; border-radius: 6px; border-left: 4px solid #ef4444;">
-                <p style="margin: 0 0 0.5rem 0; color: #7f1d1d; font-weight: 600;">Validierungsfehler:</p>
-                <ul id="importValidationList" style="margin: 0; padding-left: 1.5rem; color: #991b1b;"></ul>
-            </div>
+            <!-- YAML Export/Import Section -->
+            <div>
+                <h3 style="font-size: 1.1rem; font-weight: 600; color: var(--festival-dark); margin: 0 0 1rem 0;">
+                    <i class="bi bi-cloud-arrow-up-down"></i> Datenexport & -import
+                </h3>
 
-            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                <button id="importExecuteBtn" style="padding: 0.75rem 1.5rem; background: #ef4444; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.3s ease;" onmouseover="this.style.opacity='0.9';" onmouseout="this.style.opacity='1';">
-                    <i class="bi bi-exclamation-circle"></i> Importieren
-                </button>
-                <button id="importCancelBtn" style="padding: 0.75rem 1.5rem; background: #6b7280; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.3s ease;" onmouseover="this.style.opacity='0.9';" onmouseout="this.style.opacity='1';">
-                    Abbrechen
-                </button>
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <!-- Export Buttons -->
+                    <button id="exportFullBtn" style="padding: 0.75rem 1.5rem; background: var(--festival-primary); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.3s ease;" onmouseover="this.style.opacity='0.9';" onmouseout="this.style.opacity='1';">
+                        <i class="bi bi-download"></i> Export (mit Teilnehmern)
+                    </button>
+
+                    <button id="exportStructureBtn" style="padding: 0.75rem 1.5rem; background: #06b6d4; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.3s ease;" onmouseover="this.style.opacity='0.9';" onmouseout="this.style.opacity='1';">
+                        <i class="bi bi-download"></i> Export (nur Struktur)
+                    </button>
+
+                    <!-- Import Button -->
+                    <button id="importToggleBtn" style="padding: 0.75rem 1.5rem; background: #f59e0b; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.3s ease;" onmouseover="this.style.opacity='0.9';" onmouseout="this.style.opacity='1';">
+                        <i class="bi bi-upload"></i> Import
+                    </button>
+                </div>
+
+                <!-- Import Form (hidden by default) -->
+                <div id="importForm" style="display: none; margin-top: 1rem; padding: 1rem; background: #fef3c7; border: 2px solid #f59e0b; border-radius: 8px;">
+                    <h4 style="margin: 0 0 1rem 0; color: #92400e;">YAML-Datei importieren</h4>
+
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">YAML-Datei</label>
+                        <input type="file" id="importFileInput" accept=".yaml,.yml" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; box-sizing: border-box;">
+                    </div>
+
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" id="importIncludeParticipantsCheckbox" checked style="cursor: pointer;">
+                            <span style="color: #6b7280; font-size: 0.9rem;">Teilnehmer importieren (wenn in Datei enthalten)</span>
+                        </label>
+                    </div>
+
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" id="importDryRunCheckbox" style="cursor: pointer;">
+                            <span style="color: #6b7280; font-size: 0.9rem;">Trockentest durchführen (keine Daten ändern)</span>
+                        </label>
+                    </div>
+
+                    <div id="importValidationMessages" style="display: none; margin-bottom: 1rem; padding: 1rem; background: white; border-radius: 6px; border-left: 4px solid #ef4444;">
+                        <p style="margin: 0 0 0.5rem 0; color: #7f1d1d; font-weight: 600;">Validierungsfehler:</p>
+                        <ul id="importValidationList" style="margin: 0; padding-left: 1.5rem; color: #991b1b;"></ul>
+                    </div>
+
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <button id="importExecuteBtn" style="padding: 0.75rem 1.5rem; background: #ef4444; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.3s ease;" onmouseover="this.style.opacity='0.9';" onmouseout="this.style.opacity='1';">
+                            <i class="bi bi-exclamation-circle"></i> Importieren
+                        </button>
+                        <button id="importCancelBtn" style="padding: 0.75rem 1.5rem; background: #6b7280; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.3s ease;" onmouseover="this.style.opacity='0.9';" onmouseout="this.style.opacity='1';">
+                            Abbrechen
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -139,26 +187,29 @@
 </div>
 
 {% if shifts_data %}
-    <div style="display: grid; gap: 2rem;">
+    <div style="display: grid; gap: 1.5rem;">
         {% for shift_item in shifts_data %}
             <!-- Shift Card -->
-            <div style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); border-top: 4px solid var(--festival-primary);">
+            <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); border-top: 4px solid var(--festival-primary);">
                 <!-- Shift Header - Display Mode -->
-                <div class="shift-header-display" data-shift-id="{{ shift_item.shift.id }}" style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.5rem; cursor: pointer; padding: 1rem; background: #f9fafb; border-radius: 8px; border-left: 3px solid var(--festival-primary); transition: all 0.3s ease;" onmouseover="this.style.backgroundColor='#eef2ff';" onmouseout="this.style.backgroundColor='#f9fafb';">
-                    <div style="flex: 1;">
-                        <h2 class="shift-name-display" data-shift-id="{{ shift_item.shift.id }}" style="font-size: 1.5rem; font-weight: 700; color: var(--festival-dark); margin: 0 0 0.5rem 0;">{{ shift_item.shift.name }}</h2>
-                        <div style="display: flex; flex-wrap: wrap; gap: 1rem; color: #6b7280; font-size: 0.9rem;">
-                            <span>
-                                <i class="bi bi-calendar3" style="color: var(--festival-primary); margin-right: 0.25rem;"></i>
-                                <span class="shift-date-display" data-shift-id="{{ shift_item.shift.id }}">{{ shift_item.shift.date|date:"l, j. F Y" }}</span>
-                            </span>
-                            <span>
-                                <i class="bi bi-clock" style="color: var(--festival-primary); margin-right: 0.25rem;"></i>
-                                <span class="shift-time-display" data-shift-id="{{ shift_item.shift.id }}">{{ shift_item.shift.start_time|time:"H:i" }} – {{ shift_item.shift.end_time|time:"H:i" }}</span>
-                            </span>
-                        </div>
+                <div class="shift-header-display" data-shift-id="{{ shift_item.shift.id }}" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; cursor: pointer; padding: 0.75rem; background: #f9fafb; border-radius: 8px; border-left: 3px solid var(--festival-primary); transition: all 0.3s ease; gap: 1rem; flex-wrap: nowrap;" onmouseover="this.style.backgroundColor='#eef2ff';" onmouseout="this.style.backgroundColor='#f9fafb';">
+                    <!-- Left: Shift Name -->
+                    <h2 class="shift-name-display" data-shift-id="{{ shift_item.shift.id }}" style="font-size: 1.25rem; font-weight: 700; color: var(--festival-dark); margin: 0; white-space: nowrap; flex: 0 0 auto;">{{ shift_item.shift.name }}</h2>
+
+                    <!-- Middle: Date & Time (flex container) -->
+                    <div style="display: flex; gap: 1.5rem; white-space: nowrap; flex: 1; color: #6b7280; font-size: 0.9rem;">
+                        <span style="display: flex; align-items: center; gap: 0.3rem;">
+                            <i class="bi bi-calendar3" style="color: var(--festival-primary);"></i>
+                            <span class="shift-date-display" data-shift-id="{{ shift_item.shift.id }}">{{ shift_item.shift.date|date:"l, j. F Y" }}</span>
+                        </span>
+                        <span style="display: flex; align-items: center; gap: 0.3rem;">
+                            <i class="bi bi-clock" style="color: var(--festival-primary);"></i>
+                            <span class="shift-time-display" data-shift-id="{{ shift_item.shift.id }}">{{ shift_item.shift.start_time|time:"H:i" }} – {{ shift_item.shift.end_time|time:"H:i" }}</span>
+                        </span>
                     </div>
-                    <div style="display: flex; gap: 0.5rem;">
+
+                    <!-- Right: Action Buttons -->
+                    <div style="display: flex; gap: 0.5rem; flex: 0 0 auto;">
                         <button class="shift-edit-btn" data-shift-id="{{ shift_item.shift.id }}" style="padding: 0.5rem 0.75rem; background: none; border: 1px solid #e5e7eb; color: #6b7280; border-radius: 4px; cursor: pointer; font-size: 0.85rem; transition: all 0.3s ease;" onmouseover="this.style.color='var(--festival-primary)';" onmouseout="this.style.color='#6b7280';">
                             <i class="bi bi-pencil"></i>
                         </button>
@@ -210,12 +261,15 @@
                 </div>
 
                 <!-- Shift Description -->
-                <div style="margin-bottom: 1.5rem;">
-                    <p style="color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Beschreibung</p>
-                    <div class="shift-description-display" data-shift-id="{{ shift_item.shift.id }}" style="padding: 1rem; background: #f8fafc; border-radius: 8px; border-left: 3px solid var(--festival-primary); cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.backgroundColor='#eef2ff';" onmouseout="this.style.backgroundColor='#f8fafc';">
-                        <p style="margin: 0; color: var(--festival-dark); white-space: pre-wrap;">{{ shift_item.shift.description|default:"(keine Beschreibung)" }}</p>
+                <div style="margin-bottom: 0.5rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem 0; user-select: none;" onclick="toggleDescriptionVisibility(this, {{ shift_item.shift.id }})">
+                        <i class="shift-description-toggle-icon" data-shift-id="{{ shift_item.shift.id }}" style="font-size: 0.9rem; color: #6b7280; transition: transform 0.3s ease; transform: rotate(90deg);">›</i>
+                        <p style="color: #6b7280; font-size: 0.85rem; margin: 0; font-weight: 600; text-transform: uppercase;">Beschreibung</p>
                     </div>
-                    <textarea class="shift-description-edit" data-shift-id="{{ shift_item.shift.id }}" style="display: none; width: 100%; padding: 1rem; border: 2px solid var(--festival-primary); border-radius: 8px; font-family: inherit; font-size: 1rem; min-height: 100px; margin-top: 0.5rem; margin-bottom: 0.5rem;">{{ shift_item.shift.description }}</textarea>
+                    <div class="shift-description-display" data-shift-id="{{ shift_item.shift.id }}" style="display: block; padding: 0.75rem; background: #f8fafc; border-radius: 8px; border-left: 3px solid var(--festival-primary); cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.backgroundColor='#eef2ff';" onmouseout="this.style.backgroundColor='#f8fafc';">
+                        <p style="margin: 0; color: var(--festival-dark); white-space: pre-wrap; font-size: 0.95rem;">{{ shift_item.shift.description|default:"(keine Beschreibung)" }}</p>
+                    </div>
+                    <textarea class="shift-description-edit" data-shift-id="{{ shift_item.shift.id }}" style="display: none; width: 100%; padding: 0.75rem; border: 2px solid var(--festival-primary); border-radius: 8px; font-family: inherit; font-size: 1rem; min-height: 100px; margin-top: 0.5rem; margin-bottom: 0.5rem;">{{ shift_item.shift.description }}</textarea>
                     <div class="shift-description-buttons" data-shift-id="{{ shift_item.shift.id }}" style="display: none; gap: 0.5rem;">
                         <button class="shift-save-btn" data-shift-id="{{ shift_item.shift.id }}" style="padding: 0.5rem 1rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
                             <i class="bi bi-check-circle"></i> Speichern
@@ -228,96 +282,105 @@
 
                 <!-- Tasks for this Shift -->
                 {% if shift_item.tasks %}
-                    <div style="display: grid; gap: 1.5rem;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 0.75rem;">
                         {% for task_item in shift_item.tasks %}
                             <!-- Task Card -->
-                            <div style="padding: 1.5rem; background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 8px; border-left: 4px solid #8b5cf6;">
-                                <div style="display: grid; gap: 1rem; margin-bottom: 1.5rem;">
+                            <div style="padding: 0.75rem; background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 8px; border-left: 4px solid #8b5cf6; display: flex; flex-direction: column;">
+                                <div style="display: grid; gap: 0.75rem; margin-bottom: 0.75rem; flex: 1;">
                                     <!-- Delete Button -->
-                                    <div style="display: flex; justify-content: flex-end;">
-                                        <button class="task-delete-btn" data-task-id="{{ task_item.task.id }}" style="padding: 0.4rem 0.75rem; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; transition: all 0.3s ease;" onmouseover="this.style.opacity='0.8';" onmouseout="this.style.opacity='1';">
+                                    <div style="display: flex; justify-content: flex-end; align-self: start;">
+                                        <button class="task-delete-btn" data-task-id="{{ task_item.task.id }}" style="padding: 0.3rem 0.6rem; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem; transition: all 0.3s ease; white-space: nowrap; height: auto; line-height: 1;" onmouseover="this.style.opacity='0.8';" onmouseout="this.style.opacity='1';">
                                             <i class="bi bi-trash"></i> Löschen
                                         </button>
                                     </div>
 
                                     <!-- Task Name (editable) -->
                                     <div>
-                                        <p style="color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Aufgabe</p>
-                                        <div class="task-name-display" data-task-id="{{ task_item.task.id }}" style="padding: 0.75rem; background: white; border-radius: 6px; cursor: pointer; border: 1px solid #e5e7eb; transition: all 0.3s ease; display: inline-block;" onmouseover="this.style.borderColor='var(--festival-primary)';" onmouseout="this.style.borderColor='#e5e7eb';">
-                                            <p style="margin: 0; color: var(--festival-dark); font-size: 1.25rem; font-weight: 700;">{{ task_item.task.name }}</p>
+                                        <p style="color: #6b7280; font-size: 0.75rem; margin: 0 0 0.25rem 0; font-weight: 600; text-transform: uppercase;">Aufgabe</p>
+                                        <div class="task-name-display" data-task-id="{{ task_item.task.id }}" style="padding: 0.5rem; background: white; border-radius: 6px; cursor: pointer; border: 1px solid #e5e7eb; transition: all 0.3s ease; display: inline-block;" onmouseover="this.style.borderColor='var(--festival-primary)';" onmouseout="this.style.borderColor='#e5e7eb';">
+                                            <p style="margin: 0; color: var(--festival-dark); font-size: 1rem; font-weight: 700;">{{ task_item.task.name }}</p>
                                         </div>
-                                        <input type="text" class="task-name-edit" data-task-id="{{ task_item.task.id }}" value="{{ task_item.task.name }}" style="display: none; width: 100%; padding: 0.75rem; border: 2px solid var(--festival-primary); border-radius: 6px; font-size: 1.25rem; font-weight: 700; margin-top: 0.5rem;">
-                                        <div class="task-name-buttons" data-task-id="{{ task_item.task.id }}" style="display: none; gap: 0.5rem; margin-top: 0.5rem;">
-                                            <button class="task-name-save-btn" data-task-id="{{ task_item.task.id }}" style="padding: 0.4rem 0.8rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">Speichern</button>
-                                            <button class="task-name-cancel-btn" data-task-id="{{ task_item.task.id }}" style="padding: 0.4rem 0.8rem; background: #6b7280; color: white; border: none; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">Abbrechen</button>
+                                        <input type="text" class="task-name-edit" data-task-id="{{ task_item.task.id }}" value="{{ task_item.task.name }}" style="display: none; width: 100%; padding: 0.5rem; border: 2px solid var(--festival-primary); border-radius: 6px; font-size: 1rem; font-weight: 700; margin-top: 0.3rem;">
+                                        <div class="task-name-buttons" data-task-id="{{ task_item.task.id }}" style="display: none; gap: 0.3rem; margin-top: 0.3rem;">
+                                            <button class="task-name-save-btn" data-task-id="{{ task_item.task.id }}" style="padding: 0.3rem 0.6rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer;">Speichern</button>
+                                            <button class="task-name-cancel-btn" data-task-id="{{ task_item.task.id }}" style="padding: 0.3rem 0.6rem; background: #6b7280; color: white; border: none; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer;">Abbrechen</button>
                                         </div>
                                     </div>
 
                                     <!-- Task Description (editable) -->
                                     <div>
-                                        <p style="color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Beschreibung</p>
-                                        <div class="task-description-display" data-task-id="{{ task_item.task.id }}" style="padding: 0.75rem; background: white; border-radius: 6px; cursor: pointer; border: 1px solid #e5e7eb; transition: all 0.3s ease;" onmouseover="this.style.borderColor='var(--festival-primary)';" onmouseout="this.style.borderColor='#e5e7eb';">
-                                            <p style="margin: 0; color: var(--festival-dark); white-space: pre-wrap; font-size: 0.95rem;">{{ task_item.task.description|default:"(keine Beschreibung)" }}</p>
+                                        <p style="color: #6b7280; font-size: 0.75rem; margin: 0 0 0.25rem 0; font-weight: 600; text-transform: uppercase;">Beschreibung</p>
+                                        <div class="task-description-display" data-task-id="{{ task_item.task.id }}" style="padding: 0.5rem; background: white; border-radius: 6px; cursor: pointer; border: 1px solid #e5e7eb; transition: all 0.3s ease; max-height: 80px; overflow: hidden; text-overflow: ellipsis;" onmouseover="this.style.borderColor='var(--festival-primary)';" onmouseout="this.style.borderColor='#e5e7eb';">
+                                            <p style="margin: 0; color: var(--festival-dark); white-space: pre-wrap; font-size: 0.85rem;">{{ task_item.task.description|default:"(keine Beschreibung)" }}</p>
                                         </div>
-                                        <textarea class="task-description-edit" data-task-id="{{ task_item.task.id }}" style="display: none; width: 100%; padding: 0.75rem; border: 2px solid var(--festival-primary); border-radius: 6px; font-family: inherit; font-size: 0.95rem; min-height: 80px; margin-top: 0.5rem;">{{ task_item.task.description }}</textarea>
-                                        <div class="task-description-buttons" data-task-id="{{ task_item.task.id }}" style="display: none; gap: 0.5rem; margin-top: 0.5rem;">
-                                            <button class="task-desc-save-btn" data-task-id="{{ task_item.task.id }}" style="padding: 0.4rem 0.8rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">Speichern</button>
-                                            <button class="task-desc-cancel-btn" data-task-id="{{ task_item.task.id }}" style="padding: 0.4rem 0.8rem; background: #6b7280; color: white; border: none; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">Abbrechen</button>
+                                        <textarea class="task-description-edit" data-task-id="{{ task_item.task.id }}" style="display: none; width: 100%; padding: 0.5rem; border: 2px solid var(--festival-primary); border-radius: 6px; font-family: inherit; font-size: 0.85rem; min-height: 60px; margin-top: 0.3rem;">{{ task_item.task.description }}</textarea>
+                                        <div class="task-description-buttons" data-task-id="{{ task_item.task.id }}" style="display: none; gap: 0.3rem; margin-top: 0.3rem;">
+                                            <button class="task-desc-save-btn" data-task-id="{{ task_item.task.id }}" style="padding: 0.3rem 0.6rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer;">Speichern</button>
+                                            <button class="task-desc-cancel-btn" data-task-id="{{ task_item.task.id }}" style="padding: 0.3rem 0.6rem; background: #6b7280; color: white; border: none; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer;">Abbrechen</button>
                                         </div>
                                     </div>
 
                                     <!-- Required Helpers (editable number) -->
                                     <div>
-                                        <p style="color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Erforderliche Freiwillige</p>
-                                        <div class="helpers-display" data-task-id="{{ task_item.task.id }}" style="padding: 0.75rem; background: white; border-radius: 6px; border: 1px solid #e5e7eb; cursor: pointer; display: inline-block; min-width: 100px; text-align: center; transition: all 0.3s ease;" onmouseover="this.style.borderColor='var(--festival-primary)';" onmouseout="this.style.borderColor='#e5e7eb';">
-                                            <p style="margin: 0; color: var(--festival-dark); font-size: 1.25rem; font-weight: 700;">{{ task_item.task.required_helpers }}</p>
+                                        <p style="color: #6b7280; font-size: 0.75rem; margin: 0 0 0.25rem 0; font-weight: 600; text-transform: uppercase;">Freiwillige</p>
+                                        <div class="helpers-display" data-task-id="{{ task_item.task.id }}" style="padding: 0.4rem; background: white; border-radius: 6px; border: 1px solid #e5e7eb; cursor: pointer; display: inline-block; min-width: 60px; text-align: center; transition: all 0.3s ease;" onmouseover="this.style.borderColor='var(--festival-primary)';" onmouseout="this.style.borderColor='#e5e7eb';">
+                                            <p style="margin: 0; color: var(--festival-dark); font-size: 1rem; font-weight: 700;">{{ task_item.task.required_helpers }}</p>
                                         </div>
-                                        <div class="helpers-edit" data-task-id="{{ task_item.task.id }}" style="display: none; margin-top: 0.5rem;">
-                                            <input type="number" class="helpers-input" data-task-id="{{ task_item.task.id }}" value="{{ task_item.task.required_helpers }}" min="1" style="width: 120px; padding: 0.5rem; border: 2px solid var(--festival-primary); border-radius: 6px; font-size: 1rem;">
-                                            <button class="helpers-save-btn" data-task-id="{{ task_item.task.id }}" style="margin-left: 0.5rem; padding: 0.5rem 1rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Speichern</button>
-                                            <button class="helpers-cancel-btn" data-task-id="{{ task_item.task.id }}" style="margin-left: 0.5rem; padding: 0.5rem 1rem; background: #6b7280; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Abbrechen</button>
+                                        <div class="helpers-edit" data-task-id="{{ task_item.task.id }}" style="display: none; margin-top: 0.3rem;">
+                                            <input type="number" class="helpers-input" data-task-id="{{ task_item.task.id }}" value="{{ task_item.task.required_helpers }}" min="1" style="width: 100px; padding: 0.4rem; border: 2px solid var(--festival-primary); border-radius: 6px; font-size: 0.9rem;">
+                                            <button class="helpers-save-btn" data-task-id="{{ task_item.task.id }}" style="margin-left: 0.3rem; padding: 0.3rem 0.6rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer;">Speichern</button>
+                                            <button class="helpers-cancel-btn" data-task-id="{{ task_item.task.id }}" style="margin-left: 0.3rem; padding: 0.3rem 0.6rem; background: #6b7280; color: white; border: none; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer;">Abbrechen</button>
                                         </div>
                                     </div>
 
                                     <!-- Konzertmeister Event ID (editable) -->
                                     <div>
-                                        <p style="color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Konzertmeister Event ID</p>
-                                        <div class="km-id-display" data-task-id="{{ task_item.task.id }}" style="padding: 0.75rem; background: white; border-radius: 6px; border: 1px solid #e5e7eb; cursor: pointer; display: inline-block; transition: all 0.3s ease;" onmouseover="this.style.borderColor='var(--festival-primary)';" onmouseout="this.style.borderColor='#e5e7eb';">
-                                            <p style="margin: 0; color: var(--festival-dark); font-size: 0.95rem;">{% if task_item.task.konzertmeister_event_id %}{{ task_item.task.konzertmeister_event_id }}{% else %}<span style="color: #9ca3af; font-style: italic;">(nicht verknüpft)</span>{% endif %}</p>
+                                        <p style="color: #6b7280; font-size: 0.75rem; margin: 0 0 0.25rem 0; font-weight: 600; text-transform: uppercase;">KM Event ID</p>
+                                        <div class="km-id-display" data-task-id="{{ task_item.task.id }}" style="padding: 0.4rem; background: white; border-radius: 6px; border: 1px solid #e5e7eb; cursor: pointer; display: inline-block; transition: all 0.3s ease;" onmouseover="this.style.borderColor='var(--festival-primary)';" onmouseout="this.style.borderColor='#e5e7eb';">
+                                            <p style="margin: 0; color: var(--festival-dark); font-size: 0.85rem;">{% if task_item.task.konzertmeister_event_id %}{{ task_item.task.konzertmeister_event_id }}{% else %}<span style="color: #9ca3af; font-style: italic;">(—)</span>{% endif %}</p>
                                         </div>
-                                        <div class="km-id-edit" data-task-id="{{ task_item.task.id }}" style="display: none; margin-top: 0.5rem;">
-                                            <input type="number" class="km-id-input" data-task-id="{{ task_item.task.id }}" value="{{ task_item.task.konzertmeister_event_id }}" min="1" placeholder="z.B. 12345" style="width: 150px; padding: 0.5rem; border: 2px solid var(--festival-primary); border-radius: 6px; font-size: 1rem;">
-                                            <button class="km-id-save-btn" data-task-id="{{ task_item.task.id }}" style="margin-left: 0.5rem; padding: 0.5rem 1rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Speichern</button>
-                                            <button class="km-id-clear-btn" data-task-id="{{ task_item.task.id }}" style="margin-left: 0.5rem; padding: 0.5rem 1rem; background: #f59e0b; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Löschen</button>
-                                            <button class="km-id-cancel-btn" data-task-id="{{ task_item.task.id }}" style="margin-left: 0.5rem; padding: 0.5rem 1rem; background: #6b7280; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">Abbrechen</button>
+                                        <div class="km-id-edit" data-task-id="{{ task_item.task.id }}" style="display: none; margin-top: 0.3rem;">
+                                            <input type="number" class="km-id-input" data-task-id="{{ task_item.task.id }}" value="{{ task_item.task.konzertmeister_event_id }}" min="1" placeholder="z.B. 12345" style="width: 120px; padding: 0.4rem; border: 2px solid var(--festival-primary); border-radius: 6px; font-size: 0.9rem;">
+                                            <button class="km-id-save-btn" data-task-id="{{ task_item.task.id }}" style="margin-left: 0.3rem; padding: 0.3rem 0.6rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer;">Speichern</button>
+                                            <button class="km-id-clear-btn" data-task-id="{{ task_item.task.id }}" style="margin-left: 0.3rem; padding: 0.3rem 0.6rem; background: #f59e0b; color: white; border: none; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer;">Löschen</button>
+                                            <button class="km-id-cancel-btn" data-task-id="{{ task_item.task.id }}" style="margin-left: 0.3rem; padding: 0.3rem 0.6rem; background: #6b7280; color: white; border: none; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer;">Abbruch</button>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Participants List -->
                                 {% if task_item.participants %}
-                                    <div style="border-top: 1px solid #e5e7eb; padding-top: 1rem;">
-                                        <p style="color: #6b7280; font-size: 0.85rem; margin: 0 0 1rem 0; font-weight: 600; text-transform: uppercase;">Teilnehmer ({{ task_item.participants|length }})</p>
+                                    <div style="border-top: 1px solid #e5e7eb; padding-top: 0.75rem;">
+                                        <p style="color: #6b7280; font-size: 0.75rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Teilnehmer ({{ task_item.participants|length }})</p>
                                         <div class="participants-list" data-task-id="{{ task_item.task.id }}" style="display: grid; gap: 0.75rem;">
                                             {% for participant in task_item.participants %}
-                                                <div class="participant-row" data-participant-id="{{ participant.id }}" style="padding: 1rem; background: white; border-radius: 6px; border: 1px solid #e5e7eb; display: grid; grid-template-columns: 1fr 1fr 1fr 50px; gap: 1rem; align-items: center;">
+                                                <div class="participant-row" data-participant-id="{{ participant.id }}" style="padding: 0.5rem; background: white; border-radius: 6px; border: 1px solid #e5e7eb; display: grid; grid-template-columns: 1fr 1.2fr auto; gap: 0.75rem; align-items: center;">
                                                     <!-- Name -->
                                                     <div>
-                                                        <p style="color: #6b7280; font-size: 0.75rem; margin: 0 0 0.25rem 0; font-weight: 600; text-transform: uppercase;">Name</p>
-                                                        <p class="participant-name-display" data-participant-id="{{ participant.id }}" style="margin: 0; color: var(--festival-dark); font-weight: 600; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.color='var(--festival-primary)';" onmouseout="this.style.color='var(--festival-dark)';">{{ participant.name }}</p>
+                                                        <p style="color: #6b7280; font-size: 0.65rem; margin: 0 0 0.15rem 0; font-weight: 600; text-transform: uppercase;">Name</p>
+                                                        <p class="participant-name-display" data-participant-id="{{ participant.id }}" style="margin: 0; color: var(--festival-dark); font-weight: 600; cursor: pointer; transition: all 0.3s ease; font-size: 0.95rem;" onmouseover="this.style.color='var(--festival-primary)';" onmouseout="this.style.color='var(--festival-dark)';">{{ participant.name }}</p>
                                                         <input type="text" class="participant-name-edit" data-participant-id="{{ participant.id }}" value="{{ participant.name }}" style="display: none; width: 100%; padding: 0.5rem; border: 1px solid var(--festival-primary); border-radius: 4px;">
                                                     </div>
 
                                                     <!-- Notes -->
                                                     <div>
-                                                        <p style="color: #6b7280; font-size: 0.75rem; margin: 0 0 0.25rem 0; font-weight: 600; text-transform: uppercase;">Notizen</p>
-                                                        <p class="participant-notes-display" data-participant-id="{{ participant.id }}" style="margin: 0; color: #6b7280; font-size: 0.85rem; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: all 0.3s ease;" onmouseover="this.style.color='var(--festival-primary)';" onmouseout="this.style.color='#6b7280';">{{ participant.notes|default:"–" }}</p>
+                                                        <p style="color: #6b7280; font-size: 0.65rem; margin: 0 0 0.15rem 0; font-weight: 600; text-transform: uppercase;">Notizen</p>
+                                                        <p class="participant-notes-display" data-participant-id="{{ participant.id }}" style="margin: 0; color: #6b7280; font-size: 0.8rem; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: all 0.3s ease;" onmouseover="this.style.color='var(--festival-primary)';" onmouseout="this.style.color='#6b7280';">{{ participant.notes|default:"–" }}</p>
                                                         <textarea class="participant-notes-edit" data-participant-id="{{ participant.id }}" style="display: none; width: 100%; padding: 0.5rem; border: 1px solid var(--festival-primary); border-radius: 4px; min-height: 60px; font-family: inherit;">{{ participant.notes }}</textarea>
                                                     </div>
 
-                                                    <!-- Delete Button -->
-                                                    <div style="text-align: right;">
-                                                        <button class="participant-delete-btn" data-participant-id="{{ participant.id }}" style="padding: 0.5rem 0.75rem; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s ease;" onmouseover="this.style.opacity='0.8';" onmouseout="this.style.opacity='1';">
+                                                    <!-- Actions (Masked checkbox + Delete button) -->
+                                                    <div style="display: flex; gap: 0.5rem; align-items: center; justify-content: flex-end;">
+                                                        <!-- Masked Status -->
+                                                        <div style="display: flex; flex-direction: column; align-items: center;">
+                                                            <p class="participant-masked-display" data-participant-id="{{ participant.id }}" style="margin: 0; color: #6b7280; font-size: 0.9rem; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.color='var(--festival-primary)';" onmouseout="this.style.color='#6b7280';">
+                                                                {% if participant.masked %}<i class="bi bi-check-square" style="color: var(--festival-primary);"></i>{% else %}<span style="opacity: 0.5;">–</span>{% endif %}
+                                                            </p>
+                                                            <input type="checkbox" class="participant-masked-edit" data-participant-id="{{ participant.id }}" {% if participant.masked %}checked{% endif %} style="display: none; width: 18px; height: 18px; cursor: pointer;">
+                                                        </div>
+
+                                                        <!-- Delete Button -->
+                                                        <button class="participant-delete-btn" data-participant-id="{{ participant.id }}" style="padding: 0.4rem 0.6rem; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; transition: all 0.3s ease;" onmouseover="this.style.opacity='0.8';" onmouseout="this.style.opacity='1';">
                                                             <i class="bi bi-trash"></i>
                                                         </button>
                                                     </div>
@@ -336,40 +399,40 @@
                                         </div>
                                     </div>
                                 {% else %}
-                                    <div style="border-top: 1px solid #e5e7eb; padding-top: 1rem; text-align: center; color: #9ca3af;">
-                                        <p style="margin: 0;">Keine Teilnehmer angemeldet</p>
+                                    <div style="border-top: 1px solid #e5e7eb; padding-top: 0.75rem; text-align: center; color: #9ca3af;">
+                                        <p style="margin: 0; font-size: 0.85rem;">Keine Teilnehmer angemeldet</p>
                                     </div>
                                 {% endif %}
 
                                 <!-- Add Participant Form -->
-                                <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #e5e7eb;">
-                                    <button class="add-participant-toggle-btn" data-task-id="{{ task_item.task.id }}" style="padding: 0.75rem 1.5rem; background: var(--festival-success); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 0.5rem;" onmouseover="this.style.opacity='0.9';" onmouseout="this.style.opacity='1';">
+                                <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #e5e7eb;">
+                                    <button class="add-participant-toggle-btn" data-task-id="{{ task_item.task.id }}" style="padding: 0.5rem 1rem; background: var(--festival-success); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.85rem;" onmouseover="this.style.opacity='0.9';" onmouseout="this.style.opacity='1';">
                                         <i class="bi bi-plus-circle"></i> Teilnehmer hinzufügen
                                     </button>
 
-                                    <div class="add-participant-form" data-task-id="{{ task_item.task.id }}" style="display: none; margin-top: 1rem; padding: 1.5rem; background: #f9fafb; border: 2px dashed #e5e7eb; border-radius: 8px;">
-                                        <h4 style="margin-top: 0; color: var(--festival-dark); font-weight: 600; margin-bottom: 1rem;">Neuer Teilnehmer</h4>
+                                    <div class="add-participant-form" data-task-id="{{ task_item.task.id }}" style="display: none; margin-top: 0.75rem; padding: 1rem; background: #f9fafb; border: 2px dashed #e5e7eb; border-radius: 8px;">
+                                        <h4 style="margin-top: 0; color: var(--festival-dark); font-weight: 600; margin-bottom: 0.75rem;">Neuer Teilnehmer</h4>
 
-                                        <div style="display: grid; grid-template-columns: 1fr; gap: 1rem; margin-bottom: 1rem;">
+                                        <div style="display: grid; grid-template-columns: 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
                                             <!-- Participant Name -->
                                             <div>
-                                                <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Name *</label>
-                                                <input type="text" class="add-participant-name-input" data-task-id="{{ task_item.task.id }}" placeholder="z.B. Max Mustermann" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 1rem;">
+                                                <label style="display: block; color: #6b7280; font-size: 0.75rem; margin: 0 0 0.25rem 0; font-weight: 600; text-transform: uppercase;">Name *</label>
+                                                <input type="text" class="add-participant-name-input" data-task-id="{{ task_item.task.id }}" placeholder="z.B. Max Mustermann" style="width: 100%; padding: 0.6rem; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 0.9rem;">
                                             </div>
 
                                             <!-- Participant Notes -->
                                             <div>
-                                                <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Notizen</label>
-                                                <textarea class="add-participant-notes-input" data-task-id="{{ task_item.task.id }}" placeholder="Optional: Notizen zu diesem Teilnehmer" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-family: inherit; font-size: 0.95rem; min-height: 50px;"></textarea>
+                                                <label style="display: block; color: #6b7280; font-size: 0.75rem; margin: 0 0 0.25rem 0; font-weight: 600; text-transform: uppercase;">Notizen</label>
+                                                <textarea class="add-participant-notes-input" data-task-id="{{ task_item.task.id }}" placeholder="Optional: Notizen zu diesem Teilnehmer" style="width: 100%; padding: 0.6rem; border: 1px solid #e5e7eb; border-radius: 6px; font-family: inherit; font-size: 0.85rem; min-height: 40px;"></textarea>
                                             </div>
                                         </div>
 
                                         <!-- Form Buttons -->
                                         <div style="display: flex; gap: 0.5rem;">
-                                            <button class="add-participant-save-btn" data-task-id="{{ task_item.task.id }}" style="padding: 0.75rem 1.5rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
-                                                <i class="bi bi-check-circle"></i> Teilnehmer erstellen
+                                            <button class="add-participant-save-btn" data-task-id="{{ task_item.task.id }}" style="padding: 0.5rem 0.8rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; font-size: 0.8rem;">
+                                                <i class="bi bi-check-circle"></i> Erstellen
                                             </button>
-                                            <button class="add-participant-cancel-btn" data-task-id="{{ task_item.task.id }}" style="padding: 0.75rem 1.5rem; background: #6b7280; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                                            <button class="add-participant-cancel-btn" data-task-id="{{ task_item.task.id }}" style="padding: 0.5rem 0.8rem; background: #6b7280; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; font-size: 0.8rem;">
                                                 <i class="bi bi-x-circle"></i> Abbrechen
                                             </button>
                                         </div>
@@ -382,53 +445,53 @@
 
                 <!-- Add Task Form -->
                 <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #e5e7eb;">
-                    <button class="add-task-toggle-btn" data-shift-id="{{ shift_item.shift.id }}" style="padding: 0.75rem 1.5rem; background: var(--festival-success); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 0.5rem;" onmouseover="this.style.opacity='0.9';" onmouseout="this.style.opacity='1';">
+                    <button class="add-task-toggle-btn" data-shift-id="{{ shift_item.shift.id }}" style="padding: 0.65rem 1.25rem; background: var(--festival-success); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 0.5rem;" onmouseover="this.style.opacity='0.9';" onmouseout="this.style.opacity='1';">
                         <i class="bi bi-plus-circle"></i> Aufgabe hinzufügen
                     </button>
 
-                    <div class="add-task-form" data-shift-id="{{ shift_item.shift.id }}" style="display: none; margin-top: 1rem; padding: 1.5rem; background: #f9fafb; border: 2px dashed #e5e7eb; border-radius: 8px;">
-                        <h4 style="margin-top: 0; color: var(--festival-dark); font-weight: 600; margin-bottom: 1rem;">Neue Aufgabe</h4>
+                    <div class="add-task-form" data-shift-id="{{ shift_item.shift.id }}" style="display: none; margin-top: 0.75rem; padding: 1rem; background: #f9fafb; border: 2px dashed #e5e7eb; border-radius: 8px;">
+                        <h4 style="margin-top: 0; color: var(--festival-dark); font-weight: 600; margin-bottom: 0.75rem;">Neue Aufgabe</h4>
 
                         <!-- Template Selector -->
-                        <div style="margin-bottom: 1.5rem;">
-                            <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Vorlage (optional)</label>
-                            <select class="add-task-template-select" data-shift-id="{{ shift_item.shift.id }}" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 1rem; margin-bottom: 1rem;">
+                        <div style="margin-bottom: 0.75rem;">
+                            <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.25rem 0; font-weight: 600; text-transform: uppercase;">Vorlage (optional)</label>
+                            <select class="add-task-template-select" data-shift-id="{{ shift_item.shift.id }}" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 1rem; margin-bottom: 0.75rem;">
                                 <option value="">– Keine Vorlage verwenden –</option>
                             </select>
                         </div>
 
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
                             <!-- Task Name -->
                             <div>
-                                <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Aufgabenname *</label>
+                                <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.25rem 0; font-weight: 600; text-transform: uppercase;">Aufgabenname *</label>
                                 <input type="text" class="add-task-name-input" data-shift-id="{{ shift_item.shift.id }}" placeholder="z.B. Einlass" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 1rem;">
                             </div>
 
                             <!-- Required Helpers -->
                             <div>
-                                <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Erforderliche Freiwillige *</label>
+                                <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.25rem 0; font-weight: 600; text-transform: uppercase;">Erforderliche Freiwillige *</label>
                                 <input type="number" class="add-task-helpers-input" data-shift-id="{{ shift_item.shift.id }}" value="1" min="1" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 1rem;">
                             </div>
                         </div>
 
                         <!-- Task Description -->
-                        <div style="margin-top: 1rem;">
-                            <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Beschreibung</label>
+                        <div style="margin-top: 0.75rem;">
+                            <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.25rem 0; font-weight: 600; text-transform: uppercase;">Beschreibung</label>
                             <textarea class="add-task-description-input" data-shift-id="{{ shift_item.shift.id }}" placeholder="Detaillierte Beschreibung der Aufgabe" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-family: inherit; font-size: 0.95rem; min-height: 60px;"></textarea>
                         </div>
 
                         <!-- Special Requirements -->
-                        <div style="margin-top: 1rem;">
-                            <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.5rem 0; font-weight: 600; text-transform: uppercase;">Besondere Anforderungen</label>
+                        <div style="margin-top: 0.75rem;">
+                            <label style="display: block; color: #6b7280; font-size: 0.85rem; margin: 0 0 0.25rem 0; font-weight: 600; text-transform: uppercase;">Besondere Anforderungen</label>
                             <textarea class="add-task-requirements-input" data-shift-id="{{ shift_item.shift.id }}" placeholder="z.B. Erste-Hilfe-Kurs erforderlich" style="width: 100%; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 6px; font-family: inherit; font-size: 0.95rem; min-height: 50px;"></textarea>
                         </div>
 
                         <!-- Form Buttons -->
-                        <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
-                            <button class="add-task-save-btn" data-shift-id="{{ shift_item.shift.id }}" style="padding: 0.75rem 1.5rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                        <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem;">
+                            <button class="add-task-save-btn" data-shift-id="{{ shift_item.shift.id }}" style="padding: 0.65rem 1.25rem; background: var(--festival-success); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
                                 <i class="bi bi-check-circle"></i> Aufgabe erstellen
                             </button>
-                            <button class="add-task-cancel-btn" data-shift-id="{{ shift_item.shift.id }}" style="padding: 0.75rem 1.5rem; background: #6b7280; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                            <button class="add-task-cancel-btn" data-shift-id="{{ shift_item.shift.id }}" style="padding: 0.65rem 1.25rem; background: #6b7280; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
                                 <i class="bi bi-x-circle"></i> Abbrechen
                             </button>
                         </div>
@@ -584,6 +647,43 @@
         return cookieValue;
     }
 
+    // Settings Toggle Functionality
+    function toggleSettings() {
+        const content = document.getElementById('settings-content');
+        const icon = document.getElementById('settings-toggle-icon');
+        const isExpanded = content.style.maxHeight !== '0px';
+
+        if (isExpanded) {
+            content.style.maxHeight = '0px';
+            content.style.paddingTop = '0';
+            content.style.paddingBottom = '0';
+            icon.classList.remove('bi-chevron-up');
+            icon.classList.add('bi-chevron-down');
+            localStorage.setItem('settingsExpanded', 'false');
+        } else {
+            content.style.maxHeight = '3000px';
+            content.style.paddingTop = '1rem';
+            content.style.paddingBottom = '1rem';
+            icon.classList.add('bi-chevron-up');
+            icon.classList.remove('bi-chevron-down');
+            localStorage.setItem('settingsExpanded', 'true');
+        }
+    }
+
+    // Shift Description Toggle Functionality
+    function toggleDescriptionVisibility(headerElement, shiftId) {
+        const display = document.querySelector(`.shift-description-display[data-shift-id="${shiftId}"]`);
+        const toggleIcon = document.querySelector(`.shift-description-toggle-icon[data-shift-id="${shiftId}"]`);
+
+        if (display.style.display === 'none') {
+            display.style.display = 'block';
+            toggleIcon.style.transform = 'rotate(90deg)';
+        } else {
+            display.style.display = 'none';
+            toggleIcon.style.transform = 'rotate(0deg)';
+        }
+    }
+
     function showNotification(message, isSuccess = true) {
         const toast = document.getElementById('notificationToast');
         const text = document.getElementById('notificationText');
@@ -659,6 +759,66 @@
 
         this.disabled = false;
         this.textContent = 'Speichern';
+    });
+
+    // Festival Dates Editing
+    const festivalStartDateInput = document.getElementById('festivalStartDateInput');
+    const festivalEndDateInput = document.getElementById('festivalEndDateInput');
+    const festivalStartDateSaveBtn = document.getElementById('festivalStartDateSaveBtn');
+    const festivalEndDateSaveBtn = document.getElementById('festivalEndDateSaveBtn');
+
+    festivalStartDateSaveBtn.addEventListener('click', async function() {
+        const startDate = festivalStartDateInput.value;
+
+        this.disabled = true;
+        const originalIcon = this.innerHTML;
+        this.innerHTML = '<i class="bi bi-hourglass"></i>';
+
+        const response = await fetch(`{{ api_base_url }}${festivalSlug}/api/festival/update/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({ start_date: startDate })
+        });
+
+        if (response.ok) {
+            showNotification('Startdatum aktualisiert');
+        } else {
+            const error = await response.json();
+            showNotification(error.error || 'Fehler beim Speichern', false);
+        }
+
+        this.disabled = false;
+        this.innerHTML = originalIcon;
+    });
+
+    festivalEndDateSaveBtn.addEventListener('click', async function() {
+        const endDate = festivalEndDateInput.value;
+
+        this.disabled = true;
+        const originalIcon = this.innerHTML;
+        this.innerHTML = '<i class="bi bi-hourglass"></i>';
+
+        const response = await fetch(`{{ api_base_url }}${festivalSlug}/api/festival/update/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({ end_date: endDate })
+        });
+
+        if (response.ok) {
+            showNotification('Enddatum aktualisiert');
+        } else {
+            const error = await response.json();
+            showNotification(error.error || 'Fehler beim Speichern', false);
+        }
+
+        this.disabled = false;
+        this.innerHTML = originalIcon;
     });
 
     // Load templates and populate dropdowns
@@ -1026,12 +1186,25 @@
             }
         });
 
+        document.querySelectorAll('.participant-masked-display').forEach(display => {
+            if (!display.dataset.listenerAttached) {
+                display.addEventListener('click', function() {
+                    const participantId = this.dataset.participantId;
+                    this.style.display = 'none';
+                    document.querySelector(`.participant-masked-edit[data-participant-id="${participantId}"]`).style.display = 'block';
+                    document.querySelector(`.participant-edit-buttons[data-participant-id="${participantId}"]`).style.display = 'grid';
+                });
+                display.dataset.listenerAttached = true;
+            }
+        });
+
         document.querySelectorAll('.participant-save-btn').forEach(btn => {
             if (!btn.dataset.listenerAttached) {
                 btn.addEventListener('click', async function() {
                     const participantId = this.dataset.participantId;
                     const name = document.querySelector(`.participant-name-edit[data-participant-id="${participantId}"]`).value;
                     const notes = document.querySelector(`.participant-notes-edit[data-participant-id="${participantId}"]`).value;
+                    const masked = document.querySelector(`.participant-masked-edit[data-participant-id="${participantId}"]`).checked;
 
                     const response = await fetch(`{{ api_base_url }}${festivalSlug}/api/participant/${participantId}/update/`, {
                         method: 'POST',
@@ -1039,16 +1212,20 @@
                             'Content-Type': 'application/json',
                             'X-CSRFToken': getCookie('csrftoken')
                         },
-                        body: JSON.stringify({ name, notes })
+                        body: JSON.stringify({ name, notes, masked })
                     });
 
                     if (response.ok) {
                         document.querySelector(`.participant-name-display[data-participant-id="${participantId}"]`).textContent = name;
                         document.querySelector(`.participant-notes-display[data-participant-id="${participantId}"]`).textContent = notes || '–';
+                        const maskedDisplay = document.querySelector(`.participant-masked-display[data-participant-id="${participantId}"]`);
+                        maskedDisplay.innerHTML = masked ? '<i class="bi bi-check-square" style="color: var(--festival-primary);"></i>' : '<span style="opacity: 0.5;">–</span>';
                         document.querySelector(`.participant-name-display[data-participant-id="${participantId}"]`).style.display = 'block';
                         document.querySelector(`.participant-name-edit[data-participant-id="${participantId}"]`).style.display = 'none';
                         document.querySelector(`.participant-notes-display[data-participant-id="${participantId}"]`).style.display = 'block';
                         document.querySelector(`.participant-notes-edit[data-participant-id="${participantId}"]`).style.display = 'none';
+                        document.querySelector(`.participant-masked-display[data-participant-id="${participantId}"]`).style.display = 'block';
+                        document.querySelector(`.participant-masked-edit[data-participant-id="${participantId}"]`).style.display = 'none';
                         document.querySelector(`.participant-edit-buttons[data-participant-id="${participantId}"]`).style.display = 'none';
                         showNotification('Teilnehmer aktualisiert');
                     } else {
@@ -1068,6 +1245,8 @@
                     document.querySelector(`.participant-name-edit[data-participant-id="${participantId}"]`).style.display = 'none';
                     document.querySelector(`.participant-notes-display[data-participant-id="${participantId}"]`).style.display = 'block';
                     document.querySelector(`.participant-notes-edit[data-participant-id="${participantId}"]`).style.display = 'none';
+                    document.querySelector(`.participant-masked-display[data-participant-id="${participantId}"]`).style.display = 'block';
+                    document.querySelector(`.participant-masked-edit[data-participant-id="${participantId}"]`).style.display = 'none';
                     document.querySelector(`.participant-edit-buttons[data-participant-id="${participantId}"]`).style.display = 'none';
                 });
                 btn.dataset.listenerAttached = true;
@@ -1143,7 +1322,7 @@
 
                 // Build the new participant HTML
                 const participantHtml = `
-                    <div class="participant-row" data-participant-id="${participant.id}" style="padding: 1rem; background: white; border-radius: 6px; border: 1px solid #e5e7eb; display: grid; grid-template-columns: 1fr 1fr 1fr 50px; gap: 1rem; align-items: center;">
+                    <div class="participant-row" data-participant-id="${participant.id}" style="padding: 1rem; background: white; border-radius: 6px; border: 1px solid #e5e7eb; display: grid; grid-template-columns: 1fr 1fr 50px 50px 50px; gap: 1rem; align-items: center;">
                         <!-- Name -->
                         <div>
                             <p style="color: #6b7280; font-size: 0.75rem; margin: 0 0 0.25rem 0; font-weight: 600; text-transform: uppercase;">Name</p>
@@ -1156,6 +1335,15 @@
                             <p style="color: #6b7280; font-size: 0.75rem; margin: 0 0 0.25rem 0; font-weight: 600; text-transform: uppercase;">Notizen</p>
                             <p class="participant-notes-display" data-participant-id="${participant.id}" style="margin: 0; color: #6b7280; font-size: 0.85rem; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: all 0.3s ease;" onmouseover="this.style.color='var(--festival-primary)';" onmouseout="this.style.color='#6b7280';">${participant.notes || '–'}</p>
                             <textarea class="participant-notes-edit" data-participant-id="${participant.id}" style="display: none; width: 100%; padding: 0.5rem; border: 1px solid var(--festival-primary); border-radius: 4px; min-height: 60px; font-family: inherit;">${participant.notes || ''}</textarea>
+                        </div>
+
+                        <!-- Masked Status -->
+                        <div style="text-align: center;">
+                            <p style="color: #6b7280; font-size: 0.75rem; margin: 0 0 0.25rem 0; font-weight: 600; text-transform: uppercase;">Masken</p>
+                            <p class="participant-masked-display" data-participant-id="${participant.id}" style="margin: 0; color: #6b7280; font-size: 0.85rem; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.color='var(--festival-primary)';" onmouseout="this.style.color='#6b7280';">
+                                ${participant.masked ? '<i class="bi bi-check-square" style="color: var(--festival-primary);"></i>' : '<span style="opacity: 0.5;">–</span>'}
+                            </p>
+                            <input type="checkbox" class="participant-masked-edit" data-participant-id="${participant.id}" ${participant.masked ? 'checked' : ''} style="display: none; width: 18px; height: 18px; cursor: pointer;">
                         </div>
 
                         <!-- Delete Button -->
@@ -1846,6 +2034,23 @@
             }
         });
 
+        // Attach shift edit button listeners
+        document.querySelectorAll('.shift-edit-btn').forEach(btn => {
+            if (!btn.dataset.listenerAttached) {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const shiftId = this.dataset.shiftId;
+                    const display = document.querySelector(`.shift-header-display[data-shift-id="${shiftId}"]`);
+                    const edit = document.querySelector(`.shift-header-edit[data-shift-id="${shiftId}"]`);
+                    if (display && edit) {
+                        display.style.display = 'none';
+                        edit.style.display = 'block';
+                    }
+                });
+                btn.dataset.listenerAttached = true;
+            }
+        });
+
         // Attach header save button listeners
         document.querySelectorAll('.shift-header-save-btn').forEach(btn => {
             if (!btn.dataset.listenerAttached) {
@@ -2269,6 +2474,27 @@
             .finally(() => {
                 pendingImportData = null;
             });
+        }
+
+        // Initialize Settings Collapse State (collapse by default)
+        const settingsContent = document.getElementById('settings-content');
+        const settingsIcon = document.getElementById('settings-toggle-icon');
+        const isExpanded = localStorage.getItem('settingsExpanded') === 'true';
+
+        if (settingsContent && settingsIcon) {
+            if (!isExpanded) {
+                settingsContent.style.maxHeight = '0px';
+                settingsContent.style.paddingTop = '0';
+                settingsContent.style.paddingBottom = '0';
+                settingsIcon.classList.add('bi-chevron-down');
+                settingsIcon.classList.remove('bi-chevron-up');
+            } else {
+                settingsContent.style.maxHeight = '3000px';
+                settingsContent.style.paddingTop = '1rem';
+                settingsContent.style.paddingBottom = '1rem';
+                settingsIcon.classList.add('bi-chevron-up');
+                settingsIcon.classList.remove('bi-chevron-down');
+            }
         }
     });
 </script>

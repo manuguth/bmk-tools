@@ -44,7 +44,6 @@ def serialize_festival_to_yaml(festival: Festival, include_participants: bool = 
                 for participant in task.participants.all().order_by('signed_up_at'):
                     participant_dict = {
                         'name': participant.name,
-                        'attended': participant.attended,
                         'notes': participant.notes,
                         'signed_up_at': participant.signed_up_at.isoformat(),
                     }
@@ -306,7 +305,6 @@ def import_festival_data(festival: Festival, data: Dict, include_participants: b
                             Participant.objects.create(
                                 task=task,
                                 name=participant_data['name'],
-                                attended=participant_data.get('attended', False),
                                 notes=participant_data.get('notes', ''),
                                 signed_up_at=signed_up_at,
                             )
