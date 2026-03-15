@@ -187,7 +187,7 @@
 
 <!-- Signup Modal -->
 <div class="modal fade" id="signupModal" tabindex="-1" role="dialog" aria-labelledby="signupModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-dialog modal-dialog-centered signup-modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="signupModalLabel">Anmeldung</h5>
@@ -207,24 +207,22 @@
                 <!-- Signup Form -->
                 <form id="signupForm">
                     {% csrf_token %}
-                    <div class="form-group mb-3">
-                        <label for="participantName" class="form-label">Name (erforderlich)</label>
+                    <div class="form-group mb-2">
                         <input type="text"
                                class="form-control form-control-lg"
                                id="participantName"
                                name="name"
-                               placeholder="Ihr Name"
+                               placeholder="Name (erforderlich)"
                                required>
                         <div class="invalid-feedback" id="nameErrorMsg"></div>
                     </div>
 
-                    <div class="form-group mb-3">
-                        <label for="participantNotes" class="form-label">Kommentar (optional)</label>
+                    <div class="form-group">
                         <textarea class="form-control"
                                   id="participantNotes"
                                   name="notes"
-                                  placeholder="Besondere Anforderungen oder Anmerkungen"
-                                  rows="3"></textarea>
+                                  placeholder="Kommentar (optional)"
+                                  rows="2"></textarea>
                     </div>
 
                     <input type="hidden" id="taskIdInput" name="task_id">
@@ -285,6 +283,39 @@
 </div>
 
 <style>
+/* Signup Modal - Mobile Adjustments */
+@media (max-width: 600px) {
+    .signup-modal-dialog {
+        margin: 0 !important;
+        width: 100% !important;
+        max-width: none !important;
+        height: 100vh !important;
+        position: absolute;
+        top: 0 !important;
+        align-items: flex-start !important;
+    }
+
+    .signup-modal-dialog .modal-content {
+        border-radius: 16px 16px 0 0;
+        max-height: 70vh;
+        margin-top: auto;
+    }
+
+    .signup-modal-dialog .modal-body {
+        padding: 1rem;
+        max-height: calc(70vh - 120px);
+        overflow-y: auto;
+    }
+
+    .signup-modal-dialog .modal-header {
+        padding: 1rem;
+    }
+
+    .signup-modal-dialog .modal-footer {
+        padding: 1rem;
+    }
+}
+
 /* Mobile Sticky Shift Header */
 .mobile-sticky-shift-header {
     position: fixed;
