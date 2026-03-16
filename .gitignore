@@ -137,6 +137,7 @@ env.sh
 staticfiles/
 .DS_Store
 .*_venv/
-pw_convert-hex.py
 
 *.pdf
+
+pw_convert-hex.py
