@@ -3,7 +3,8 @@ import logging
 
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
-from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
 from django.conf import settings
 from django.db import models as db_models
 from django.http import JsonResponse
@@ -21,55 +22,27 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 def _send_confirmation_email(order):
-    """Send German-language confirmation email to the customer."""
-    concert_date_str = order.concert.date.strftime("%A, %d. %B %Y, %H:%M Uhr")
-
-    ticket_lines = []
-    if order.adult_count > 0:
-        subtotal = order.adult_count * order.concert.adult_price
-        ticket_lines.append(
-            f"  Erwachsene:  {order.adult_count} × {order.concert.adult_price:.2f} € = {subtotal:.2f} €"
-        )
-    if order.child_count > 0:
-        subtotal = order.child_count * order.concert.child_price
-        ticket_lines.append(
-            f"  Kinder:      {order.child_count} × {order.concert.child_price:.2f} € = {subtotal:.2f} €"
-        )
+    """Send German-language confirmation email to the customer (HTML + plain text)."""
+    context = {
+        "order": order,
+        "adult_subtotal": order.adult_count * order.concert.adult_price,
+        "child_subtotal": order.child_count * order.concert.child_price,
+    }
 
     subject = f"Ihre Kartenreservierung: {order.concert.name}"
-    message = (
-        f"Sehr geehrte(r) {order.customer_name},\n\n"
-        f"vielen Dank für Ihre Kartenreservierung beim "
-        f"Bergmannskapelle Buggingen e.V.!\n\n"
-        f"Ihre Reservierung wurde erfolgreich aufgenommen und wird "
-        f"schnellstmöglich bearbeitet.\n\n"
-        f"{'━' * 42}\n"
-        f"IHRE BESTELLUNG\n"
-        f"{'━' * 42}\n\n"
-        f"Konzert:           {order.concert.name}\n"
-        f"Datum:             {concert_date_str}\n"
-        f"Veranstaltungsort: {order.concert.venue}\n\n"
-        + "\n".join(ticket_lines)
-        + f"\n{'─' * 42}\n"
-        f"Gesamtbetrag:      {order.total_price:.2f} €\n\n"
-        f"Bestätigungscode:  {order.confirmation_code}\n\n"
-        f"{'━' * 42}\n\n"
-        f"Bitte halten Sie Ihren Bestätigungscode ({order.confirmation_code}) bereit.\n"
-        f"Die Karten liegen unter Ihrem Namen an der Abendkasse für Sie bereit.\n"
-        f"Die Zahlung erfolgt an der Abendkasse.\n\n"
-        f"Bei Fragen wenden Sie sich bitte an uns.\n\n"
-        f"Mit freundlichen Grüßen\n"
-        f"Ihr BMK-Team\n"
+    text_body = render_to_string("tickets/email_confirmation.txt", context)
+    html_body = render_to_string("tickets/email_confirmation.html", context)
+
+    email = EmailMultiAlternatives(
+        subject=subject,
+        body=text_body,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[order.customer_email],
     )
+    email.attach_alternative(html_body, "text/html")
 
     try:
-        send_mail(
-            subject=subject,
-            message=message,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[order.customer_email],
-            fail_silently=False,
-        )
+        email.send(fail_silently=False)
     except Exception as exc:
         logger.error(
             "Failed to send confirmation email for order %s: %s",
