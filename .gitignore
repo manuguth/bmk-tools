@@ -141,3 +141,4 @@ staticfiles/
 *.pdf
 
 pw_convert-hex.py
+playground/
