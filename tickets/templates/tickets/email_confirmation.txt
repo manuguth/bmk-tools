@@ -1,0 +1,38 @@
+Sehr geehrte(r) {{ order.customer_name }},
+
+vielen Dank fuer Ihre Kartenreservierung beim
+Bergmannskapelle Buggingen e.V.!
+
+Ihre Reservierung wurde erfolgreich aufgenommen.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+IHRE BESTELLUNG
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Konzert:           {{ order.concert.name }}
+Datum:             {{ order.concert.date|date:"l, d. F Y" }}, {{ order.concert.date|date:"H:i" }} Uhr
+Veranstaltungsort: {{ order.concert.venue }}
+
+{% if order.adult_count > 0 %}  Erwachsene:  {{ order.adult_count }} x {{ order.concert.adult_price|floatformat:2 }} EUR = {{ adult_subtotal|floatformat:2 }} EUR
+{% endif %}{% if order.child_count > 0 %}  Kinder:      {{ order.child_count }} x {{ order.concert.child_price|floatformat:2 }} EUR = {{ child_subtotal|floatformat:2 }} EUR
+{% endif %}──────────────────────────────────────────
+Gesamtbetrag:  {{ order.total_price|floatformat:2 }} EUR
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ABENDKASSE & ZAHLUNG
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Bitte nennen Sie an der Abendkasse einfach Ihren Namen.
+Die Karten liegen unter Ihrem Namen bereit.
+Die Zahlung erfolgt vor Ort an der Abendkasse.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Bei Fragen stehen wir Ihnen gerne zur Verfuegung.
+
+Mit freundlichen Gruessen
+Ihr BMK-Team
+
+--
+Bergmannskapelle Buggingen e.V. | Kartenvorverkauf
+Sie koennen auf diese E-Mail antworten - wir lesen alle Nachrichten.

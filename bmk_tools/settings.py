@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -24,6 +25,7 @@ SECRET_KEY = "django-insecure-9a$g84u=&-_so*b@lzvr_2o@*n4q%17$b6*j2wlw!%#fj%!*$^
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+# DEBUG = False
 
 ALLOWED_HOSTS = ["*"] if DEBUG else ["host.docker.internal", "localhost", "127.0.0.1"]
 
@@ -33,6 +35,7 @@ ALLOWED_HOSTS = ["*"] if DEBUG else ["host.docker.internal", "localhost", "127.0
 INSTALLED_APPS = [
     "festival.apps.FestivalConfig",
     "info_mail.apps.InfoMailConfig",
+    "tickets.apps.TicketsConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -140,3 +143,17 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 MEDIA_ROOT = BASE_DIR / "uploads/"
 MEDIA_URL = "media/"
+
+# Email Configuration — uses SMTP if EMAIL_HOST_USER is set, console backend otherwise
+if os.environ.get("EMAIL_HOST_USER"):
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+    EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.office365.com")
+    EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 587))
+    EMAIL_USE_TLS = True
+    EMAIL_USE_SSL = False
+    EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
+    EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+    DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "Tickets BMK <tickets@bmk-buggingen.de>")
+else:
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+    DEFAULT_FROM_EMAIL = "Tickets BMK <tickets@bmk-buggingen.de>"

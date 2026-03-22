@@ -1,0 +1,154 @@
+{% extends "tickets/base.html" %}
+
+{% block title %}Neues Konzert – BMK{% endblock %}
+
+{% block page_content %}
+
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="{% url 'tickets:admin_concert_list' %}" style="color: var(--tickets-gold); text-decoration:none;">Verwaltung</a>
+        </li>
+        <li class="breadcrumb-item active">Neues Konzert</li>
+    </ol>
+</nav>
+
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-8">
+        <div class="ticket-card p-4">
+            <h3 class="fw-bold mb-4" style="color: var(--tickets-navy);">
+                <i class="bi bi-plus-circle me-2" style="color: var(--tickets-gold);"></i>Neues Konzert anlegen
+            </h3>
+
+            <form method="post" enctype="multipart/form-data" novalidate>
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger mb-3">
+                    {% for error in form.non_field_errors %}
+                        <div>{{ error }}</div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <div class="mb-3">
+                    <label class="form-label" for="{{ form.name.id_for_label }}">{{ form.name.label }} <span class="text-danger">*</span></label>
+                    {{ form.name }}
+                    {% if form.name.errors %}<div class="text-danger small mt-1">{{ form.name.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="{{ form.slug.id_for_label }}">{{ form.slug.label }} <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text text-muted" style="font-size:0.85rem;">/tickets/</span>
+                        {{ form.slug }}
+                        <span class="input-group-text text-muted" style="font-size:0.85rem;">/</span>
+                    </div>
+                    <div class="form-text">Wird automatisch aus dem Namen befüllt. Nur Kleinbuchstaben, Zahlen und Bindestriche erlaubt.</div>
+                    {% if form.slug.errors %}<div class="text-danger small mt-1">{{ form.slug.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+                    {{ form.description }}
+                    {% if form.description.errors %}<div class="text-danger small mt-1">{{ form.description.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-12 col-sm-6">
+                        <label class="form-label" for="{{ form.date.id_for_label }}">{{ form.date.label }} <span class="text-danger">*</span></label>
+                        {{ form.date }}
+                        {% if form.date.errors %}<div class="text-danger small mt-1">{{ form.date.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-12 col-sm-6">
+                        <label class="form-label" for="{{ form.venue.id_for_label }}">{{ form.venue.label }} <span class="text-danger">*</span></label>
+                        {{ form.venue }}
+                        {% if form.venue.errors %}<div class="text-danger small mt-1">{{ form.venue.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-sm-4">
+                        <label class="form-label" for="{{ form.adult_price.id_for_label }}">{{ form.adult_price.label }} <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            {{ form.adult_price }}
+                            <span class="input-group-text">€</span>
+                        </div>
+                        {% if form.adult_price.errors %}<div class="text-danger small mt-1">{{ form.adult_price.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-6 col-sm-4">
+                        <label class="form-label" for="{{ form.child_price.id_for_label }}">{{ form.child_price.label }} <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            {{ form.child_price }}
+                            <span class="input-group-text">€</span>
+                        </div>
+                        {% if form.child_price.errors %}<div class="text-danger small mt-1">{{ form.child_price.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-12 col-sm-4">
+                        <label class="form-label" for="{{ form.max_adults.id_for_label }}">{{ form.max_adults.label }} <span class="text-danger">*</span></label>
+                        {{ form.max_adults }}
+                        {% if form.max_adults.errors %}<div class="text-danger small mt-1">{{ form.max_adults.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-12">
+                        <label class="form-label" for="{{ form.max_children.id_for_label }}">{{ form.max_children.label }} <span class="text-danger">*</span></label>
+                        {{ form.max_children }}
+                        {% if form.max_children.errors %}<div class="text-danger small mt-1">{{ form.max_children.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="{{ form.image.id_for_label }}">{{ form.image.label }}</label>
+                    {{ form.image }}
+                    <div class="form-text">Empfohlen: 1200×600 Pixel, JPG oder PNG</div>
+                    {% if form.image.errors %}<div class="text-danger small mt-1">{{ form.image.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="form-check form-switch mb-4">
+                    {{ form.is_active }}
+                    <label class="form-check-label fw-semibold" for="{{ form.is_active.id_for_label }}">
+                        {{ form.is_active.label }}
+                    </label>
+                    <div class="form-text">Wenn aktiv, können Besucher Karten reservieren.</div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-tickets-gold">
+                        <i class="bi bi-check2 me-1"></i>Konzert erstellen
+                    </button>
+                    <a href="{% url 'tickets:admin_concert_list' %}" class="btn btn-tickets-secondary">
+                        Abbrechen
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function () {
+    var nameInput = document.getElementById('id_name');
+    var slugInput = document.getElementById('id_slug');
+    if (!nameInput || !slugInput) return;
+
+    var slugEdited = slugInput.value.length > 0;
+    slugInput.addEventListener('input', function () {
+        slugEdited = true;
+    });
+
+    nameInput.addEventListener('input', function () {
+        if (slugEdited) return;
+        slugInput.value = nameInput.value
+            .toLowerCase()
+            .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+    });
+}());
+</script>
+{% endblock %}

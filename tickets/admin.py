@@ -1,0 +1,131 @@
+from django.contrib import admin
+
+from .models import Concert, TicketOrder
+
+
+class TicketOrderInline(admin.TabularInline):
+    model = TicketOrder
+    extra = 0
+    readonly_fields = ("confirmation_code", "total_price", "created_at")
+    fields = (
+        "customer_name",
+        "customer_email",
+        "adult_count",
+        "child_count",
+        "total_price",
+        "status",
+        "confirmation_code",
+        "created_at",
+    )
+    can_delete = True
+    show_change_link = True
+
+
+@admin.register(Concert)
+class ConcertAdmin(admin.ModelAdmin):
+    list_display = (
+        "name",
+        "date",
+        "venue",
+        "is_active",
+        "adults_sold_display",
+        "adults_remaining_display",
+        "children_sold_display",
+        "children_remaining_display",
+        "created_at",
+    )
+    list_filter = ("is_active", "date")
+    search_fields = ("name", "venue", "description")
+    prepopulated_fields = {"slug": ("name",)}
+    readonly_fields = ("created_at", "updated_at")
+    inlines = [TicketOrderInline]
+    fieldsets = (
+        (
+            "Konzertdaten",
+            {
+                "fields": ("name", "slug", "description", "date", "venue", "image"),
+            },
+        ),
+        (
+            "Preise & Kapazität",
+            {
+                "fields": ("adult_price", "child_price", "max_adults", "max_children", "is_active"),
+            },
+        ),
+        (
+            "Zeitstempel",
+            {
+                "fields": ("created_at", "updated_at"),
+                "classes": ("collapse",),
+            },
+        ),
+    )
+
+    def adults_sold_display(self, obj):
+        return f"{obj.adults_sold}/{obj.max_adults}"
+
+    adults_sold_display.short_description = "Erw. verkauft"
+
+    def adults_remaining_display(self, obj):
+        return obj.adults_remaining
+
+    adults_remaining_display.short_description = "Erw. frei"
+
+    def children_sold_display(self, obj):
+        return f"{obj.children_sold}/{obj.max_children}"
+
+    children_sold_display.short_description = "Kinder verk."
+
+    def children_remaining_display(self, obj):
+        return obj.children_remaining
+
+    children_remaining_display.short_description = "Kinder frei"
+
+
+@admin.register(TicketOrder)
+class TicketOrderAdmin(admin.ModelAdmin):
+    list_display = (
+        "customer_name",
+        "concert",
+        "adult_count",
+        "child_count",
+        "total_price",
+        "status",
+        "created_at",
+        "confirmation_code",
+    )
+    list_filter = ("status", "concert", "created_at")
+    search_fields = (
+        "customer_name",
+        "customer_email",
+        "confirmation_code",
+        "concert__name",
+    )
+    readonly_fields = ("confirmation_code", "total_price", "created_at")
+    list_editable = ("status",)
+    fieldsets = (
+        (
+            "Kundendaten",
+            {
+                "fields": ("customer_name", "customer_email", "customer_phone"),
+            },
+        ),
+        (
+            "Bestellung",
+            {
+                "fields": (
+                    "concert",
+                    "adult_count",
+                    "child_count",
+                    "total_price",
+                    "notes",
+                ),
+            },
+        ),
+        (
+            "Status & Code",
+            {
+                "fields": ("status", "confirmation_code", "created_at"),
+            },
+        ),
+    )

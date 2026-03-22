@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Kartenvorverkauf – BMK{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --tickets-navy:      #0d1b2a;
+            --tickets-navy-mid:  #1a2f47;
+            --tickets-gold:      #c9a84c;
+            --tickets-gold-light:#e8d08a;
+            --tickets-bg:        #f5f0e8;
+            --tickets-surface:   #ffffff;
+            --tickets-text:      #1a1a2e;
+            --tickets-muted:     #6b7280;
+            --tickets-success:   #166534;
+            --tickets-danger:    #991b1b;
+            --tickets-warning:   #92400e;
+            --tickets-border:    #e2d9c8;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            background-color: var(--tickets-bg);
+            color: var(--tickets-text);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── Navbar ─────────────────────────────────────────── */
+        .tickets-navbar {
+            background: linear-gradient(135deg, var(--tickets-navy) 0%, var(--tickets-navy-mid) 100%);
+            box-shadow: 0 4px 20px rgba(13,27,42,0.4);
+            padding: 0.75rem 0;
+        }
+
+        .tickets-navbar-brand {
+            color: var(--tickets-gold) !important;
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            text-decoration: none;
+        }
+        .tickets-navbar-brand:hover { color: var(--tickets-gold-light) !important; }
+
+        .tickets-navbar .navbar-toggler {
+            border-color: rgba(201,168,76,0.4);
+        }
+        .tickets-navbar .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(201,168,76,0.9)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+
+        .tickets-navbar .nav-link {
+            color: rgba(255,255,255,0.85) !important;
+            font-weight: 500;
+            padding: 0.45rem 0.9rem;
+            border-radius: 6px;
+            transition: background 0.2s, color 0.2s;
+        }
+        .tickets-navbar .nav-link:hover,
+        .tickets-navbar .nav-link.active {
+            color: var(--tickets-gold) !important;
+            background: rgba(255,255,255,0.07);
+        }
+
+        .admin-badge {
+            background: var(--tickets-gold);
+            color: var(--tickets-navy);
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 4px;
+            vertical-align: middle;
+            margin-left: 4px;
+            letter-spacing: 0.05em;
+        }
+
+        /* ── Main content ───────────────────────────────────── */
+        main {
+            flex: 1;
+            padding: 2rem 0.5rem;
+        }
+
+        /* ── Cards ──────────────────────────────────────────── */
+        .ticket-card {
+            background: var(--tickets-surface);
+            border: 1px solid var(--tickets-border);
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(13,27,42,0.08);
+            transition: transform 0.2s, box-shadow 0.2s;
+            overflow: hidden;
+        }
+        .ticket-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 28px rgba(13,27,42,0.14);
+        }
+        .ticket-card .card-img-top {
+            height: 200px;
+            object-fit: cover;
+        }
+        .ticket-card-placeholder {
+            height: 180px;
+            background: linear-gradient(135deg, var(--tickets-navy) 0%, var(--tickets-navy-mid) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .ticket-card-placeholder i {
+            font-size: 4rem;
+            color: var(--tickets-gold);
+            opacity: 0.7;
+        }
+
+        /* ── Buttons ────────────────────────────────────────── */
+        .btn-tickets-primary {
+            background: linear-gradient(135deg, var(--tickets-navy) 0%, var(--tickets-navy-mid) 100%);
+            color: var(--tickets-gold);
+            border: 2px solid var(--tickets-gold);
+            font-weight: 600;
+            padding: 0.6rem 1.4rem;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        .btn-tickets-primary:hover, .btn-tickets-primary:focus {
+            background: var(--tickets-gold);
+            color: var(--tickets-navy);
+            border-color: var(--tickets-gold);
+        }
+
+        .btn-tickets-secondary {
+            background: transparent;
+            color: var(--tickets-navy);
+            border: 2px solid var(--tickets-navy);
+            font-weight: 600;
+            padding: 0.6rem 1.4rem;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        .btn-tickets-secondary:hover {
+            background: var(--tickets-navy);
+            color: var(--tickets-gold);
+        }
+
+        .btn-tickets-gold {
+            background: var(--tickets-gold);
+            color: var(--tickets-navy);
+            border: none;
+            font-weight: 700;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-size: 1.05rem;
+            transition: all 0.2s;
+        }
+        .btn-tickets-gold:hover, .btn-tickets-gold:focus {
+            background: var(--tickets-gold-light);
+            color: var(--tickets-navy);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(201,168,76,0.4);
+        }
+
+        /* ── Section headers ───────────────────────────────── */
+        .section-header {
+            border-left: 4px solid var(--tickets-gold);
+            padding-left: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+        .section-header h1, .section-header h2 {
+            margin: 0;
+            color: var(--tickets-navy);
+            font-weight: 700;
+        }
+        .section-header p {
+            color: var(--tickets-muted);
+            margin: 0.25rem 0 0;
+            font-size: 0.95rem;
+        }
+
+        /* ── Status badges ──────────────────────────────────── */
+        .badge-ausstehend { background-color: #fef3c7; color: #92400e; }
+        .badge-bestaetigt { background-color: #d1fae5; color: #065f46; }
+        .badge-storniert  { background-color: #fee2e2; color: #991b1b; }
+
+        /* ── Form styling ───────────────────────────────────── */
+        .form-control:focus, .form-select:focus {
+            border-color: var(--tickets-gold);
+            box-shadow: 0 0 0 3px rgba(201,168,76,0.2);
+        }
+        .form-label {
+            font-weight: 600;
+            color: var(--tickets-navy);
+            font-size: 0.9rem;
+        }
+
+        /* ── Price display ──────────────────────────────────── */
+        .price-table {
+            background: #f8f4ed;
+            border: 1px solid var(--tickets-border);
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+        }
+        .price-table .price-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.4rem 0;
+        }
+        .price-table .price-row + .price-row {
+            border-top: 1px solid var(--tickets-border);
+        }
+        .price-label { font-weight: 500; color: var(--tickets-muted); font-size: 0.9rem; }
+        .price-value { font-weight: 700; color: var(--tickets-navy); font-size: 1rem; }
+
+        .total-price-box {
+            background: var(--tickets-navy);
+            color: var(--tickets-gold);
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            text-align: center;
+        }
+        .total-price-box .label { font-size: 0.85rem; opacity: 0.8; }
+        .total-price-box .amount { font-size: 1.75rem; font-weight: 800; }
+
+        /* ── Confirmation code ──────────────────────────────── */
+        .confirmation-code-box {
+            background: var(--tickets-navy);
+            color: var(--tickets-gold);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        .confirmation-code-box .code {
+            font-size: 2rem;
+            font-weight: 900;
+            letter-spacing: 0.15em;
+            font-family: 'Courier New', monospace;
+        }
+        .confirmation-code-box .label {
+            font-size: 0.8rem;
+            opacity: 0.75;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        /* ── Stats cards ────────────────────────────────────── */
+        .stat-card {
+            background: var(--tickets-surface);
+            border: 1px solid var(--tickets-border);
+            border-radius: 10px;
+            padding: 1.25rem;
+            text-align: center;
+        }
+        .stat-card .stat-value {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--tickets-navy);
+        }
+        .stat-card .stat-label {
+            font-size: 0.8rem;
+            color: var(--tickets-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-top: 0.2rem;
+        }
+        .stat-card .stat-icon {
+            font-size: 1.5rem;
+            color: var(--tickets-gold);
+            margin-bottom: 0.5rem;
+        }
+
+        /* ── Progress bar ───────────────────────────────────── */
+        .capacity-bar .progress {
+            height: 8px;
+            border-radius: 10px;
+            background: #e2d9c8;
+        }
+        .capacity-bar .progress-bar {
+            background: linear-gradient(90deg, var(--tickets-navy), var(--tickets-gold));
+            border-radius: 10px;
+        }
+        .capacity-bar .progress-bar.almost-full {
+            background: linear-gradient(90deg, #b45309, #f59e0b);
+        }
+        .capacity-bar .progress-bar.full {
+            background: #dc2626;
+        }
+
+        /* ── Tables ─────────────────────────────────────────── */
+        .tickets-table th {
+            background: var(--tickets-navy);
+            color: var(--tickets-gold);
+            font-weight: 600;
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            border: none;
+            padding: 0.75rem 1rem;
+        }
+        .tickets-table td {
+            vertical-align: middle;
+            padding: 0.75rem 1rem;
+            border-color: var(--tickets-border);
+        }
+        .tickets-table tbody tr:hover { background: #faf7f2; }
+
+        /* ── Footer ─────────────────────────────────────────── */
+        footer {
+            background: var(--tickets-navy);
+            color: rgba(255,255,255,0.55);
+            padding: 1.5rem 0;
+            text-align: center;
+            font-size: 0.82rem;
+            margin-top: auto;
+        }
+        footer .bi { color: var(--tickets-gold); }
+
+        /* ── Responsive adjustments ─────────────────────────── */
+        @media (max-width: 575px) {
+            main { padding: 1rem 0.25rem; }
+            .section-header h1 { font-size: 1.4rem; }
+            .total-price-box .amount { font-size: 1.4rem; }
+        }
+
+        {% block extra_style %}{% endblock %}
+    </style>
+</head>
+<body>
+    <nav class="tickets-navbar navbar navbar-expand-lg">
+        <div class="container-lg">
+            <a class="navbar-brand tickets-navbar-brand" href="{% url 'tickets:concert_list' %}">
+                <i class="bi bi-music-note-beamed me-1"></i>Kartenvorverkauf BMK
+            </a>
+            <button class="navbar-toggler" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#ticketsNavbar"
+                    aria-controls="ticketsNavbar" aria-expanded="false"
+                    aria-label="Navigation umschalten">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="ticketsNavbar">
+                <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-1">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'tickets:concert_list' %}">
+                            <i class="bi bi-ticket-perforated me-1"></i>Konzerte
+                        </a>
+                    </li>
+                    {% if user.is_staff %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'tickets:admin_concert_list' %}">
+                            <i class="bi bi-speedometer2 me-1"></i>Verwaltung
+                            <span class="admin-badge">ADMIN</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <div class="container-lg">
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show mb-3" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Schließen"></button>
+                </div>
+                {% endfor %}
+            {% endif %}
+
+            {% block page_content %}{% endblock %}
+        </div>
+    </main>
+
+    <footer>
+        <div class="container-lg">
+            <p class="mb-0">
+                <i class="bi bi-music-note-beamed"></i>
+                Bergmannskapelle Buggingen e.V. &nbsp;&bull;&nbsp; Kartenvorverkauf
+            </p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

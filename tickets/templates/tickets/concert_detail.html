@@ -1,0 +1,339 @@
+{% extends "tickets/base.html" %}
+
+{% block title %}{{ concert.name }} – Kartenvorverkauf BMK{% endblock %}
+
+{% block extra_style %}
+<style>
+.stepper-group {
+    display: flex;
+    align-items: center;
+    border: 2px solid var(--tickets-navy);
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+.stepper-btn {
+    width: 44px;
+    height: 44px;
+    background: var(--tickets-navy);
+    color: var(--tickets-gold);
+    border: none;
+    font-size: 1.4rem;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1;
+    flex-shrink: 0;
+    touch-action: manipulation;
+    user-select: none;
+}
+.stepper-btn:hover { background: var(--tickets-navy-mid); }
+.stepper-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.stepper-value {
+    width: 52px;
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--tickets-navy);
+    background: #fff;
+    padding: 0.25rem 0;
+    user-select: none;
+}
+</style>
+{% endblock %}
+
+{% block page_content %}
+
+{# Breadcrumb #}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="{% url 'tickets:concert_list' %}" style="color: var(--tickets-gold); text-decoration:none;">
+                <i class="bi bi-ticket-perforated me-1"></i>Konzerte
+            </a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">{{ concert.name }}</li>
+    </ol>
+</nav>
+
+<div class="row g-4">
+
+    {# ── Left: Concert info ─────────────────────────────────── #}
+    <div class="col-12 col-md-5">
+        <div class="ticket-card">
+            {% if concert.image %}
+                <img src="{{ concert.image.url }}" alt="{{ concert.name }}" style="width:100%; height:250px; object-fit:cover;">
+            {% else %}
+                <div class="ticket-card-placeholder" style="height:200px;">
+                    <i class="bi bi-music-note-list"></i>
+                </div>
+            {% endif %}
+
+            <div class="p-4">
+                <h2 class="fw-bold mb-3" style="color: var(--tickets-navy);">{{ concert.name }}</h2>
+
+                <div class="d-flex align-items-start mb-2">
+                    <i class="bi bi-calendar3 me-3 mt-1" style="color: var(--tickets-gold); font-size:1.1rem; flex-shrink:0;"></i>
+                    <div>
+                        <div class="fw-semibold">{{ concert.date|date:"l, d. F Y" }}</div>
+                        <div class="text-muted small">Beginn: {{ concert.date|date:"H:i" }} Uhr</div>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-start mb-3">
+                    <i class="bi bi-geo-alt me-3 mt-1" style="color: var(--tickets-gold); font-size:1.1rem; flex-shrink:0;"></i>
+                    <div>
+                        <div class="fw-semibold">{{ concert.venue }}</div>
+                    </div>
+                </div>
+
+                {% if concert.description %}
+                <p class="text-muted" style="font-size:0.95rem; line-height:1.65;">{{ concert.description }}</p>
+                {% endif %}
+
+                {# Prices #}
+                <div class="price-table mb-3">
+                    <div class="price-row">
+                        <span class="price-label"><i class="bi bi-person me-1"></i>Erwachsene</span>
+                        <span class="price-value">{{ concert.adult_price|floatformat:2 }} €</span>
+                    </div>
+                    <div class="price-row">
+                        <span class="price-label"><i class="bi bi-person-fill me-1" style="font-size:.75em;"></i>Kinder bis 12 Jahre</span>
+                        <span class="price-value">{{ concert.child_price|floatformat:2 }} €</span>
+                    </div>
+                </div>
+
+                {# Capacity #}
+                <div class="capacity-bar">
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span class="text-muted"><i class="bi bi-person me-1"></i>Erwachsene</span>
+                        <span class="fw-semibold" style="color: var(--tickets-navy);">
+                            {% if concert.adults_remaining == 0 %}
+                                <span style="color: var(--tickets-danger);">ausverkauft</span>
+                            {% else %}
+                                {{ concert.adults_remaining }} / {{ concert.max_adults }} verfügbar
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="progress mb-2">
+                        <div class="progress-bar {% if concert.adults_remaining == 0 %}full{% elif concert.adults_remaining <= 10 %}almost-full{% endif %}"
+                             role="progressbar"
+                             style="width: {% widthratio concert.adults_sold concert.max_adults 100 %}%"
+                             aria-valuenow="{{ concert.adults_sold }}"
+                             aria-valuemin="0"
+                             aria-valuemax="{{ concert.max_adults }}">
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span class="text-muted"><i class="bi bi-people me-1"></i>Kinder bis 12 Jahre</span>
+                        <span class="fw-semibold" style="color: var(--tickets-navy);">
+                            {% if concert.children_remaining == 0 %}
+                                <span style="color: var(--tickets-danger);">ausverkauft</span>
+                            {% else %}
+                                {{ concert.children_remaining }} / {{ concert.max_children }} verfügbar
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar {% if concert.children_remaining == 0 %}full{% elif concert.children_remaining <= 10 %}almost-full{% endif %}"
+                             role="progressbar"
+                             style="width: {% widthratio concert.children_sold concert.max_children 100 %}%"
+                             aria-valuenow="{{ concert.children_sold }}"
+                             aria-valuemin="0"
+                             aria-valuemax="{{ concert.max_children }}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# ── Right: Reservation form ────────────────────────────── #}
+    <div class="col-12 col-md-7">
+        <div class="ticket-card p-4">
+
+            {% if not concert.is_active %}
+            <div class="text-center py-4">
+                <i class="bi bi-lock-fill" style="font-size:3rem; color: var(--tickets-muted);"></i>
+                <h5 class="mt-3 fw-semibold">Vorverkauf beendet</h5>
+                <p class="text-muted">Der Kartenvorverkauf für dieses Konzert ist nicht mehr aktiv.</p>
+            </div>
+
+            {% elif concert.is_sold_out %}
+            <div class="text-center py-4">
+                <i class="bi bi-x-circle-fill" style="font-size:3rem; color: var(--tickets-danger);"></i>
+                <h5 class="mt-3 fw-semibold">Ausverkauft</h5>
+                <p class="text-muted">Für dieses Konzert sind leider keine Karten mehr verfügbar.</p>
+            </div>
+
+            {% else %}
+            <h4 class="fw-bold mb-4" style="color: var(--tickets-navy);">
+                <i class="bi bi-ticket me-2" style="color: var(--tickets-gold);"></i>Karten reservieren
+            </h4>
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger mb-3">
+                    {% for error in form.non_field_errors %}
+                        <div>{{ error }}</div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {# Ticket counts #}
+                <div class="p-3 mb-4 rounded-3" style="background: #f8f4ed; border: 1px solid var(--tickets-border);">
+                    <h6 class="fw-bold mb-3" style="color: var(--tickets-navy);">
+                        <i class="bi bi-person-lines-fill me-2" style="color: var(--tickets-gold);"></i>Anzahl Karten
+                    </h6>
+
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center justify-content-between gap-3">
+                            <div>
+                                <div class="fw-semibold" style="color: var(--tickets-navy);">Erwachsene</div>
+                                <small class="text-muted">({{ concert.adult_price|floatformat:2 }} € / Stk.)</small>
+                            </div>
+                            <div class="stepper-group" data-input-id="id_adult_count" data-min="0" data-max="20">
+                                <button type="button" class="stepper-btn stepper-minus" aria-label="Weniger">−</button>
+                                <span class="stepper-value">1</span>
+                                <button type="button" class="stepper-btn stepper-plus" aria-label="Mehr">+</button>
+                            </div>
+                        </div>
+                        <input type="hidden" name="adult_count" id="id_adult_count" value="{{ form.adult_count.value|default:1 }}">
+                        {% if form.adult_count.errors %}
+                            <div class="text-danger small mt-1">{{ form.adult_count.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center justify-content-between gap-3">
+                            <div>
+                                <div class="fw-semibold" style="color: var(--tickets-navy);">Kinder</div>
+                                <small class="text-muted">({{ concert.child_price|floatformat:2 }} € / Stk.)</small>
+                            </div>
+                            <div class="stepper-group" data-input-id="id_child_count" data-min="0" data-max="20">
+                                <button type="button" class="stepper-btn stepper-minus" aria-label="Weniger">−</button>
+                                <span class="stepper-value">0</span>
+                                <button type="button" class="stepper-btn stepper-plus" aria-label="Mehr">+</button>
+                            </div>
+                        </div>
+                        <input type="hidden" name="child_count" id="id_child_count" value="{{ form.child_count.value|default:0 }}">
+                        {% if form.child_count.errors %}
+                            <div class="text-danger small mt-1">{{ form.child_count.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="total-price-box mt-3">
+                        <div class="label">Gesamtbetrag</div>
+                        <div class="amount" id="total-price-display">0,00 €</div>
+                        <div class="label" style="font-size:0.75rem; margin-top:0.25rem;">Zahlung an der Abendkasse</div>
+                    </div>
+                </div>
+
+                {# Contact info #}
+                <h6 class="fw-bold mb-3" style="color: var(--tickets-navy);">
+                    <i class="bi bi-person-badge me-2" style="color: var(--tickets-gold);"></i>Ihre Kontaktdaten
+                </h6>
+
+                <div class="mb-3">
+                    <label class="form-label" for="{{ form.customer_name.id_for_label }}">
+                        {{ form.customer_name.label }} <span class="text-danger">*</span>
+                    </label>
+                    {{ form.customer_name }}
+                    {% if form.customer_name.errors %}
+                        <div class="text-danger small mt-1">{{ form.customer_name.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="{{ form.customer_email.id_for_label }}">
+                        {{ form.customer_email.label }} <span class="text-danger">*</span>
+                    </label>
+                    {{ form.customer_email }}
+                    {% if form.customer_email.errors %}
+                        <div class="text-danger small mt-1">{{ form.customer_email.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="{{ form.customer_phone.id_for_label }}">
+                        {{ form.customer_phone.label }}
+                    </label>
+                    {{ form.customer_phone }}
+                    {% if form.customer_phone.errors %}
+                        <div class="text-danger small mt-1">{{ form.customer_phone.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label" for="{{ form.notes.id_for_label }}">
+                        {{ form.notes.label }}
+                    </label>
+                    {{ form.notes }}
+                    {% if form.notes.errors %}
+                        <div class="text-danger small mt-1">{{ form.notes.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-tickets-gold">
+                        <i class="bi bi-check2-circle me-2"></i>Verbindlich reservieren
+                    </button>
+                </div>
+
+                <p class="text-muted small text-center mt-2 mb-0">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Die Karten liegen unter Ihrem Namen an der Abendkasse bereit. Die Zahlung erfolgt vor Ort.
+                </p>
+            </form>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var adultPrice = parseFloat("{{ concert.adult_price }}") || 0;
+    var childPrice = parseFloat("{{ concert.child_price }}") || 0;
+    var totalEl    = document.getElementById('total-price-display');
+    if (!totalEl) return;
+
+    function updateTotal() {
+        var adults   = parseInt(document.getElementById('id_adult_count').value) || 0;
+        var children = parseInt(document.getElementById('id_child_count').value) || 0;
+        var total    = (adults * adultPrice) + (children * childPrice);
+        totalEl.textContent = total.toFixed(2).replace('.', ',') + '\u00a0\u20ac';
+    }
+
+    document.querySelectorAll('.stepper-group').forEach(function (group) {
+        var inputId      = group.dataset.inputId;
+        var input        = document.getElementById(inputId);
+        var valueDisplay = group.querySelector('.stepper-value');
+        var minusBtn     = group.querySelector('.stepper-minus');
+        var plusBtn      = group.querySelector('.stepper-plus');
+        var min = parseInt(group.dataset.min) || 0;
+        var max = parseInt(group.dataset.max) || 20;
+
+        function getValue() { return parseInt(input.value) || 0; }
+        function setValue(v) {
+            v = Math.max(min, Math.min(max, v));
+            input.value = v;
+            valueDisplay.textContent = v;
+            minusBtn.disabled = (v <= min);
+            plusBtn.disabled  = (v >= max);
+            updateTotal();
+        }
+
+        setValue(getValue());
+
+        minusBtn.addEventListener('click', function () { setValue(getValue() - 1); });
+        plusBtn.addEventListener('click',  function () { setValue(getValue() + 1); });
+    });
+
+    updateTotal();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,114 @@
+{% extends "tickets/base.html" %}
+
+{% block title %}Konzerte – Kartenvorverkauf BMK{% endblock %}
+
+{% block page_content %}
+<div class="section-header mb-4">
+    <h1><i class="bi bi-ticket-perforated-fill me-2" style="color: var(--tickets-gold);"></i>Aktuelle Konzerte</h1>
+    <p>Sichern Sie sich jetzt Ihre Karten für unsere bevorstehenden Konzerte.</p>
+</div>
+
+{% if concerts %}
+    <div class="row g-4">
+        {% for concert in concerts %}
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="ticket-card h-100 d-flex flex-column">
+                {% if concert.image %}
+                    <img src="{{ concert.image.url }}" alt="{{ concert.name }}" class="card-img-top" style="height:200px; object-fit:cover;">
+                {% else %}
+                    <div class="ticket-card-placeholder">
+                        <i class="bi bi-music-note-list"></i>
+                    </div>
+                {% endif %}
+
+                <div class="p-4 d-flex flex-column flex-grow-1">
+                    <h5 class="fw-bold mb-2" style="color: var(--tickets-navy);">{{ concert.name }}</h5>
+
+                    <div class="d-flex align-items-center mb-2 text-muted small">
+                        <i class="bi bi-calendar3 me-2" style="color: var(--tickets-gold);"></i>
+                        <span>{{ concert.date|date:"l, d. F Y" }}, {{ concert.date|date:"H:i" }} Uhr</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-3 text-muted small">
+                        <i class="bi bi-geo-alt me-2" style="color: var(--tickets-gold);"></i>
+                        <span>{{ concert.venue }}</span>
+                    </div>
+
+                    {% if concert.description %}
+                    <p class="text-muted small mb-3">{{ concert.description|truncatewords:18 }}</p>
+                    {% endif %}
+
+                    <div class="price-table mb-3">
+                        <div class="price-row">
+                            <span class="price-label"><i class="bi bi-person me-1"></i>Erwachsene</span>
+                            <span class="price-value">{{ concert.adult_price|floatformat:2 }} €</span>
+                        </div>
+                        <div class="price-row">
+                            <span class="price-label"><i class="bi bi-person-fill me-1" style="font-size:.75em;"></i>Kinder bis 12 Jahre</span>
+                            <span class="price-value">{{ concert.child_price|floatformat:2 }} €</span>
+                        </div>
+                    </div>
+
+                    {# Capacity bars #}
+                    <div class="capacity-bar mb-3">
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span class="text-muted"><i class="bi bi-person me-1"></i>Erwachsene</span>
+                            <span class="fw-semibold" style="color: var(--tickets-navy);">
+                                {% if concert.adults_remaining == 0 %}
+                                    <span style="color: var(--tickets-danger);">ausverkauft</span>
+                                {% else %}
+                                    {{ concert.adults_remaining }} / {{ concert.max_adults }} frei
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="progress mb-2">
+                            <div class="progress-bar {% if concert.adults_remaining == 0 %}full{% elif concert.adults_remaining <= 10 %}almost-full{% endif %}"
+                                 role="progressbar"
+                                 style="width: {% widthratio concert.adults_sold concert.max_adults 100 %}%"
+                                 aria-valuenow="{{ concert.adults_sold }}"
+                                 aria-valuemin="0"
+                                 aria-valuemax="{{ concert.max_adults }}"></div>
+                        </div>
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span class="text-muted"><i class="bi bi-people me-1"></i>Kinder (bis 12 J.)</span>
+                            <span class="fw-semibold" style="color: var(--tickets-navy);">
+                                {% if concert.children_remaining == 0 %}
+                                    <span style="color: var(--tickets-danger);">ausverkauft</span>
+                                {% else %}
+                                    {{ concert.children_remaining }} / {{ concert.max_children }} frei
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar {% if concert.children_remaining == 0 %}full{% elif concert.children_remaining <= 10 %}almost-full{% endif %}"
+                                 role="progressbar"
+                                 style="width: {% widthratio concert.children_sold concert.max_children 100 %}%"
+                                 aria-valuenow="{{ concert.children_sold }}"
+                                 aria-valuemin="0"
+                                 aria-valuemax="{{ concert.max_children }}"></div>
+                        </div>
+                    </div>
+
+                    <div class="mt-auto">
+                        {% if concert.is_sold_out %}
+                            <button class="btn btn-secondary w-100" disabled>
+                                <i class="bi bi-x-circle me-1"></i>Ausverkauft
+                            </button>
+                        {% else %}
+                            <a href="{% url 'tickets:concert_detail' concert.slug %}" class="btn btn-tickets-primary w-100">
+                                <i class="bi bi-ticket me-1"></i>Jetzt reservieren
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="text-center py-5" style="color: var(--tickets-muted);">
+        <i class="bi bi-music-note-beamed" style="font-size: 4rem; color: var(--tickets-gold); opacity: 0.6;"></i>
+        <h4 class="mt-3 fw-semibold" style="color: var(--tickets-navy);">Keine Konzerte verfügbar</h4>
+        <p class="mb-0">Derzeit sind keine Konzerte im Vorverkauf verfügbar.<br>Schauen Sie bald wieder vorbei!</p>
+    </div>
+{% endif %}
+{% endblock %}
