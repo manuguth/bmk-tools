@@ -1,0 +1,205 @@
+{% extends "tickets/base.html" %}
+
+{% block title %}{{ concert.name }} – Verwaltung{% endblock %}
+
+{% block page_content %}
+
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="{% url 'tickets:admin_concert_list' %}" style="color: var(--tickets-gold); text-decoration:none;">Verwaltung</a>
+        </li>
+        <li class="breadcrumb-item active">{{ concert.name }}</li>
+    </ol>
+</nav>
+
+<div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-4">
+    <div class="section-header mb-0">
+        <h2>{{ concert.name }}</h2>
+        <p>{{ concert.date|date:"d. F Y" }}, {{ concert.date|date:"H:i" }} Uhr · {{ concert.venue }}</p>
+    </div>
+    <a href="{% url 'tickets:admin_concert_bestellungen' concert.slug %}" class="btn btn-tickets-primary">
+        <i class="bi bi-list-ul me-1"></i>Alle Bestellungen
+    </a>
+</div>
+
+{# Stats row #}
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon"><i class="bi bi-bag-check"></i></div>
+            <div class="stat-value">{{ order_stats.total_orders|default:0 }}</div>
+            <div class="stat-label">Bestellungen</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon" style="color:#059669;"><i class="bi bi-check-circle"></i></div>
+            <div class="stat-value" style="color:#059669;">{{ order_stats.confirmed|default:0 }}</div>
+            <div class="stat-label">Bestätigt</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon" style="color:#b45309;"><i class="bi bi-hourglass-split"></i></div>
+            <div class="stat-value" style="color:#b45309;">{{ order_stats.pending|default:0 }}</div>
+            <div class="stat-label">Ausstehend</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon"><i class="bi bi-cash-coin"></i></div>
+            <div class="stat-value">{{ order_stats.revenue|default:0|floatformat:2 }} €</div>
+            <div class="stat-label">Einnahmen</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+
+    {# ── Edit form ──────────────────────────────────────────── #}
+    <div class="col-12 col-lg-6">
+        <div class="ticket-card p-4">
+            <h5 class="fw-bold mb-4" style="color: var(--tickets-navy);">
+                <i class="bi bi-pencil-square me-2" style="color: var(--tickets-gold);"></i>Konzertdaten bearbeiten
+            </h5>
+
+            <form method="post" enctype="multipart/form-data" novalidate>
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger mb-3">
+                    {% for error in form.non_field_errors %}
+                        <div>{{ error }}</div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <div class="mb-3">
+                    <label class="form-label" for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+                    {{ form.name }}
+                    {% if form.name.errors %}<div class="text-danger small mt-1">{{ form.name.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="{{ form.slug.id_for_label }}">{{ form.slug.label }}</label>
+                    <div class="input-group">
+                        <span class="input-group-text text-muted" style="font-size:0.85rem;">/tickets/</span>
+                        {{ form.slug }}
+                        <span class="input-group-text text-muted" style="font-size:0.85rem;">/</span>
+                    </div>
+                    <div class="form-text text-warning-emphasis">
+                        <i class="bi bi-exclamation-triangle me-1"></i>Achtung: Änderungen am Slug machen bestehende Links ungültig.
+                    </div>
+                    {% if form.slug.errors %}<div class="text-danger small mt-1">{{ form.slug.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+                    {{ form.description }}
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-12">
+                        <label class="form-label" for="{{ form.date.id_for_label }}">{{ form.date.label }}</label>
+                        {{ form.date }}
+                        {% if form.date.errors %}<div class="text-danger small mt-1">{{ form.date.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label" for="{{ form.venue.id_for_label }}">{{ form.venue.label }}</label>
+                        {{ form.venue }}
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-6">
+                        <label class="form-label" for="{{ form.adult_price.id_for_label }}">{{ form.adult_price.label }}</label>
+                        <div class="input-group">{{ form.adult_price }}<span class="input-group-text">€</span></div>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label" for="{{ form.child_price.id_for_label }}">{{ form.child_price.label }}</label>
+                        <div class="input-group">{{ form.child_price }}<span class="input-group-text">€</span></div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-6">
+                        <label class="form-label" for="{{ form.max_adults.id_for_label }}">{{ form.max_adults.label }}</label>
+                        {{ form.max_adults }}
+                        {% if form.max_adults.errors %}<div class="text-danger small mt-1">{{ form.max_adults.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label" for="{{ form.max_children.id_for_label }}">{{ form.max_children.label }}</label>
+                        {{ form.max_children }}
+                        {% if form.max_children.errors %}<div class="text-danger small mt-1">{{ form.max_children.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="{{ form.image.id_for_label }}">{{ form.image.label }}</label>
+                    {{ form.image }}
+                </div>
+
+                <div class="form-check form-switch mb-4">
+                    {{ form.is_active }}
+                    <label class="form-check-label fw-semibold" for="{{ form.is_active.id_for_label }}">{{ form.is_active.label }}</label>
+                </div>
+
+                <button type="submit" class="btn btn-tickets-gold">
+                    <i class="bi bi-check2 me-1"></i>Änderungen speichern
+                </button>
+            </form>
+        </div>
+    </div>
+
+    {# ── Recent orders ──────────────────────────────────────── #}
+    <div class="col-12 col-lg-6">
+        <div class="ticket-card overflow-hidden">
+            <div class="p-4 pb-2 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0" style="color: var(--tickets-navy);">
+                    <i class="bi bi-clock-history me-2" style="color: var(--tickets-gold);"></i>Letzte Bestellungen
+                </h5>
+                <a href="{% url 'tickets:admin_concert_bestellungen' concert.slug %}" class="small" style="color: var(--tickets-gold);">
+                    Alle anzeigen <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+            {% if recent_orders %}
+            <div class="table-responsive">
+                <table class="table tickets-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th class="text-center">Erw.</th>
+                            <th class="text-center">Kinder</th>
+                            <th class="text-center">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in recent_orders %}
+                        <tr>
+                            <td>
+                                <div class="fw-semibold" style="font-size:0.9rem;">{{ order.customer_name }}</div>
+                                <div class="text-muted" style="font-size:0.78rem;">{{ order.created_at|date:"d.m.Y H:i" }}</div>
+                            </td>
+                            <td class="text-center">{{ order.adult_count }}</td>
+                            <td class="text-center">{{ order.child_count }}</td>
+                            <td class="text-center">
+                                <span class="badge badge-{{ order.status }} px-2 py-1 rounded-2 fw-semibold" style="font-size:0.75rem;">
+                                    {{ order.get_status_display }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center text-muted py-4" style="font-size:0.9rem;">
+                <i class="bi bi-inbox me-1"></i>Noch keine Bestellungen eingegangen.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

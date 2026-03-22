@@ -1,0 +1,126 @@
+{% extends "tickets/base.html" %}
+
+{% block title %}Konzert-Verwaltung – BMK{% endblock %}
+
+{% block page_content %}
+<div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-4">
+    <div class="section-header mb-0">
+        <h1><i class="bi bi-speedometer2 me-2" style="color: var(--tickets-gold);"></i>Konzert-Verwaltung</h1>
+        <p>Übersicht aller Konzerte und Bestellungen</p>
+    </div>
+    <a href="{% url 'tickets:admin_concert_create' %}" class="btn btn-tickets-primary">
+        <i class="bi bi-plus-circle me-1"></i>Neues Konzert
+    </a>
+</div>
+
+{# Totals row #}
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon"><i class="bi bi-music-note-list"></i></div>
+            <div class="stat-value">{{ concerts_data|length }}</div>
+            <div class="stat-label">Konzerte gesamt</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon"><i class="bi bi-bag-check"></i></div>
+            <div class="stat-value">{{ total_all_orders }}</div>
+            <div class="stat-label">Bestellungen gesamt</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon"><i class="bi bi-ticket-perforated"></i></div>
+            <div class="stat-value">{{ total_all_tickets }}</div>
+            <div class="stat-label">Tickets verkauft</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon"><i class="bi bi-cash-coin"></i></div>
+            <div class="stat-value">{{ total_all_revenue|floatformat:2 }} €</div>
+            <div class="stat-label">Einnahmen gesamt</div>
+        </div>
+    </div>
+</div>
+
+{# Concert table #}
+{% if concerts_data %}
+<div class="ticket-card overflow-hidden">
+    <div class="table-responsive">
+        <table class="table tickets-table mb-0">
+            <thead>
+                <tr>
+                    <th>Konzert</th>
+                    <th>Datum</th>
+                    <th>Ort</th>
+                    <th class="text-center">Status</th>
+                    <th class="text-center">Bestellungen</th>
+                    <th class="text-center">Erw.</th>
+                    <th class="text-center">Kinder</th>
+                    <th class="text-right">Einnahmen</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in concerts_data %}
+                <tr>
+                    <td>
+                        <strong>{{ item.concert.name }}</strong>
+                    </td>
+                    <td class="text-nowrap">{{ item.concert.date|date:"d.m.Y" }}<br><small class="text-muted">{{ item.concert.date|date:"H:i" }} Uhr</small></td>
+                    <td>{{ item.concert.venue }}</td>
+                    <td class="text-center">
+                        {% if item.concert.is_active %}
+                            <span class="badge badge-bestaetigt px-2 py-1 rounded-2 fw-semibold small">
+                                <i class="bi bi-check-circle me-1"></i>Aktiv
+                            </span>
+                        {% else %}
+                            <span class="badge badge-storniert px-2 py-1 rounded-2 fw-semibold small">
+                                <i class="bi bi-pause-circle me-1"></i>Inaktiv
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center fw-semibold">{{ item.order_count }}</td>
+                    <td class="text-center">
+                        <span class="fw-bold">{{ item.adults_sold }}</span>
+                        <span class="text-muted small"> / {{ item.concert.max_adults }}</span>
+                    </td>
+                    <td class="text-center">
+                        <span class="fw-bold">{{ item.children_sold }}</span>
+                        <span class="text-muted small"> / {{ item.concert.max_children }}</span>
+                    </td>
+                    <td class="text-end fw-bold">{{ item.revenue|floatformat:2 }} €</td>
+                    <td class="text-end text-nowrap">
+                        <a href="{% url 'tickets:admin_concert_detail' item.concert.slug %}"
+                           class="btn btn-sm btn-tickets-secondary me-1">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="{% url 'tickets:admin_concert_bestellungen' item.concert.slug %}"
+                           class="btn btn-sm btn-tickets-primary">
+                            <i class="bi bi-list-ul"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="text-end mt-3">
+    <a href="{% url 'tickets:admin_all_bestellungen' %}" class="btn btn-tickets-secondary">
+        <i class="bi bi-list-stars me-1"></i>Alle Bestellungen anzeigen
+    </a>
+</div>
+{% else %}
+<div class="text-center py-5" style="color: var(--tickets-muted);">
+    <i class="bi bi-folder2-open" style="font-size:3rem; color: var(--tickets-gold); opacity:0.6;"></i>
+    <h5 class="mt-3">Noch keine Konzerte angelegt</h5>
+    <a href="{% url 'tickets:admin_concert_create' %}" class="btn btn-tickets-primary mt-2">
+        <i class="bi bi-plus-circle me-1"></i>Erstes Konzert anlegen
+    </a>
+</div>
+{% endif %}
+{% endblock %}

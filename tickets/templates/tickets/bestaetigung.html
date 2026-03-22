@@ -1,0 +1,94 @@
+{% extends "tickets/base.html" %}
+
+{% block title %}Bestellung bestätigt – {{ concert.name }}{% endblock %}
+
+{% block page_content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+
+        {# Success header #}
+        <div class="text-center mb-4">
+            <div style="width:80px; height:80px; background: #d1fae5; border-radius: 50%; display:inline-flex; align-items:center; justify-content:center; margin-bottom:1rem;">
+                <i class="bi bi-check-circle-fill" style="font-size:2.5rem; color: #059669;"></i>
+            </div>
+            <h2 class="fw-bold" style="color: var(--tickets-navy);">Vielen Dank, {{ order.customer_name }}!</h2>
+            <p class="text-muted mb-0">Ihre Reservierung wurde erfolgreich aufgenommen.</p>
+        </div>
+
+        {# Confirmation code #}
+        <div class="confirmation-code-box mb-4">
+            <div class="label">Ihr Bestätigungscode</div>
+            <div class="code">{{ order.confirmation_code }}</div>
+            <div class="label" style="margin-top:0.5rem;">Bitte notieren oder Screenshot aufnehmen</div>
+        </div>
+
+        {# Order summary card #}
+        <div class="ticket-card p-4 mb-4">
+            <h5 class="fw-bold mb-3" style="color: var(--tickets-navy);">
+                <i class="bi bi-receipt me-2" style="color: var(--tickets-gold);"></i>Bestellübersicht
+            </h5>
+
+            <div class="d-flex align-items-start mb-2">
+                <i class="bi bi-music-note-beamed me-3 mt-1" style="color: var(--tickets-gold); flex-shrink:0;"></i>
+                <div>
+                    <div class="fw-semibold">{{ concert.name }}</div>
+                    <div class="text-muted small">{{ concert.date|date:"l, d. F Y" }}, {{ concert.date|date:"H:i" }} Uhr</div>
+                </div>
+            </div>
+            <div class="d-flex align-items-start mb-3">
+                <i class="bi bi-geo-alt me-3 mt-1" style="color: var(--tickets-gold); flex-shrink:0;"></i>
+                <div class="fw-semibold">{{ concert.venue }}</div>
+            </div>
+
+            <div class="price-table mb-3">
+                {% if order.adult_count > 0 %}
+                <div class="price-row">
+                    <span class="price-label">
+                        <i class="bi bi-person me-1"></i>Erwachsene × {{ order.adult_count }}
+                    </span>
+                    <span class="price-value">{{ concert.adult_price|floatformat:2 }} € ×&thinsp;{{ order.adult_count }}</span>
+                </div>
+                {% endif %}
+                {% if order.child_count > 0 %}
+                <div class="price-row">
+                    <span class="price-label">
+                        <i class="bi bi-person-fill me-1" style="font-size:.75em;"></i>Kinder × {{ order.child_count }}
+                    </span>
+                    <span class="price-value">{{ concert.child_price|floatformat:2 }} € ×&thinsp;{{ order.child_count }}</span>
+                </div>
+                {% endif %}
+                <div class="price-row" style="border-top: 2px solid var(--tickets-navy); margin-top:0.25rem; padding-top:0.5rem;">
+                    <span style="font-weight:700; color: var(--tickets-navy);">Gesamtbetrag</span>
+                    <span style="font-weight:800; color: var(--tickets-navy); font-size:1.15rem;">{{ order.total_price|floatformat:2 }} €</span>
+                </div>
+            </div>
+
+            <div class="p-3 rounded-3" style="background: #fef3c7; border: 1px solid #fde68a;">
+                <div class="d-flex align-items-start">
+                    <i class="bi bi-info-circle me-2 mt-1" style="color: #92400e; flex-shrink:0;"></i>
+                    <div style="font-size:0.9rem; color: #92400e;">
+                        Die Karten liegen unter Ihrem Namen an der Abendkasse bereit.
+                        Die Zahlung erfolgt vor Ort. Bitte halten Sie Ihren Bestätigungscode bereit.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Email notice #}
+        <div class="d-flex align-items-center p-3 rounded-3 mb-4" style="background: #eff6ff; border: 1px solid #bfdbfe;">
+            <i class="bi bi-envelope-check me-3" style="font-size:1.5rem; color: #2563eb; flex-shrink:0;"></i>
+            <div style="font-size:0.9rem; color: #1e40af;">
+                Eine Bestätigungs-E-Mail wurde an <strong>{{ order.customer_email }}</strong> gesendet.
+            </div>
+        </div>
+
+        {# Back button #}
+        <div class="text-center">
+            <a href="{% url 'tickets:concert_list' %}" class="btn btn-tickets-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Zurück zur Konzertübersicht
+            </a>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

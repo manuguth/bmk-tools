@@ -27,4 +27,5 @@ urlpatterns = [
     path("info_mails/", include("info_mail.urls")),
     path("accounts/", include("django.contrib.auth.urls")),
     path("aktuelle-themen", views.latest_info_mail, name="latest_info_mail"),
+    path("tickets/", include(("tickets.urls", "tickets"), namespace="tickets")),
 ]

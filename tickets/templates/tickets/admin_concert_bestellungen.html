@@ -1,0 +1,190 @@
+{% extends "tickets/base.html" %}
+
+{% block title %}Bestellungen – {{ concert.name }}{% endblock %}
+
+{% block extra_style %}
+.status-select {
+    border: none;
+    background: transparent;
+    font-weight: 600;
+    font-size: 0.8rem;
+    padding: 2px 6px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.status-select.status-ausstehend { background: #fef3c7; color: #92400e; }
+.status-select.status-bestaetigt { background: #d1fae5; color: #065f46; }
+.status-select.status-storniert  { background: #fee2e2; color: #991b1b; }
+{% endblock %}
+
+{% block page_content %}
+
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="{% url 'tickets:admin_concert_list' %}" style="color: var(--tickets-gold); text-decoration:none;">Verwaltung</a>
+        </li>
+        <li class="breadcrumb-item">
+            <a href="{% url 'tickets:admin_concert_detail' concert.slug %}" style="color: var(--tickets-gold); text-decoration:none;">{{ concert.name }}</a>
+        </li>
+        <li class="breadcrumb-item active">Bestellungen</li>
+    </ol>
+</nav>
+
+<div class="section-header mb-4">
+    <h2>Bestellungen: {{ concert.name }}</h2>
+    <p>{{ concert.date|date:"d. F Y" }}, {{ concert.date|date:"H:i" }} Uhr · {{ concert.venue }}</p>
+</div>
+
+{# Stats #}
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon"><i class="bi bi-bag-check"></i></div>
+            <div class="stat-value">{{ order_stats.total_orders|default:0 }}</div>
+            <div class="stat-label">Bestellungen</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon"><i class="bi bi-ticket-perforated"></i></div>
+            <div class="stat-value">
+                {% with t=order_stats.total_adults|default:0|add:order_stats.total_children|default:0 %}{{ t }}{% endwith %}
+            </div>
+            <div class="stat-label">Tickets (Erw. + Kinder)</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon" style="color:#059669;"><i class="bi bi-check-circle"></i></div>
+            <div class="stat-value" style="color:#059669;">{{ order_stats.confirmed|default:0 }}</div>
+            <div class="stat-label">Bestätigt</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon"><i class="bi bi-cash-coin"></i></div>
+            <div class="stat-value">{{ order_stats.revenue|default:0|floatformat:2 }} €</div>
+            <div class="stat-label">Einnahmen</div>
+        </div>
+    </div>
+</div>
+
+{# Status filter tabs #}
+<div class="d-flex gap-2 flex-wrap mb-3">
+    <a href="?status=" class="btn btn-sm {% if not status_filter %}btn-tickets-primary{% else %}btn-tickets-secondary{% endif %}">
+        Alle ({{ order_stats.total_orders|default:0 }})
+    </a>
+    <a href="?status=ausstehend" class="btn btn-sm {% if status_filter == 'ausstehend' %}btn-tickets-primary{% else %}btn-tickets-secondary{% endif %}">
+        Ausstehend ({{ order_stats.pending|default:0 }})
+    </a>
+    <a href="?status=bestaetigt" class="btn btn-sm {% if status_filter == 'bestaetigt' %}btn-tickets-primary{% else %}btn-tickets-secondary{% endif %}">
+        Bestätigt ({{ order_stats.confirmed|default:0 }})
+    </a>
+    <a href="?status=storniert" class="btn btn-sm {% if status_filter == 'storniert' %}btn-tickets-primary{% else %}btn-tickets-secondary{% endif %}">
+        Storniert ({{ order_stats.cancelled|default:0 }})
+    </a>
+</div>
+
+{# Orders table #}
+{% if orders %}
+<div class="ticket-card overflow-hidden">
+    <div class="table-responsive">
+        <table class="table tickets-table mb-0">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>E-Mail / Telefon</th>
+                    <th class="text-center">Erw.</th>
+                    <th class="text-center">Kind.</th>
+                    <th class="text-end">Gesamt</th>
+                    <th>Anmerkungen</th>
+                    <th class="text-center">Status</th>
+                    <th>Datum</th>
+                    <th>Code</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr data-order-id="{{ order.id }}">
+                    <td class="fw-semibold">{{ order.customer_name }}</td>
+                    <td>
+                        <div style="font-size:0.85rem;">{{ order.customer_email }}</div>
+                        {% if order.customer_phone %}
+                        <div class="text-muted" style="font-size:0.78rem;">{{ order.customer_phone }}</div>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">{{ order.adult_count }}</td>
+                    <td class="text-center">{{ order.child_count }}</td>
+                    <td class="text-end fw-bold">{{ order.total_price|floatformat:2 }} €</td>
+                    <td>
+                        {% if order.notes %}
+                        <span class="text-muted" style="font-size:0.83rem;" title="{{ order.notes }}">
+                            {{ order.notes|truncatewords:6 }}
+                        </span>
+                        {% else %}–{% endif %}
+                    </td>
+                    <td class="text-center">
+                        <select class="status-select status-{{ order.status }}"
+                                data-order-id="{{ order.id }}"
+                                data-update-url="{% url 'tickets:admin_order_status_update' order.id %}">
+                            <option value="ausstehend" {% if order.status == 'ausstehend' %}selected{% endif %}>Ausstehend</option>
+                            <option value="bestaetigt" {% if order.status == 'bestaetigt' %}selected{% endif %}>Bestätigt</option>
+                            <option value="storniert"  {% if order.status == 'storniert' %}selected{% endif %}>Storniert</option>
+                        </select>
+                    </td>
+                    <td class="text-nowrap" style="font-size:0.82rem;">{{ order.created_at|date:"d.m.Y H:i" }}</td>
+                    <td>
+                        <code style="font-size:0.82rem; color: var(--tickets-navy);">{{ order.confirmation_code }}</code>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="text-center text-muted py-5">
+    <i class="bi bi-inbox" style="font-size:3rem; opacity:0.4;"></i>
+    <p class="mt-2 mb-0">Keine Bestellungen gefunden.</p>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function () {
+    var csrfToken = document.cookie.match(/csrftoken=([^;]+)/);
+    csrfToken = csrfToken ? csrfToken[1] : '';
+
+    document.querySelectorAll('.status-select').forEach(function (sel) {
+        sel.addEventListener('change', function () {
+            var url        = sel.getAttribute('data-update-url');
+            var newStatus  = sel.value;
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                },
+                body: JSON.stringify({ status: newStatus }),
+            })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data.success) {
+                    sel.className = 'status-select status-' + data.status;
+                } else {
+                    alert('Fehler beim Speichern: ' + (data.error || 'Unbekannter Fehler'));
+                    location.reload();
+                }
+            })
+            .catch(function () {
+                alert('Verbindungsfehler. Bitte Seite neu laden.');
+                location.reload();
+            });
+        });
+    });
+}());
+</script>
+{% endblock %}

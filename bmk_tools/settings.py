@@ -33,6 +33,7 @@ ALLOWED_HOSTS = ["*"] if DEBUG else ["host.docker.internal", "localhost", "127.0
 INSTALLED_APPS = [
     "festival.apps.FestivalConfig",
     "info_mail.apps.InfoMailConfig",
+    "tickets.apps.TicketsConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -140,3 +141,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 MEDIA_ROOT = BASE_DIR / "uploads/"
 MEDIA_URL = "media/"
+
+# Email Configuration (development: print to console)
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = "Tickets BMK <tickets@bmk-buggingen.de>"
