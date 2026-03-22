@@ -2,6 +2,45 @@
 
 {% block title %}{{ concert.name }} – Kartenvorverkauf BMK{% endblock %}
 
+{% block extra_style %}
+<style>
+.stepper-group {
+    display: flex;
+    align-items: center;
+    border: 2px solid var(--tickets-navy);
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+.stepper-btn {
+    width: 44px;
+    height: 44px;
+    background: var(--tickets-navy);
+    color: var(--tickets-gold);
+    border: none;
+    font-size: 1.4rem;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1;
+    flex-shrink: 0;
+    touch-action: manipulation;
+    user-select: none;
+}
+.stepper-btn:hover { background: var(--tickets-navy-mid); }
+.stepper-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.stepper-value {
+    width: 52px;
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--tickets-navy);
+    background: #fff;
+    padding: 0.25rem 0;
+    user-select: none;
+}
+</style>
+{% endblock %}
+
 {% block page_content %}
 
 {# Breadcrumb #}
@@ -147,27 +186,41 @@
                     <h6 class="fw-bold mb-3" style="color: var(--tickets-navy);">
                         <i class="bi bi-person-lines-fill me-2" style="color: var(--tickets-gold);"></i>Anzahl Karten
                     </h6>
-                    <div class="row g-3">
-                        <div class="col-6">
-                            <label class="form-label" for="{{ form.adult_count.id_for_label }}">
-                                {{ form.adult_count.label }}
-                                <small class="text-muted fw-normal">({{ concert.adult_price|floatformat:2 }} € / Stk.)</small>
-                            </label>
-                            {{ form.adult_count }}
-                            {% if form.adult_count.errors %}
-                                <div class="text-danger small mt-1">{{ form.adult_count.errors.0 }}</div>
-                            {% endif %}
+
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center justify-content-between gap-3">
+                            <div>
+                                <div class="fw-semibold" style="color: var(--tickets-navy);">Erwachsene</div>
+                                <small class="text-muted">({{ concert.adult_price|floatformat:2 }} € / Stk.)</small>
+                            </div>
+                            <div class="stepper-group" data-input-id="id_adult_count" data-min="0" data-max="20">
+                                <button type="button" class="stepper-btn stepper-minus" aria-label="Weniger">−</button>
+                                <span class="stepper-value">1</span>
+                                <button type="button" class="stepper-btn stepper-plus" aria-label="Mehr">+</button>
+                            </div>
                         </div>
-                        <div class="col-6">
-                            <label class="form-label" for="{{ form.child_count.id_for_label }}">
-                                {{ form.child_count.label }}
-                                <small class="text-muted fw-normal">({{ concert.child_price|floatformat:2 }} € / Stk.)</small>
-                            </label>
-                            {{ form.child_count }}
-                            {% if form.child_count.errors %}
-                                <div class="text-danger small mt-1">{{ form.child_count.errors.0 }}</div>
-                            {% endif %}
+                        <input type="hidden" name="adult_count" id="id_adult_count" value="{{ form.adult_count.value|default:1 }}">
+                        {% if form.adult_count.errors %}
+                            <div class="text-danger small mt-1">{{ form.adult_count.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center justify-content-between gap-3">
+                            <div>
+                                <div class="fw-semibold" style="color: var(--tickets-navy);">Kinder</div>
+                                <small class="text-muted">({{ concert.child_price|floatformat:2 }} € / Stk.)</small>
+                            </div>
+                            <div class="stepper-group" data-input-id="id_child_count" data-min="0" data-max="20">
+                                <button type="button" class="stepper-btn stepper-minus" aria-label="Weniger">−</button>
+                                <span class="stepper-value">0</span>
+                                <button type="button" class="stepper-btn stepper-plus" aria-label="Mehr">+</button>
+                            </div>
                         </div>
+                        <input type="hidden" name="child_count" id="id_child_count" value="{{ form.child_count.value|default:0 }}">
+                        {% if form.child_count.errors %}
+                            <div class="text-danger small mt-1">{{ form.child_count.errors.0 }}</div>
+                        {% endif %}
                     </div>
 
                     <div class="total-price-box mt-3">
@@ -243,23 +296,43 @@
 {% block extra_scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    var adultInput  = document.getElementById('id_adult_count');
-    var childInput  = document.getElementById('id_child_count');
-    var totalEl     = document.getElementById('total-price-display');
-    if (!adultInput || !childInput || !totalEl) return;
-
     var adultPrice = parseFloat("{{ concert.adult_price }}") || 0;
     var childPrice = parseFloat("{{ concert.child_price }}") || 0;
+    var totalEl    = document.getElementById('total-price-display');
+    if (!totalEl) return;
 
     function updateTotal() {
-        var adults   = parseInt(adultInput.value)  || 0;
-        var children = parseInt(childInput.value)  || 0;
+        var adults   = parseInt(document.getElementById('id_adult_count').value) || 0;
+        var children = parseInt(document.getElementById('id_child_count').value) || 0;
         var total    = (adults * adultPrice) + (children * childPrice);
         totalEl.textContent = total.toFixed(2).replace('.', ',') + '\u00a0\u20ac';
     }
 
-    adultInput.addEventListener('input', updateTotal);
-    childInput.addEventListener('input', updateTotal);
+    document.querySelectorAll('.stepper-group').forEach(function (group) {
+        var inputId      = group.dataset.inputId;
+        var input        = document.getElementById(inputId);
+        var valueDisplay = group.querySelector('.stepper-value');
+        var minusBtn     = group.querySelector('.stepper-minus');
+        var plusBtn      = group.querySelector('.stepper-plus');
+        var min = parseInt(group.dataset.min) || 0;
+        var max = parseInt(group.dataset.max) || 20;
+
+        function getValue() { return parseInt(input.value) || 0; }
+        function setValue(v) {
+            v = Math.max(min, Math.min(max, v));
+            input.value = v;
+            valueDisplay.textContent = v;
+            minusBtn.disabled = (v <= min);
+            plusBtn.disabled  = (v >= max);
+            updateTotal();
+        }
+
+        setValue(getValue());
+
+        minusBtn.addEventListener('click', function () { setValue(getValue() - 1); });
+        plusBtn.addEventListener('click',  function () { setValue(getValue() + 1); });
+    });
+
     updateTotal();
 });
 </script>
