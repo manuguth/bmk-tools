@@ -9,6 +9,7 @@ from django.conf import settings
 from django.db import models as db_models
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.timezone import localtime
 from django.views.decorators.http import require_http_methods
 
 from .forms import ConcertForm, TicketOrderForm
@@ -216,7 +217,7 @@ def admin_concert_detail(request, slug):
     else:
         form = ConcertForm(instance=concert)
         if concert.date:
-            form.initial["date"] = concert.date.strftime("%Y-%m-%dT%H:%M")
+            form.initial["date"] = localtime(concert.date).strftime("%Y-%m-%dT%H:%M")
 
     recent_orders = concert.orders.all().order_by("-created_at")[:10]
     order_stats = concert.orders.aggregate(

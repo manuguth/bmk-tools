@@ -1,4 +1,5 @@
 from django import forms
+from django.utils import timezone
 
 from .models import Concert, TicketOrder
 
@@ -174,3 +175,9 @@ class ConcertForm(forms.ModelForm):
             "is_active": "Vorverkauf aktiv",
             "image": "Konzertplakat (optional)",
         }
+
+    def clean_date(self):
+        date = self.cleaned_data.get("date")
+        if date and timezone.is_naive(date):
+            date = timezone.make_aware(date)
+        return date
