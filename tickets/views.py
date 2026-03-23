@@ -2,7 +2,7 @@ import json
 import logging
 
 from django.contrib import messages
-from django.contrib.admin.views.decorators import staff_member_required
+from .decorators import tickets_admin_required
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.conf import settings
@@ -132,7 +132,7 @@ def bestaetigung(request, slug, confirmation_code):
 # Admin views (staff only)
 # ---------------------------------------------------------------------------
 
-@staff_member_required
+@tickets_admin_required
 def admin_concert_list(request):
     """Admin: list all concerts with stats."""
     concerts = Concert.objects.all().order_by("date")
@@ -177,7 +177,7 @@ def admin_concert_list(request):
     return render(request, "tickets/admin_concert_list.html", context)
 
 
-@staff_member_required
+@tickets_admin_required
 def admin_concert_create(request):
     """Admin: create a new concert."""
     if request.method == "POST":
@@ -200,7 +200,7 @@ def admin_concert_create(request):
     return render(request, "tickets/admin_concert_create.html", context)
 
 
-@staff_member_required
+@tickets_admin_required
 def admin_concert_detail(request, slug):
     """Admin: edit concert details and see a summary of its orders."""
     concert = get_object_or_404(Concert, slug=slug)
@@ -246,7 +246,7 @@ def admin_concert_detail(request, slug):
     return render(request, "tickets/admin_concert_detail.html", context)
 
 
-@staff_member_required
+@tickets_admin_required
 def admin_concert_bestellungen(request, slug):
     """Admin: full order list for a single concert."""
     concert = get_object_or_404(Concert, slug=slug)
@@ -290,7 +290,7 @@ def admin_concert_bestellungen(request, slug):
     return render(request, "tickets/admin_concert_bestellungen.html", context)
 
 
-@staff_member_required
+@tickets_admin_required
 def admin_all_bestellungen(request):
     """Admin: overview of ALL orders across all concerts."""
     status_filter = request.GET.get("status", "")
@@ -325,7 +325,7 @@ def admin_all_bestellungen(request):
     return render(request, "tickets/admin_all_bestellungen.html", context)
 
 
-@staff_member_required
+@tickets_admin_required
 @require_http_methods(["POST"])
 def admin_order_status_update(request, order_id):
     """Admin: update an order's status via AJAX POST."""
