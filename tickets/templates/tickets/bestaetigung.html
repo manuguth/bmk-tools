@@ -2,6 +2,14 @@
 
 {% block title %}Bestellung bestätigt – {{ concert.name }}{% endblock %}
 
+{% block extra_style %}
+:root {
+    --tickets-navy:  {{ concert.color_primary }};
+    --tickets-gold:  {{ concert.color_accent }};
+    --tickets-bg:    {{ concert.color_background }};
+}
+{% endblock %}
+
 {% block page_content %}
 <div class="row justify-content-center">
     <div class="col-12 col-md-8 col-lg-6">

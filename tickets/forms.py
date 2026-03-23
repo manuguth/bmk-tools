@@ -102,6 +102,9 @@ class ConcertForm(forms.ModelForm):
             "max_children",
             "is_active",
             "image",
+            "color_primary",
+            "color_accent",
+            "color_background",
         ]
         widgets = {
             "name": forms.TextInput(
@@ -162,6 +165,15 @@ class ConcertForm(forms.ModelForm):
             ),
             "is_active": forms.CheckboxInput(attrs={"class": "form-check-input"}),
             "image": forms.ClearableFileInput(attrs={"class": "form-control"}),
+            "color_primary": forms.TextInput(
+                attrs={"type": "color", "class": "form-control form-control-color"}
+            ),
+            "color_accent": forms.TextInput(
+                attrs={"type": "color", "class": "form-control form-control-color"}
+            ),
+            "color_background": forms.TextInput(
+                attrs={"type": "color", "class": "form-control form-control-color"}
+            ),
         }
         labels = {
             "name": "Bezeichnung",
@@ -174,6 +186,14 @@ class ConcertForm(forms.ModelForm):
             "max_children": "Max. Kinder-Tickets (bis 12 Jahre)",
             "is_active": "Vorverkauf aktiv",
             "image": "Konzertplakat (optional)",
+            "color_primary": "Primärfarbe",
+            "color_accent": "Akzentfarbe",
+            "color_background": "Hintergrundfarbe",
+        }
+        help_texts = {
+            "color_primary": "Standard: #0d1b2a (Navy)",
+            "color_accent": "Standard: #c9a84c (Gold)",
+            "color_background": "Standard: #f5f0e8 (Beige)",
         }
 
     def clean_date(self):

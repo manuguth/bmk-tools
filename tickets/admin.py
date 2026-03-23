@@ -1,6 +1,12 @@
+from django import forms
 from django.contrib import admin
 
 from .models import Concert, TicketOrder
+
+
+class ColorInput(forms.TextInput):
+    """Renders as <input type="color"> for the Django admin color picker."""
+    input_type = 'color'
 
 
 class TicketOrderInline(admin.TabularInline):
@@ -47,6 +53,13 @@ class ConcertAdmin(admin.ModelAdmin):
             },
         ),
         (
+            "Farben",
+            {
+                "fields": ("color_primary", "color_accent", "color_background"),
+                "description": "Farbgebung der Konzertseite. Standardwerte: Navy #0d1b2a · Gold #c9a84c · Beige #f5f0e8",
+            },
+        ),
+        (
             "Preise & Kapazität",
             {
                 "fields": ("adult_price", "child_price", "max_adults", "max_children", "is_active"),
@@ -80,6 +93,11 @@ class ConcertAdmin(admin.ModelAdmin):
         return obj.children_remaining
 
     children_remaining_display.short_description = "Kinder frei"
+
+    def formfield_for_dbfield(self, db_field, request, **kwargs):
+        if db_field.name in ('color_primary', 'color_accent', 'color_background'):
+            kwargs['widget'] = ColorInput(attrs={'style': 'width:80px; height:40px; padding:2px; border-radius:4px;'})
+        return super().formfield_for_dbfield(db_field, request, **kwargs)
 
 
 @admin.register(TicketOrder)

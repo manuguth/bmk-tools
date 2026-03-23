@@ -3,7 +3,11 @@
 {% block title %}{{ concert.name }} – Kartenvorverkauf BMK{% endblock %}
 
 {% block extra_style %}
-<style>
+:root {
+    --tickets-navy:  {{ concert.color_primary }};
+    --tickets-gold:  {{ concert.color_accent }};
+    --tickets-bg:    {{ concert.color_background }};
+}
 .stepper-group {
     display: flex;
     align-items: center;
@@ -38,7 +42,6 @@
     padding: 0.25rem 0;
     user-select: none;
 }
-</style>
 {% endblock %}
 
 {% block page_content %}
