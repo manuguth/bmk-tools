@@ -1,8 +1,14 @@
 import random
 import string
 
+from django.core.validators import RegexValidator
 from django.db import models
 from django.utils.text import slugify
+
+_hex_validator = RegexValidator(
+    regex=r'^#[0-9A-Fa-f]{6}$',
+    message='Geben Sie eine gültige Hex-Farbe ein (z.B. #0d1b2a).'
+)
 
 
 class Concert(models.Model):
@@ -27,6 +33,24 @@ class Concert(models.Model):
         blank=True,
         null=True,
         verbose_name="Konzertplakat (optional)",
+    )
+    color_primary = models.CharField(
+        max_length=7,
+        default='#0d1b2a',
+        validators=[_hex_validator],
+        verbose_name='Primärfarbe',
+    )
+    color_accent = models.CharField(
+        max_length=7,
+        default='#c9a84c',
+        validators=[_hex_validator],
+        verbose_name='Akzentfarbe',
+    )
+    color_background = models.CharField(
+        max_length=7,
+        default='#f5f0e8',
+        validators=[_hex_validator],
+        verbose_name='Hintergrundfarbe',
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

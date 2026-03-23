@@ -145,6 +145,47 @@
                     <label class="form-check-label fw-semibold" for="{{ form.is_active.id_for_label }}">{{ form.is_active.label }}</label>
                 </div>
 
+                {# Erweiterte Einstellungen (collapsible) #}
+                <div class="mb-4">
+                    <button type="button"
+                            class="btn btn-sm btn-outline-secondary w-100 text-start d-flex justify-content-between align-items-center"
+                            data-bs-toggle="collapse" data-bs-target="#advancedSettings" aria-expanded="false">
+                        <span><i class="bi bi-sliders me-2"></i>Erweiterte Einstellungen</span>
+                        <i class="bi bi-chevron-down"></i>
+                    </button>
+                    <div class="collapse" id="advancedSettings">
+                        <div class="border rounded p-3 mt-2 bg-light">
+                            <p class="text-muted small mb-3">Farbgebung der öffentlichen Konzertseite. Standardwerte werden verwendet, wenn nichts geändert wird.</p>
+                            <div class="row g-3">
+                                <div class="col-4">
+                                    <label class="form-label small fw-semibold" for="{{ form.color_primary.id_for_label }}">{{ form.color_primary.label }}</label>
+                                    {{ form.color_primary }}
+                                    <div class="form-text">{{ form.color_primary.help_text }}</div>
+                                    {% if form.color_primary.errors %}<div class="text-danger small">{{ form.color_primary.errors.0 }}</div>{% endif %}
+                                </div>
+                                <div class="col-4">
+                                    <label class="form-label small fw-semibold" for="{{ form.color_accent.id_for_label }}">{{ form.color_accent.label }}</label>
+                                    {{ form.color_accent }}
+                                    <div class="form-text">{{ form.color_accent.help_text }}</div>
+                                    {% if form.color_accent.errors %}<div class="text-danger small">{{ form.color_accent.errors.0 }}</div>{% endif %}
+                                </div>
+                                <div class="col-4">
+                                    <label class="form-label small fw-semibold" for="{{ form.color_background.id_for_label }}">{{ form.color_background.label }}</label>
+                                    {{ form.color_background }}
+                                    <div class="form-text">{{ form.color_background.help_text }}</div>
+                                    {% if form.color_background.errors %}<div class="text-danger small">{{ form.color_background.errors.0 }}</div>{% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% if concert.color_primary != '#0d1b2a' or concert.color_accent != '#c9a84c' or concert.color_background != '#f5f0e8' %}
+                    <script>
+                        document.getElementById('advancedSettings').classList.add('show');
+                        document.querySelector('[data-bs-target="#advancedSettings"]').setAttribute('aria-expanded', 'true');
+                    </script>
+                    {% endif %}
+                </div>
+
                 <button type="submit" class="btn btn-tickets-gold">
                     <i class="bi bi-check2 me-1"></i>Änderungen speichern
                 </button>
