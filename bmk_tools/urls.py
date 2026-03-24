@@ -16,6 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.contrib.auth import urls as auth_urls
 from info_mail import views
 
 
@@ -25,7 +26,7 @@ urlpatterns = [
     path("event/", include(("festival.urls", "festival"), namespace="event")),
     path("", include("info_mail.urls")),
     path("info_mails/", include("info_mail.urls")),
-    path("accounts/", include("django.contrib.auth.urls")),
+    path("accounts/", include(auth_urls)),
     path("aktuelle-themen", views.latest_info_mail, name="latest_info_mail"),
     path("tickets/", include(("tickets.urls", "tickets"), namespace="tickets")),
 ]
