@@ -1,46 +1,35 @@
-Sehr geehrte(r) {{ order.customer_full_name }},
+Hallo {{ order.customer_full_name }},
 
-vielen Dank fuer Ihre Kartenreservierung beim
-Bergmannskapelle Buggingen e.V.!
+Ihre Reservierung ist bei uns eingegangen und erfolgreich vorgemerkt.
 
-Ihre Reservierung wurde erfolgreich aufgenommen.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-IHRE BESTELLUNG
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
+==================================================
+RESERVIERUNGSDETAILS
+==================================================
 Konzert:           {{ order.concert.name }}
 Datum:             {{ order.concert.date|date:"l, d. F Y" }}, {{ order.concert.date|date:"H:i" }} Uhr
-{% if order.concert.einlass %}Einlass:           {{ order.concert.einlass|time:"H:i" }} Uhr
-{% endif %}Veranstaltungsort: {{ order.concert.venue }} (Freie Platzwahl)
+Einlass:           {% if order.concert.einlass %}{{ order.concert.einlass|time:"H:i" }} Uhr{% else %}-{% endif %}
+Ort:               {{ order.concert.venue }}
+Hinweis:           Freie Platzwahl
 
-{% if order.adult_count > 0 %}  Erwachsene:  {{ order.adult_count }} x {{ order.concert.adult_price|floatformat:2 }} EUR = {{ adult_subtotal|floatformat:2 }} EUR
-{% endif %}{% if order.child_count > 0 %}  Kinder:      {{ order.child_count }} x {{ order.concert.child_price|floatformat:2 }} EUR = {{ child_subtotal|floatformat:2 }} EUR
-{% endif %}──────────────────────────────────────────
-Gesamtbetrag:  {{ order.total_price|floatformat:2 }} EUR
+Ticketpositionen:
+{% if order.adult_count > 0 %}- Erwachsene:       {{ order.adult_count }} x {{ order.concert.adult_price|floatformat:2 }} EUR = {{ adult_subtotal|floatformat:2 }} EUR
+{% endif %}{% if order.child_count > 0 %}- Kinder (bis 12): {{ order.child_count }} x {{ order.concert.child_price|floatformat:2 }} EUR = {{ child_subtotal|floatformat:2 }} EUR
+{% endif %}--------------------------------------------------
+Gesamtbetrag:      {{ order.total_price|floatformat:2 }} EUR
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ABENDKASSE & ZAHLUNG
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+==================================================
+WICHTIG FUER DEN KONZERTABEND
+==================================================
+- Bitte zeigen Sie am Einlass den QR-Code aus dieser E-Mail.
+- Alternativ reicht auch Ihr Name an der Abendkasse.
+- Die Karten sind auf Ihren Namen reserviert.
+- WICHTIG: DIE ZAHLUNG ERFOLGT AUSSCHLIESSLICH VOR ORT AN DER ABENDKASSE.
+- QR-Code für den Einlass: {% if qr_url %}{{ qr_url }}{% else %}nicht verfügbar{% endif %}
+- Falls der QR-Code nicht verfügbar ist: Bestätigungscode {{ order.confirmation_code }}
+Wenn Sie Fragen haben, antworten Sie einfach auf diese E-Mail.
 
-Bitte nennen Sie an der Abendkasse einfach Ihren Namen.
-Die Karten liegen unter Ihrem Namen bereit.
-Die Zahlung erfolgt vor Ort an der Abendkasse.
-{% if qr_url %}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-EINLASS-QR-CODE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Ihr Bestätigungscode: {{ order.confirmation_code }}
-QR-Code: {{ qr_url }}
-{% endif %}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Bei Fragen stehen wir Ihnen gerne zur Verfuegung.
-
-Mit freundlichen Gruessen
+Viele Grüße
 Ihr BMK-Team
 
 --
 Bergmannskapelle Buggingen e.V. | Kartenvorverkauf
-Sie koennen auf diese E-Mail antworten - wir lesen alle Nachrichten.

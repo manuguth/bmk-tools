@@ -36,7 +36,7 @@
             <td style="background-color:#d1fae5; padding:16px 40px; text-align:center;
                        border-bottom:1px solid #a7f3d0;">
               <p style="margin:0; color:#065f46; font-size:15px; font-weight:600;">
-                &#10003;&nbsp; Reservierung erfolgreich aufgenommen
+                &#10003;&nbsp; Ihre Reservierung wurde bestätigt
               </p>
             </td>
           </tr>
@@ -47,10 +47,10 @@
 
               <!-- Greeting -->
               <p style="margin:0 0 20px; font-size:16px; color:#1a1a2e;">
-                Sehr geehrte(r) <strong>{{ order.customer_full_name }}</strong>,
+                Hallo <strong>{{ order.customer_full_name }}</strong>,
               </p>
               <p style="margin:0 0 28px; font-size:15px; color:#4b5563; line-height:1.6;">
-                vielen Dank für Ihre Kartenreservierung. Wir haben Ihre Bestellung erhalten.
+                Ihre Reservierung ist bei uns eingegangen und erfolgreich vorgemerkt.
               </p>
 
               <!-- Section label -->
@@ -187,12 +187,15 @@
                 <tr>
                   <td style="padding:16px 20px;">
                     <p style="margin:0 0 6px; font-size:13px; font-weight:700; color:#92400e;">
-                      &#8505;&nbsp; Abendkasse &amp; Zahlung
+                      &#8505;&nbsp; Einlass &amp; Zahlung
                     </p>
                     <p style="margin:0; font-size:13px; color:#92400e; line-height:1.5;">
-                      Bitte nennen Sie an der Abendkasse einfach Ihren Namen.
-                      Die Karten liegen unter Ihrem Namen bereit.
-                      Die Zahlung erfolgt vor Ort an der Abendkasse.
+                      Bitte zeigen Sie am Einlass den QR-Code aus dieser E-Mail.
+                      Alternativ reicht auch Ihr Name an der Abendkasse.
+                      Die Karten sind auf Ihren Namen reserviert.
+                    </p>
+                    <p style="margin:10px 0 0; font-size:13px; font-weight:800; color:#7c2d12; letter-spacing:0.02em;">
+                      Zahlung vor Ort an der Abendkasse.
                     </p>
                   </td>
                 </tr>
@@ -212,12 +215,8 @@
                          width="160" height="160"
                          alt="QR-Code Einlass {{ order.confirmation_code }}"
                          style="border:3px solid #0d1b2a; border-radius:8px; display:block; margin:0 auto;">
-                    <p style="margin:10px 0 4px; font-family:monospace; font-size:15px; font-weight:700;
-                               letter-spacing:0.12em; color:#0d1b2a;">
+                    <p style="margin:4px 0 0; font-family:monospace; font-size:13px; color:#374151; letter-spacing:0.08em;">
                       {{ order.confirmation_code }}
-                    </p>
-                    <p style="margin:0; font-size:13px; color:#4b5563;">
-                      Zeigen Sie diesen Code am Einlass vor – oder nennen Sie einfach Ihren Namen.
                     </p>
                   </td>
                 </tr>
@@ -226,10 +225,10 @@
 
               <!-- Closing -->
               <p style="margin:0; font-size:15px; color:#1a1a2e; line-height:1.6;">
-                Bei Fragen stehen wir Ihnen gerne zur Verfügung.
+                Wenn Sie Fragen haben, antworten Sie einfach auf diese E-Mail.
               </p>
               <p style="margin:16px 0 0; font-size:15px; color:#1a1a2e;">
-                Mit freundlichen Grüßen<br>
+                Viele Gruesse<br>
                 <strong style="color:#0d1b2a;">Ihr BMK-Team</strong>
               </p>
 
@@ -241,8 +240,7 @@
             <td style="background-color:#f8f4ed; border-top:1px solid #e2d9c8;
                        padding:20px 40px; text-align:center;">
               <p style="margin:0; font-size:12px; color:#9ca3af; line-height:1.6;">
-                Bergmannskapelle Buggingen e.V. &bull; Kartenvorverkauf<br>
-                Sie können auf diese E-Mail antworten &ndash; wir lesen alle Nachrichten.
+                Bergmannskapelle Buggingen e.V. &bull; Kartenvorverkauf
               </p>
             </td>
           </tr>
