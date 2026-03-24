@@ -38,30 +38,35 @@
 
 {# Stats #}
 <div class="row g-3 mb-4">
-    <div class="col-6 col-md-3">
+    <div class="col-6 col-md">
         <div class="stat-card">
             <div class="stat-icon"><i class="bi bi-bag-check"></i></div>
             <div class="stat-value">{{ order_stats.total_orders|default:0 }}</div>
             <div class="stat-label">Bestellungen</div>
         </div>
     </div>
-    <div class="col-6 col-md-3">
+    <div class="col-6 col-md">
         <div class="stat-card">
-            <div class="stat-icon"><i class="bi bi-ticket-perforated"></i></div>
-            <div class="stat-value">
-                {% with t=order_stats.total_adults|default:0|add:order_stats.total_children|default:0 %}{{ t }}{% endwith %}
-            </div>
-            <div class="stat-label">Tickets (Erw. + Kinder)</div>
+            <div class="stat-icon"><i class="bi bi-person"></i></div>
+            <div class="stat-value">{{ order_stats.total_adults|default:0 }} / {{ concert.max_adults }}</div>
+            <div class="stat-label">Erwachsene</div>
         </div>
     </div>
-    <div class="col-6 col-md-3">
+    <div class="col-6 col-md">
+        <div class="stat-card">
+            <div class="stat-icon"><i class="bi bi-people"></i></div>
+            <div class="stat-value">{{ order_stats.total_children|default:0 }} / {{ concert.max_children }}</div>
+            <div class="stat-label">Kinder</div>
+        </div>
+    </div>
+    <div class="col-6 col-md">
         <div class="stat-card">
             <div class="stat-icon" style="color:#059669;"><i class="bi bi-check-circle"></i></div>
             <div class="stat-value" style="color:#059669;">{{ order_stats.confirmed|default:0 }}</div>
             <div class="stat-label">Bestätigt</div>
         </div>
     </div>
-    <div class="col-6 col-md-3">
+    <div class="col-6 col-md">
         <div class="stat-card">
             <div class="stat-icon"><i class="bi bi-cash-coin"></i></div>
             <div class="stat-value">{{ order_stats.revenue|default:0|floatformat:2 }} €</div>
