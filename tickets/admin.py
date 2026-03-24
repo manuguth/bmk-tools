@@ -121,7 +121,7 @@ class TicketOrderAdmin(admin.ModelAdmin):
         "confirmation_code",
         "concert__name",
     )
-    readonly_fields = ("confirmation_code", "total_price", "created_at")
+    readonly_fields = ("confirmation_code", "total_price", "created_at", "collected", "collected_adult_count", "collected_child_count")
     list_editable = ("status",)
     fieldsets = (
         (
@@ -145,7 +145,14 @@ class TicketOrderAdmin(admin.ModelAdmin):
         (
             "Status & Code",
             {
-                "fields": ("status", "confirmation_code", "created_at"),
+                "fields": (
+                    "status",
+                    "confirmation_code",
+                    "created_at",
+                    "collected",
+                    "collected_adult_count",
+                    "collected_child_count",
+                ),
             },
         ),
     )

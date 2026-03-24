@@ -435,9 +435,43 @@ def einlass_detail(request, confirmation_code):
 @scanner_required
 @require_http_methods(["POST"])
 def einlass_mark_collected(request, confirmation_code):
-    """Scanner: mark a TicketOrder as collected."""
+    """Scanner: mark a TicketOrder as collected, with optional count adjustment."""
     order = get_object_or_404(TicketOrder, confirmation_code=confirmation_code)
+
+    try:
+        collected_adult = int(request.POST.get("collected_adult_count", order.adult_count))
+        collected_child = int(request.POST.get("collected_child_count", order.child_count))
+    except (ValueError, TypeError):
+        collected_adult = order.adult_count
+        collected_child = order.child_count
+
+    collected_adult = max(0, collected_adult)
+    collected_child = max(0, collected_child)
+
+    adjusted = (
+        collected_adult != order.adult_count or collected_child != order.child_count
+    )
+
+    new_price = (
+        collected_adult * order.concert.adult_price
+        + collected_child * order.concert.child_price
+    )
+
     order.collected = True
-    order.save(update_fields=["collected"])
-    messages.success(request, f"Bestellung {confirmation_code} als abgeholt markiert.")
+    order.collected_adult_count = collected_adult
+    order.collected_child_count = collected_child
+    order.total_price = new_price
+    order.save(update_fields=["collected", "collected_adult_count", "collected_child_count", "total_price"])
+
+    if adjusted:
+        messages.success(
+            request,
+            f"Bestellung {confirmation_code} abgeholt — Anzahl angepasst: "
+            f"{collected_adult} Erw. / {collected_child} Kinder "
+            f"(reserviert: {order.adult_count} Erw. / {order.child_count} Kinder). "
+            f"Neuer Preis: {new_price:.2f} €.",
+        )
+    else:
+        messages.success(request, f"Bestellung {confirmation_code} als abgeholt markiert.")
+
     return redirect("tickets:einlass_detail", confirmation_code=confirmation_code)
