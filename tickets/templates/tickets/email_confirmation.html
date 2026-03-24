@@ -212,7 +212,11 @@
                          width="160" height="160"
                          alt="QR-Code Einlass {{ order.confirmation_code }}"
                          style="border:3px solid #0d1b2a; border-radius:8px; display:block; margin:0 auto;">
-                    <p style="margin:10px 0 0; font-size:13px; color:#4b5563;">
+                    <p style="margin:10px 0 4px; font-family:monospace; font-size:15px; font-weight:700;
+                               letter-spacing:0.12em; color:#0d1b2a;">
+                      {{ order.confirmation_code }}
+                    </p>
+                    <p style="margin:0; font-size:13px; color:#4b5563;">
                       Zeigen Sie diesen Code am Einlass vor – oder nennen Sie einfach Ihren Namen.
                     </p>
                   </td>
