@@ -61,6 +61,12 @@
                         {% if form.date.errors %}<div class="text-danger small mt-1">{{ form.date.errors.0 }}</div>{% endif %}
                     </div>
                     <div class="col-12 col-sm-6">
+                        <label class="form-label" for="{{ form.einlass.id_for_label }}">{{ form.einlass.label }}</label>
+                        {{ form.einlass }}
+                        <div class="form-text">{{ form.einlass.help_text }}</div>
+                        {% if form.einlass.errors %}<div class="text-danger small mt-1">{{ form.einlass.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-12">
                         <label class="form-label" for="{{ form.venue.id_for_label }}">{{ form.venue.label }} <span class="text-danger">*</span></label>
                         {{ form.venue }}
                         {% if form.venue.errors %}<div class="text-danger small mt-1">{{ form.venue.errors.0 }}</div>{% endif %}

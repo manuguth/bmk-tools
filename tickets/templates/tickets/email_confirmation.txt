@@ -11,7 +11,8 @@ IHRE BESTELLUNG
 
 Konzert:           {{ order.concert.name }}
 Datum:             {{ order.concert.date|date:"l, d. F Y" }}, {{ order.concert.date|date:"H:i" }} Uhr
-Veranstaltungsort: {{ order.concert.venue }} (Freie Platzwahl)
+{% if order.concert.einlass %}Einlass:           {{ order.concert.einlass|time:"H:i" }} Uhr
+{% endif %}Veranstaltungsort: {{ order.concert.venue }} (Freie Platzwahl)
 
 {% if order.adult_count > 0 %}  Erwachsene:  {{ order.adult_count }} x {{ order.concert.adult_price|floatformat:2 }} EUR = {{ adult_subtotal|floatformat:2 }} EUR
 {% endif %}{% if order.child_count > 0 %}  Kinder:      {{ order.child_count }} x {{ order.concert.child_price|floatformat:2 }} EUR = {{ child_subtotal|floatformat:2 }} EUR
