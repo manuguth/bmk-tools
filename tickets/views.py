@@ -3,7 +3,7 @@ import json
 import logging
 
 from django.contrib import messages
-from .decorators import tickets_admin_required
+from .decorators import tickets_admin_required, scanner_required
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.conf import settings
@@ -384,24 +384,24 @@ def ticket_qr_code(request, confirmation_code):
     return HttpResponse(buffer.getvalue(), content_type="image/png")
 
 
-@tickets_admin_required
+@scanner_required
 def einlass_scanner(request):
-    """Admin: mobile QR code scanner page for Einlass."""
+    """Scanner: mobile QR code scanner page for Einlass."""
     return render(request, "tickets/einlass_scanner.html")
 
 
-@tickets_admin_required
+@scanner_required
 def einlass_detail(request, confirmation_code):
-    """Admin: show order details and allow marking as collected."""
+    """Scanner: show order details and allow marking as collected."""
     order = get_object_or_404(TicketOrder, confirmation_code=confirmation_code)
     context = {"order": order}
     return render(request, "tickets/einlass_detail.html", context)
 
 
-@tickets_admin_required
+@scanner_required
 @require_http_methods(["POST"])
 def einlass_mark_collected(request, confirmation_code):
-    """Admin: mark a TicketOrder as collected."""
+    """Scanner: mark a TicketOrder as collected."""
     order = get_object_or_404(TicketOrder, confirmation_code=confirmation_code)
     order.collected = True
     order.save(update_fields=["collected"])
