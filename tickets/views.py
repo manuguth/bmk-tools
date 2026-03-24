@@ -40,7 +40,7 @@ def _send_confirmation_email(order, request=None):
         "qr_url": qr_url,
     }
 
-    subject = f"Ihre Kartenreservierung: {order.concert.name}"
+    subject = f"Reservierungsbestätigung: {order.concert.name}"
     text_body = render_to_string("tickets/email_confirmation.txt", context)
     html_body = render_to_string("tickets/email_confirmation.html", context)
 
