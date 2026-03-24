@@ -366,18 +366,16 @@ def admin_order_status_update(request, order_id):
 # ---------------------------------------------------------------------------
 
 def ticket_qr_code(request, confirmation_code):
-    """Public: generate and serve a QR code PNG encoding the Einlass URL."""
+    """Public: generate and serve a QR code PNG with the confirmation code payload."""
     order = get_object_or_404(TicketOrder, confirmation_code=confirmation_code)
-    einlass_url = request.build_absolute_uri(
-        reverse("tickets:einlass_detail", args=[confirmation_code])
-    )
     qr = qrcode.QRCode(
         version=None,
         error_correction=qrcode.constants.ERROR_CORRECT_M,
         box_size=10,
         border=4,
     )
-    qr.add_data(einlass_url)
+    # Encode only the ticket code so scanning is independent from host/proxy setup.
+    qr.add_data(order.confirmation_code)
     qr.make(fit=True)
     img = qr.make_image(fill_color="black", back_color="white")
     buffer = io.BytesIO()

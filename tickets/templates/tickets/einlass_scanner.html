@@ -76,13 +76,25 @@
 
     function onScanSuccess(decodedText) {
         html5QrCode.stop().then(function () {
-            var codeMatch = decodedText.match(/\/einlass\/([A-Z0-9]{8,12})\/?/i);
+            var raw = (decodedText || '').trim();
+            var codeMatch = raw.match(/(?:\/einlass\/|\b)([A-Z0-9]{8,12})(?:\b|\/?)/i);
             if (codeMatch) {
                 navigateToCode(codeMatch[1]);
-            } else if (decodedText.startsWith('http')) {
-                window.location.href = decodedText;
-            } else if (/^[A-Z0-9]{8,12}$/i.test(decodedText.trim())) {
-                navigateToCode(decodedText.trim());
+            } else if (/^[A-Z0-9]{8,12}$/i.test(raw)) {
+                navigateToCode(raw);
+            } else if (raw.startsWith('http')) {
+                // Support legacy QR payloads by trying to extract from URL query/path first.
+                try {
+                    var u = new URL(raw);
+                    var fromQuery = u.searchParams.get('code') || u.searchParams.get('confirmation_code');
+                    if (fromQuery && /^[A-Z0-9]{8,12}$/i.test(fromQuery)) {
+                        navigateToCode(fromQuery);
+                        return;
+                    }
+                } catch (e) {
+                    // Ignore parse errors and fall through to generic error message.
+                }
+                window.location.href = raw;
             } else {
                 document.getElementById('scan-status').textContent =
                     'Unbekannter QR-Code. Bitte Code manuell eingeben.';
