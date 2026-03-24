@@ -1,3 +1,4 @@
+import io
 import json
 import logging
 
@@ -7,10 +8,13 @@ from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.conf import settings
 from django.db import models as db_models
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils.timezone import localtime
 from django.views.decorators.http import require_http_methods
+
+import qrcode
 
 from .forms import ConcertForm, TicketOrderForm
 from .models import Concert, TicketOrder
@@ -22,12 +26,18 @@ logger = logging.getLogger(__name__)
 # Helper: confirmation email
 # ---------------------------------------------------------------------------
 
-def _send_confirmation_email(order):
+def _send_confirmation_email(order, request=None):
     """Send German-language confirmation email to the customer (HTML + plain text)."""
+    qr_url = None
+    if request is not None:
+        qr_url = request.build_absolute_uri(
+            reverse("tickets:ticket_qr_code", args=[order.confirmation_code])
+        )
     context = {
         "order": order,
         "adult_subtotal": order.adult_count * order.concert.adult_price,
         "child_subtotal": order.child_count * order.concert.child_price,
+        "qr_url": qr_url,
     }
 
     subject = f"Ihre Kartenreservierung: {order.concert.name}"
@@ -99,7 +109,7 @@ def concert_detail(request, slug):
                 form.add_error(None, " ".join(capacity_errors))
             else:
                 order.save()
-                _send_confirmation_email(order)
+                _send_confirmation_email(order, request=request)
                 return redirect(
                     "tickets:bestaetigung",
                     slug=slug,
@@ -349,3 +359,53 @@ def admin_order_status_update(request, order_id):
         )
     except (json.JSONDecodeError, Exception) as exc:
         return JsonResponse({"success": False, "error": str(exc)}, status=400)
+
+
+# ---------------------------------------------------------------------------
+# QR code and Einlass views
+# ---------------------------------------------------------------------------
+
+def ticket_qr_code(request, confirmation_code):
+    """Public: generate and serve a QR code PNG encoding the Einlass URL."""
+    order = get_object_or_404(TicketOrder, confirmation_code=confirmation_code)
+    einlass_url = request.build_absolute_uri(
+        reverse("tickets:einlass_detail", args=[confirmation_code])
+    )
+    qr = qrcode.QRCode(
+        version=None,
+        error_correction=qrcode.constants.ERROR_CORRECT_M,
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(einlass_url)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+    buffer = io.BytesIO()
+    img.save(buffer, format="PNG")
+    buffer.seek(0)
+    return HttpResponse(buffer.getvalue(), content_type="image/png")
+
+
+@tickets_admin_required
+def einlass_scanner(request):
+    """Admin: mobile QR code scanner page for Einlass."""
+    return render(request, "tickets/einlass_scanner.html")
+
+
+@tickets_admin_required
+def einlass_detail(request, confirmation_code):
+    """Admin: show order details and allow marking as collected."""
+    order = get_object_or_404(TicketOrder, confirmation_code=confirmation_code)
+    context = {"order": order}
+    return render(request, "tickets/einlass_detail.html", context)
+
+
+@tickets_admin_required
+@require_http_methods(["POST"])
+def einlass_mark_collected(request, confirmation_code):
+    """Admin: mark a TicketOrder as collected."""
+    order = get_object_or_404(TicketOrder, confirmation_code=confirmation_code)
+    order.collected = True
+    order.save(update_fields=["collected"])
+    messages.success(request, f"Bestellung {confirmation_code} als abgeholt markiert.")
+    return redirect("tickets:einlass_detail", confirmation_code=confirmation_code)

@@ -198,6 +198,28 @@
                 </tr>
               </table>
 
+              <!-- QR Code for Einlass -->
+              {% if qr_url %}
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
+                     style="margin-bottom:28px;">
+                <tr>
+                  <td style="text-align:center; padding:0;">
+                    <p style="margin:0 0 12px; font-size:11px; font-weight:700; color:#c9a84c;
+                               text-transform:uppercase; letter-spacing:0.1em;">
+                      Ihr Einlass-QR-Code
+                    </p>
+                    <img src="{{ qr_url }}"
+                         width="160" height="160"
+                         alt="QR-Code Einlass {{ order.confirmation_code }}"
+                         style="border:3px solid #0d1b2a; border-radius:8px; display:block; margin:0 auto;">
+                    <p style="margin:10px 0 0; font-size:13px; color:#4b5563;">
+                      Zeigen Sie diesen Code am Einlass vor – oder nennen Sie einfach Ihren Namen.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+              {% endif %}
+
               <!-- Closing -->
               <p style="margin:0; font-size:15px; color:#1a1a2e; line-height:1.6;">
                 Bei Fragen stehen wir Ihnen gerne zur Verfügung.

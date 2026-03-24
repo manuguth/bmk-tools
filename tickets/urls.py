@@ -29,6 +29,24 @@ urlpatterns = [
         views.admin_order_status_update,
         name="admin_order_status_update",
     ),
+    # QR code image (public – required for email embedding)
+    path(
+        "qr/<str:confirmation_code>/",
+        views.ticket_qr_code,
+        name="ticket_qr_code",
+    ),
+    # Einlass scanner and order detail (staff only)
+    path("einlass/scanner/", views.einlass_scanner, name="einlass_scanner"),
+    path(
+        "einlass/<str:confirmation_code>/",
+        views.einlass_detail,
+        name="einlass_detail",
+    ),
+    path(
+        "einlass/<str:confirmation_code>/collected/",
+        views.einlass_mark_collected,
+        name="einlass_mark_collected",
+    ),
     path("<slug:slug>/", views.concert_detail, name="concert_detail"),
     path(
         "<slug:slug>/bestaetigung/<str:confirmation_code>/",

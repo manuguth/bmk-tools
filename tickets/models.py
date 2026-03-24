@@ -141,6 +141,10 @@ class TicketOrder(models.Model):
         editable=False,
         verbose_name="Bestätigungscode",
     )
+    collected = models.BooleanField(
+        default=False,
+        verbose_name="Abgeholt",
+    )
 
     class Meta:
         ordering = ["-created_at"]

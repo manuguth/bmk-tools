@@ -1,0 +1,156 @@
+{% extends "tickets/base.html" %}
+
+{% block title %}Einlass-Scanner – BMK{% endblock %}
+
+{% block extra_style %}
+#qr-reader {
+    width: 100%;
+    max-width: 420px;
+    margin: 0 auto;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #000;
+}
+#qr-reader video { width: 100% !important; }
+#qr-reader__scan_region { width: 100% !important; }
+#scan-wrapper { max-width: 500px; margin: 0 auto; }
+{% endblock %}
+
+{% block page_content %}
+<div id="scan-wrapper">
+
+    <div class="section-header mb-3">
+        <h2><i class="bi bi-qr-code-scan me-2" style="color: var(--tickets-gold);"></i>Einlass-Scanner</h2>
+        <p>QR-Code scannen oder Code manuell eingeben</p>
+    </div>
+
+    <div class="ticket-card p-3 mb-4">
+        <div id="qr-reader"></div>
+        <div id="scan-status" class="mt-2 small text-center text-muted"></div>
+        <div class="text-center mt-2">
+            <button id="retry-camera" class="btn btn-sm btn-tickets-secondary" style="display:none;">
+                <i class="bi bi-arrow-clockwise me-1"></i>Erneut versuchen
+            </button>
+        </div>
+    </div>
+
+    <div class="ticket-card p-4">
+        <h6 class="fw-bold mb-3" style="color: var(--tickets-navy);">
+            <i class="bi bi-keyboard me-1" style="color: var(--tickets-gold);"></i>Code manuell eingeben
+        </h6>
+        <form id="manual-form">
+            <div class="input-group">
+                <input
+                    type="text"
+                    id="manual-code"
+                    class="form-control form-control-lg text-uppercase"
+                    placeholder="z.B. AB1C2D3E"
+                    maxlength="12"
+                    autocomplete="off"
+                    autocapitalize="characters"
+                    autocorrect="off"
+                    spellcheck="false"
+                    style="letter-spacing: 0.12em; font-family: monospace;">
+                <button type="submit" class="btn btn-tickets-primary">
+                    <i class="bi bi-search me-1"></i>Suchen
+                </button>
+            </div>
+        </form>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script>
+(function () {
+    'use strict';
+
+    var detailUrlTemplate = "{% url 'tickets:einlass_detail' 'PLACEHOLDER' %}";
+
+    function navigateToCode(code) {
+        var cleanCode = code.trim().toUpperCase();
+        window.location.href = detailUrlTemplate.replace('PLACEHOLDER', cleanCode);
+    }
+
+    function onScanSuccess(decodedText) {
+        html5QrCode.stop().then(function () {
+            var codeMatch = decodedText.match(/\/einlass\/([A-Z0-9]{8,12})\/?/i);
+            if (codeMatch) {
+                navigateToCode(codeMatch[1]);
+            } else if (decodedText.startsWith('http')) {
+                window.location.href = decodedText;
+            } else if (/^[A-Z0-9]{8,12}$/i.test(decodedText.trim())) {
+                navigateToCode(decodedText.trim());
+            } else {
+                document.getElementById('scan-status').textContent =
+                    'Unbekannter QR-Code. Bitte Code manuell eingeben.';
+                startCamera();
+            }
+        });
+    }
+
+    var scanConfig = {
+        fps: 10,
+        qrbox: { width: 250, height: 250 },
+        aspectRatio: 1.0,
+    };
+
+    var html5QrCode = new Html5Qrcode('qr-reader');
+    var retryBtn = document.getElementById('retry-camera');
+
+    function setStatus(msg) {
+        document.getElementById('scan-status').textContent = msg;
+    }
+
+    function showRetry() {
+        if (retryBtn) retryBtn.style.display = 'inline-block';
+    }
+
+    function hideRetry() {
+        if (retryBtn) retryBtn.style.display = 'none';
+    }
+
+    function startCamera() {
+        hideRetry();
+        setStatus('Kamera wird gestartet…');
+        html5QrCode.start(
+            { facingMode: 'environment' },
+            scanConfig,
+            onScanSuccess
+        )
+        .then(function () {
+            setStatus('');
+        })
+        .catch(function (err) {
+            console.error(err);
+            if (err && (err.toString().includes('NotAllowedError') || err.toString().includes('Permission'))) {
+                setStatus('Kamerazugriff verweigert. Bitte Berechtigung erteilen und erneut versuchen.');
+            } else if (!window.isSecureContext) {
+                setStatus('Kamera benötigt HTTPS. Bitte Code manuell eingeben.');
+            } else {
+                setStatus('Kamera konnte nicht gestartet werden. Bitte Code manuell eingeben.');
+            }
+            showRetry();
+        });
+    }
+
+    if (retryBtn) {
+        retryBtn.addEventListener('click', function () {
+            startCamera();
+        });
+    }
+
+    document.getElementById('manual-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        var code = document.getElementById('manual-code').value.trim();
+        if (code.length >= 8) {
+            navigateToCode(code);
+        }
+    });
+
+    startCamera();
+}());
+</script>
+{% endblock %}
