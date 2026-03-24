@@ -107,7 +107,7 @@
             <tbody>
                 {% for order in orders %}
                 <tr data-order-id="{{ order.id }}">
-                    <td class="fw-semibold">{{ order.customer_name }}</td>
+                    <td class="fw-semibold">{{ order.customer_full_name }}</td>
                     <td>
                         <div style="font-size:0.85rem;">{{ order.customer_email }}</div>
                         {% if order.customer_phone %}

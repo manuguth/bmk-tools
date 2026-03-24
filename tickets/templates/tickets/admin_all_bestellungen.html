@@ -119,7 +119,7 @@
                         </a>
                         <div class="text-muted" style="font-size:0.75rem;">{{ order.concert.date|date:"d.m.Y" }}</div>
                     </td>
-                    <td class="fw-semibold" style="font-size:0.9rem;">{{ order.customer_name }}</td>
+                    <td class="fw-semibold" style="font-size:0.9rem;">{{ order.customer_full_name }}</td>
                     <td>
                         <div style="font-size:0.82rem;">{{ order.customer_email }}</div>
                         {% if order.customer_phone %}

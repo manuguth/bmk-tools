@@ -19,7 +19,7 @@
             <div style="width:80px; height:80px; background: #d1fae5; border-radius: 50%; display:inline-flex; align-items:center; justify-content:center; margin-bottom:1rem;">
                 <i class="bi bi-check-circle-fill" style="font-size:2.5rem; color: #059669;"></i>
             </div>
-            <h2 class="fw-bold" style="color: var(--tickets-navy);">Vielen Dank, {{ order.customer_name }}!</h2>
+            <h2 class="fw-bold" style="color: var(--tickets-navy);">Vielen Dank, {{ order.customer_full_name }}!</h2>
             <p class="text-muted mb-0">Ihre Reservierung wurde erfolgreich aufgenommen.</p>
         </div>
 
@@ -38,7 +38,10 @@
             </div>
             <div class="d-flex align-items-start mb-3">
                 <i class="bi bi-geo-alt me-3 mt-1" style="color: var(--tickets-gold); flex-shrink:0;"></i>
-                <div class="fw-semibold">{{ concert.venue }}</div>
+                <div>
+                    <div class="fw-semibold">{{ concert.venue }}</div>
+                    <small class="text-muted"><i class="bi bi-shuffle me-1"></i>Freie Platzwahl</small>
+                </div>
             </div>
 
             <div class="price-table mb-3">

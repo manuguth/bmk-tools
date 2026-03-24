@@ -8,7 +8,8 @@ class TicketOrderForm(forms.ModelForm):
     class Meta:
         model = TicketOrder
         fields = [
-            "customer_name",
+            "customer_firstname",
+            "customer_lastname",
             "customer_email",
             "customer_phone",
             "adult_count",
@@ -16,10 +17,16 @@ class TicketOrderForm(forms.ModelForm):
             "notes",
         ]
         widgets = {
-            "customer_name": forms.TextInput(
+            "customer_firstname": forms.TextInput(
                 attrs={
                     "class": "form-control form-control-lg",
-                    "placeholder": "Ihr vollständiger Name",
+                    "placeholder": "Vorname",
+                }
+            ),
+            "customer_lastname": forms.TextInput(
+                attrs={
+                    "class": "form-control form-control-lg",
+                    "placeholder": "Nachname",
                 }
             ),
             "customer_email": forms.EmailInput(
@@ -59,13 +66,21 @@ class TicketOrderForm(forms.ModelForm):
             ),
         }
         labels = {
-            "customer_name": "Name",
+            "customer_firstname": "Vorname",
+            "customer_lastname": "Nachname",
             "customer_email": "E-Mail-Adresse",
             "customer_phone": "Telefon (optional)",
             "adult_count": "Erwachsene",
             "child_count": "Kinder",
             "notes": "Anmerkungen (optional)",
         }
+
+    confirm_data = forms.BooleanField(
+        label="Hiermit bestätige ich die Richtigkeit meiner Angaben und die verbindliche Reservierung der Tickets.",
+        required=True,
+        error_messages={"required": "Bitte bestätigen Sie Ihre Angaben."},
+        widget=forms.CheckboxInput(attrs={"class": "form-check-input"}),
+    )
 
     def clean(self):
         cleaned_data = super().clean()

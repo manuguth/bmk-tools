@@ -108,7 +108,8 @@ class TicketOrder(models.Model):
         related_name="orders",
         verbose_name="Konzert",
     )
-    customer_name = models.CharField(max_length=255, verbose_name="Name")
+    customer_firstname = models.CharField(max_length=150, verbose_name="Vorname")
+    customer_lastname = models.CharField(max_length=150, verbose_name="Nachname")
     customer_email = models.EmailField(verbose_name="E-Mail-Adresse")
     customer_phone = models.CharField(
         max_length=50, blank=True, verbose_name="Telefon (optional)"
@@ -142,7 +143,11 @@ class TicketOrder(models.Model):
         verbose_name_plural = "Bestellungen"
 
     def __str__(self):
-        return f"{self.customer_name} – {self.concert.name} ({self.confirmation_code})"
+        return f"{self.customer_firstname} {self.customer_lastname} – {self.concert.name} ({self.confirmation_code})"
+
+    @property
+    def customer_full_name(self):
+        return f"{self.customer_firstname} {self.customer_lastname}"
 
     @staticmethod
     def generate_confirmation_code():
