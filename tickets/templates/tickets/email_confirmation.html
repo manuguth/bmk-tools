@@ -92,6 +92,21 @@
                       </tr>
                     </table>
 
+                    {% if order.concert.einlass %}
+                    <!-- Einlass -->
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
+                           style="margin-bottom:8px;">
+                      <tr>
+                        <td style="width:20px; padding-top:2px; vertical-align:top;">
+                          <span style="color:#c9a84c; font-size:15px;">&#128682;</span>
+                        </td>
+                        <td style="padding-left:8px; font-size:14px; color:#4b5563;">
+                          Einlass: {{ order.concert.einlass|time:"H:i" }} Uhr
+                        </td>
+                      </tr>
+                    </table>
+                    {% endif %}
+
                     <!-- Venue -->
                     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                       <tr>

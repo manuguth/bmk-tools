@@ -102,6 +102,16 @@ class ConcertForm(forms.ModelForm):
         ),
         label="Datum & Uhrzeit",
     )
+    einlass = forms.TimeField(
+        input_formats=["%H:%M"],
+        required=False,
+        widget=forms.TimeInput(
+            attrs={"class": "form-control", "type": "time"},
+            format="%H:%M",
+        ),
+        label="Einlass",
+        help_text="Optional: Einlasszeit (z.B. 18:30 Uhr)",
+    )
 
     class Meta:
         model = Concert
@@ -110,6 +120,7 @@ class ConcertForm(forms.ModelForm):
             "slug",
             "description",
             "date",
+            "einlass",
             "venue",
             "adult_price",
             "child_price",

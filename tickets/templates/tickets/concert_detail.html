@@ -82,6 +82,15 @@
                     </div>
                 </div>
 
+                {% if concert.einlass %}
+                <div class="d-flex align-items-start mb-2">
+                    <i class="bi bi-door-open me-3 mt-1" style="color: var(--tickets-gold); font-size:1.1rem; flex-shrink:0;"></i>
+                    <div>
+                        <div class="fw-semibold">Einlass: {{ concert.einlass|time:"H:i" }} Uhr</div>
+                    </div>
+                </div>
+                {% endif %}
+
                 <div class="d-flex align-items-start mb-3">
                     <i class="bi bi-geo-alt me-3 mt-1" style="color: var(--tickets-gold); font-size:1.1rem; flex-shrink:0;"></i>
                     <div>

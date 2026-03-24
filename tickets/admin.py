@@ -50,7 +50,7 @@ class ConcertAdmin(admin.ModelAdmin):
         (
             "Konzertdaten",
             {
-                "fields": ("name", "slug", "description", "date", "venue", "image"),
+                "fields": ("name", "slug", "description", "date", "einlass", "venue", "image"),
             },
         ),
         (

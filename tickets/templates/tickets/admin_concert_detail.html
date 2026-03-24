@@ -106,6 +106,12 @@
                         {% if form.date.errors %}<div class="text-danger small mt-1">{{ form.date.errors.0 }}</div>{% endif %}
                     </div>
                     <div class="col-12">
+                        <label class="form-label" for="{{ form.einlass.id_for_label }}">{{ form.einlass.label }}</label>
+                        {{ form.einlass }}
+                        <div class="form-text">{{ form.einlass.help_text }}</div>
+                        {% if form.einlass.errors %}<div class="text-danger small mt-1">{{ form.einlass.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-12">
                         <label class="form-label" for="{{ form.venue.id_for_label }}">{{ form.venue.label }}</label>
                         {{ form.venue }}
                     </div>

@@ -16,6 +16,11 @@ class Concert(models.Model):
     slug = models.SlugField(unique=True)
     description = models.TextField(blank=True, verbose_name="Beschreibung")
     date = models.DateTimeField(verbose_name="Datum & Uhrzeit")
+    einlass = models.TimeField(
+        null=True,
+        blank=True,
+        verbose_name="Einlass",
+    )
     venue = models.CharField(max_length=255, verbose_name="Veranstaltungsort")
     adult_price = models.DecimalField(
         max_digits=6, decimal_places=2, verbose_name="Preis Erwachsene (€)"
