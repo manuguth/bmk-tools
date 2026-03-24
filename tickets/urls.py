@@ -37,6 +37,7 @@ urlpatterns = [
     ),
     # Einlass scanner and order detail (staff only)
     path("einlass/scanner/", views.einlass_scanner, name="einlass_scanner"),
+    path("einlass/search/", views.einlass_name_search, name="einlass_name_search"),
     path(
         "einlass/<str:confirmation_code>/",
         views.einlass_detail,

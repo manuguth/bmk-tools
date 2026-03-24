@@ -19,6 +19,17 @@
     padding: 1rem 1.25rem;
     text-align: center;
 }
+.adjusted-badge {
+    display: inline-block;
+    background: #fef3c7;
+    border: 1px solid #f59e0b;
+    color: #92400e;
+    font-size: 0.78rem;
+    font-weight: 600;
+    border-radius: 6px;
+    padding: 0.15rem 0.5rem;
+    margin-left: 0.4rem;
+}
 .btn-collect {
     display: block;
     width: 100%;
@@ -38,6 +49,38 @@
     transform: translateY(-1px);
 }
 .btn-collect:active { transform: translateY(0); }
+
+.count-control {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.count-btn {
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 8px;
+    border: 2px solid var(--tickets-navy);
+    background: #fff;
+    color: var(--tickets-navy);
+    font-size: 1.3rem;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+.count-btn:active { background: #e5e7eb; }
+.count-display {
+    width: 2.8rem;
+    text-align: center;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--tickets-navy);
+    border: none;
+    background: transparent;
+    -moz-appearance: textfield;
+}
+.count-display::-webkit-outer-spin-button,
+.count-display::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 {% endblock %}
 
 {% block page_content %}
@@ -47,11 +90,28 @@
         <i class="bi bi-arrow-left me-1"></i>Zurück zum Scanner
     </a>
 
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-success alert-dismissible fade show py-2 small" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+
     {% if order.collected %}
     <div class="collected-banner mb-4">
         <i class="bi bi-check-circle-fill" style="font-size: 3rem; color: #059669;"></i>
         <div class="fw-bold mt-2" style="font-size: 1.3rem; color: #065f46;">Bereits abgeholt</div>
+        {% if order.amount_adjusted %}
+        <div class="mt-2 small" style="color: #065f46;">
+            Abgeholt: <strong>{{ order.collected_adult_count }} Erw. / {{ order.collected_child_count }} Kinder</strong>
+            <span class="adjusted-badge"><i class="bi bi-pencil-fill me-1"></i>Angepasst</span>
+        </div>
+        <div class="text-muted small mt-1">Bestellt: {{ order.adult_count }} Erw. / {{ order.child_count }} Kinder</div>
+        {% else %}
         <div class="text-muted small mt-1">Diese Bestellung wurde bereits als abgeholt markiert.</div>
+        {% endif %}
     </div>
     {% else %}
     <div class="not-collected-banner mb-3">
@@ -75,14 +135,27 @@
             <dt class="col-5" style="color: var(--tickets-muted); font-weight: 500;">Datum</dt>
             <dd class="col-7 mb-0">{{ order.concert.date|date:"d. F Y" }}</dd>
 
-            <dt class="col-5" style="color: var(--tickets-muted); font-weight: 500;">Erwachsene</dt>
+            {% if order.notes %}
+            <dt class="col-5" style="color: var(--tickets-muted); font-weight: 500;">Anmerkung Kunde</dt>
+            <dd class="col-7 mb-0">{{ order.notes }}</dd>
+            {% endif %}
+
+            <dt class="col-5" style="color: var(--tickets-muted); font-weight: 500;">Reserviert Erw.</dt>
             <dd class="col-7 mb-0">{{ order.adult_count }}</dd>
 
-            <dt class="col-5" style="color: var(--tickets-muted); font-weight: 500;">Kinder</dt>
+            <dt class="col-5" style="color: var(--tickets-muted); font-weight: 500;">Reserviert Kinder</dt>
             <dd class="col-7 mb-0">{{ order.child_count }}</dd>
 
+            {% if order.amount_adjusted %}
+            <dt class="col-5" style="color: var(--tickets-muted); font-weight: 500;">Abgeholt Erw.</dt>
+            <dd class="col-7 mb-0 fw-semibold" style="color: #059669;">{{ order.collected_adult_count }}</dd>
+
+            <dt class="col-5" style="color: var(--tickets-muted); font-weight: 500;">Abgeholt Kinder</dt>
+            <dd class="col-7 mb-0 fw-semibold" style="color: #059669;">{{ order.collected_child_count }}</dd>
+            {% endif %}
+
             <dt class="col-5" style="color: var(--tickets-muted); font-weight: 500;">Gesamtpreis</dt>
-            <dd class="col-7 fw-bold mb-0">{{ order.total_price|floatformat:2 }} €</dd>
+            <dd class="col-7 fw-bold mb-0">{{ order.total_price|floatformat:2 }} €{% if order.amount_adjusted %} <span class="adjusted-badge"><i class="bi bi-pencil-fill me-1"></i>Angepasst</span>{% endif %}</dd>
 
             <dt class="col-5" style="color: var(--tickets-muted); font-weight: 500;">Status</dt>
             <dd class="col-7 mb-0">
@@ -101,13 +174,78 @@
     </div>
 
     {% if not order.collected %}
-    <form method="post" action="{% url 'tickets:einlass_mark_collected' order.confirmation_code %}">
-        {% csrf_token %}
-        <button type="submit" class="btn-collect">
-            <i class="bi bi-check-circle me-2"></i>Abgeholt ✓
-        </button>
-    </form>
+    <div class="ticket-card p-4 mb-3">
+        <h6 class="fw-bold mb-3" style="color: var(--tickets-navy);">
+            <i class="bi bi-people me-1" style="color: var(--tickets-gold);"></i>Anzahl beim Einlass
+        </h6>
+        <form method="post" action="{% url 'tickets:einlass_mark_collected' order.confirmation_code %}">
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold small" style="color: var(--tickets-muted);">Erwachsene</label>
+                <div class="count-control">
+                    <button type="button" class="count-btn" data-target="id_collected_adult_count" data-delta="-1">−</button>
+                    <input type="number" id="id_collected_adult_count" name="collected_adult_count"
+                           class="count-display" value="{{ order.adult_count }}" min="0">
+                    <button type="button" class="count-btn" data-target="id_collected_adult_count" data-delta="1">+</button>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-semibold small" style="color: var(--tickets-muted);">Kinder</label>
+                <div class="count-control">
+                    <button type="button" class="count-btn" data-target="id_collected_child_count" data-delta="-1">−</button>
+                    <input type="number" id="id_collected_child_count" name="collected_child_count"
+                           class="count-display" value="{{ order.child_count }}" min="0">
+                    <button type="button" class="count-btn" data-target="id_collected_child_count" data-delta="1">+</button>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center justify-content-between mb-4 px-1">
+                <span class="fw-semibold small" style="color: var(--tickets-muted);">Preis beim Einlass</span>
+                <span id="live-price" class="fw-bold" style="font-size: 1.1rem; color: var(--tickets-navy);">{{ order.total_price|floatformat:2 }} &euro;</span>
+            </div>
+
+            <button type="submit" class="btn-collect">
+                <i class="bi bi-check-circle me-2"></i>Abgeholt ✓
+            </button>
+        </form>
+    </div>
     {% endif %}
 
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function () {
+    'use strict';
+    var adultPrice = {{ order.concert.adult_price|stringformat:".2f" }};
+    var childPrice = {{ order.concert.child_price|stringformat:".2f" }};
+    var adultInput = document.getElementById('id_collected_adult_count');
+    var childInput = document.getElementById('id_collected_child_count');
+    var priceDisplay = document.getElementById('live-price');
+
+    function updatePrice() {
+        if (!priceDisplay) return;
+        var adults = parseInt(adultInput.value, 10) || 0;
+        var children = parseInt(childInput.value, 10) || 0;
+        var total = adults * adultPrice + children * childPrice;
+        priceDisplay.textContent = total.toFixed(2).replace('.', ',') + ' \u20ac';
+    }
+
+    document.querySelectorAll('.count-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var input = document.getElementById(btn.dataset.target);
+            var val = parseInt(input.value, 10) || 0;
+            var next = val + parseInt(btn.dataset.delta, 10);
+            input.value = Math.max(0, next);
+            updatePrice();
+        });
+    });
+
+    if (adultInput) adultInput.addEventListener('input', updatePrice);
+    if (childInput) childInput.addEventListener('input', updatePrice);
+})();
+</script>
 {% endblock %}

@@ -3,3 +3,5 @@ Scanning QR codes
 
 ## Improvements
 Also add possibility to adapt amount of tickets in scanner
+
+

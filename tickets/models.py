@@ -75,16 +75,41 @@ class Concert(models.Model):
 
     @property
     def adults_sold(self):
+        # Collected orders count only actual attendees; uncollected orders still hold their reservation.
         result = self.orders.filter(
             status__in=["ausstehend", "bestaetigt"]
-        ).aggregate(total=models.Sum("adult_count"))
+        ).aggregate(
+            total=models.Sum(
+                models.Case(
+                    models.When(
+                        collected=True,
+                        collected_adult_count__isnull=False,
+                        then=models.F("collected_adult_count"),
+                    ),
+                    default=models.F("adult_count"),
+                    output_field=models.IntegerField(),
+                )
+            )
+        )
         return result["total"] or 0
 
     @property
     def children_sold(self):
         result = self.orders.filter(
             status__in=["ausstehend", "bestaetigt"]
-        ).aggregate(total=models.Sum("child_count"))
+        ).aggregate(
+            total=models.Sum(
+                models.Case(
+                    models.When(
+                        collected=True,
+                        collected_child_count__isnull=False,
+                        then=models.F("collected_child_count"),
+                    ),
+                    default=models.F("child_count"),
+                    output_field=models.IntegerField(),
+                )
+            )
+        )
         return result["total"] or 0
 
     @property
@@ -145,7 +170,16 @@ class TicketOrder(models.Model):
         default=False,
         verbose_name="Abgeholt",
     )
-
+    collected_adult_count = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        verbose_name="Abgeholt Erwachsene",
+    )
+    collected_child_count = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        verbose_name="Abgeholt Kinder",
+    )
     class Meta:
         ordering = ["-created_at"]
         verbose_name = "Bestellung"
@@ -157,6 +191,15 @@ class TicketOrder(models.Model):
     @property
     def customer_full_name(self):
         return f"{self.customer_firstname} {self.customer_lastname}"
+
+    @property
+    def amount_adjusted(self):
+        if not self.collected:
+            return False
+        return (
+            self.collected_adult_count != self.adult_count
+            or self.collected_child_count != self.child_count
+        )
 
     @staticmethod
     def generate_confirmation_code():

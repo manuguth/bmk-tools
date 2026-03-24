@@ -63,6 +63,27 @@
         </form>
     </div>
 
+    <div class="ticket-card p-4 mt-3">
+        <h6 class="fw-bold mb-3" style="color: var(--tickets-navy);">
+            <i class="bi bi-person-search me-1" style="color: var(--tickets-gold);"></i>Nach Name suchen
+        </h6>
+        <div class="input-group mb-3">
+            <input
+                type="text"
+                id="name-search-input"
+                class="form-control form-control-lg"
+                placeholder="Vor- oder Nachname …"
+                autocomplete="off"
+                autocorrect="off"
+                spellcheck="false"
+                minlength="2">
+            <button id="name-search-btn" class="btn btn-tickets-primary" type="button">
+                <i class="bi bi-search me-1"></i>Suchen
+            </button>
+        </div>
+        <div id="name-search-results"></div>
+    </div>
+
 </div>
 {% endblock %}
 
@@ -173,6 +194,78 @@
         if (code.length >= 8) {
             navigateToCode(code);
         }
+    });
+}());
+</script>
+
+<script>
+(function () {
+    'use strict';
+
+    var searchUrl = "{% url 'tickets:einlass_name_search' %}";
+    var input = document.getElementById('name-search-input');
+    var btn = document.getElementById('name-search-btn');
+    var resultsDiv = document.getElementById('name-search-results');
+    var debounceTimer = null;
+
+    function renderResults(data) {
+        if (!data.results || data.results.length === 0) {
+            resultsDiv.innerHTML = '<p class="text-muted small mb-0">Keine Ergebnisse gefunden.</p>';
+            return;
+        }
+        var html = '<ul class="list-group list-group-flush">';
+        data.results.forEach(function (r) {
+            var collectedBadge = r.collected
+                ? '<span class="badge bg-success ms-1">Abgeholt</span>'
+                : '';
+            var statusBadge;
+            if (r.status === 'bestaetigt') {
+                statusBadge = '<span class="badge bg-primary ms-1">Bestätigt</span>';
+            } else if (r.status === 'storniert') {
+                statusBadge = '<span class="badge bg-danger ms-1">Storniert</span>';
+            } else {
+                statusBadge = '<span class="badge bg-secondary ms-1">' + r.status_display + '</span>';
+            }
+            html += '<li class="list-group-item px-0">'
+                + '<a href="' + r.url + '" class="d-flex justify-content-between align-items-center text-decoration-none">'
+                + '<div>'
+                + '<span class="fw-semibold" style="color: var(--tickets-navy);">' + r.name + '</span>'
+                + statusBadge + collectedBadge
+                + '<br><small class="text-muted">' + r.concert + ' &middot; ' + r.code + '</small>'
+                + '</div>'
+                + '<i class="bi bi-chevron-right text-muted"></i>'
+                + '</a>'
+                + '</li>';
+        });
+        html += '</ul>';
+        resultsDiv.innerHTML = html;
+    }
+
+    function doSearch() {
+        var q = input.value.trim();
+        if (q.length < 2) {
+            resultsDiv.innerHTML = '';
+            return;
+        }
+        fetch(searchUrl + '?q=' + encodeURIComponent(q), {
+            headers: {'X-Requested-With': 'XMLHttpRequest'}
+        })
+        .then(function (resp) { return resp.json(); })
+        .then(renderResults)
+        .catch(function () {
+            resultsDiv.innerHTML = '<p class="text-danger small mb-0">Fehler bei der Suche.</p>';
+        });
+    }
+
+    input.addEventListener('input', function () {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(doSearch, 300);
+    });
+
+    btn.addEventListener('click', doSearch);
+
+    input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); doSearch(); }
     });
 }());
 </script>
