@@ -26,7 +26,14 @@ ABENDKASSE & ZAHLUNG
 Bitte nennen Sie an der Abendkasse einfach Ihren Namen.
 Die Karten liegen unter Ihrem Namen bereit.
 Die Zahlung erfolgt vor Ort an der Abendkasse.
+{% if qr_url %}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+EINLASS-QR-CODE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+Ihr Bestätigungscode: {{ order.confirmation_code }}
+QR-Code: {{ qr_url }}
+{% endif %}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Bei Fragen stehen wir Ihnen gerne zur Verfuegung.

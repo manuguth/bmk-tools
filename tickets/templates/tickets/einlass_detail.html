@@ -1,0 +1,113 @@
+{% extends "tickets/base.html" %}
+
+{% block title %}Einlass {{ order.confirmation_code }} – {{ order.concert.name }}{% endblock %}
+
+{% block extra_style %}
+.einlass-detail-wrap { max-width: 520px; margin: 0 auto; }
+
+.collected-banner {
+    background: #d1fae5;
+    border: 2px solid #059669;
+    border-radius: 12px;
+    padding: 1.5rem 1.25rem;
+    text-align: center;
+}
+.not-collected-banner {
+    background: #fef3c7;
+    border: 2px solid #f59e0b;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    text-align: center;
+}
+.btn-collect {
+    display: block;
+    width: 100%;
+    background: #059669;
+    color: #fff;
+    border: none;
+    font-size: 1.25rem;
+    font-weight: 700;
+    padding: 1rem 2rem;
+    border-radius: 10px;
+    transition: background 0.18s, transform 0.1s;
+    cursor: pointer;
+}
+.btn-collect:hover, .btn-collect:focus {
+    background: #047857;
+    color: #fff;
+    transform: translateY(-1px);
+}
+.btn-collect:active { transform: translateY(0); }
+{% endblock %}
+
+{% block page_content %}
+<div class="einlass-detail-wrap">
+
+    <a href="{% url 'tickets:einlass_scanner' %}" class="btn btn-sm btn-tickets-secondary mb-3">
+        <i class="bi bi-arrow-left me-1"></i>Zurück zum Scanner
+    </a>
+
+    {% if order.collected %}
+    <div class="collected-banner mb-4">
+        <i class="bi bi-check-circle-fill" style="font-size: 3rem; color: #059669;"></i>
+        <div class="fw-bold mt-2" style="font-size: 1.3rem; color: #065f46;">Bereits abgeholt</div>
+        <div class="text-muted small mt-1">Diese Bestellung wurde bereits als abgeholt markiert.</div>
+    </div>
+    {% else %}
+    <div class="not-collected-banner mb-3">
+        <i class="bi bi-hourglass-split" style="font-size: 1.4rem; color: #92400e;"></i>
+        <div class="fw-semibold mt-1" style="color: #92400e;">Noch nicht abgeholt</div>
+    </div>
+    {% endif %}
+
+    <div class="ticket-card p-4 mb-4">
+        <h5 class="fw-bold mb-3" style="color: var(--tickets-navy);">
+            <i class="bi bi-ticket-perforated me-2" style="color: var(--tickets-gold);"></i>Bestelldetails
+        </h5>
+
+        <dl class="row mb-0 g-2">
+            <dt class="col-5" style="color: var(--tickets-muted); font-weight: 500;">Name</dt>
+            <dd class="col-7 fw-semibold mb-0">{{ order.customer_full_name }}</dd>
+
+            <dt class="col-5" style="color: var(--tickets-muted); font-weight: 500;">Konzert</dt>
+            <dd class="col-7 fw-semibold mb-0">{{ order.concert.name }}</dd>
+
+            <dt class="col-5" style="color: var(--tickets-muted); font-weight: 500;">Datum</dt>
+            <dd class="col-7 mb-0">{{ order.concert.date|date:"d. F Y" }}</dd>
+
+            <dt class="col-5" style="color: var(--tickets-muted); font-weight: 500;">Erwachsene</dt>
+            <dd class="col-7 mb-0">{{ order.adult_count }}</dd>
+
+            <dt class="col-5" style="color: var(--tickets-muted); font-weight: 500;">Kinder</dt>
+            <dd class="col-7 mb-0">{{ order.child_count }}</dd>
+
+            <dt class="col-5" style="color: var(--tickets-muted); font-weight: 500;">Gesamtpreis</dt>
+            <dd class="col-7 fw-bold mb-0">{{ order.total_price|floatformat:2 }} €</dd>
+
+            <dt class="col-5" style="color: var(--tickets-muted); font-weight: 500;">Status</dt>
+            <dd class="col-7 mb-0">
+                <span class="badge badge-{{ order.status }} px-2 py-1">
+                    {{ order.get_status_display }}
+                </span>
+            </dd>
+
+            <dt class="col-5" style="color: var(--tickets-muted); font-weight: 500;">Code</dt>
+            <dd class="col-7 mb-0">
+                <code style="font-size: 0.9rem; color: var(--tickets-navy); letter-spacing: 0.08em;">
+                    {{ order.confirmation_code }}
+                </code>
+            </dd>
+        </dl>
+    </div>
+
+    {% if not order.collected %}
+    <form method="post" action="{% url 'tickets:einlass_mark_collected' order.confirmation_code %}">
+        {% csrf_token %}
+        <button type="submit" class="btn-collect">
+            <i class="bi bi-check-circle me-2"></i>Abgeholt ✓
+        </button>
+    </form>
+    {% endif %}
+
+</div>
+{% endblock %}

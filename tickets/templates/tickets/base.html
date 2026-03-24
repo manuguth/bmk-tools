@@ -391,11 +391,16 @@
                             <i class="bi bi-ticket-perforated me-1"></i>Konzerte
                         </a>
                     </li>
-                    {% if user.is_staff %}
+                    {% if is_tickets_admin %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'tickets:admin_concert_list' %}">
                             <i class="bi bi-speedometer2 me-1"></i>Verwaltung
                             <span class="admin-badge">ADMIN</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'tickets:einlass_scanner' %}">
+                            <i class="bi bi-qr-code-scan me-1"></i>Einlass
                         </a>
                     </li>
                     {% endif %}
