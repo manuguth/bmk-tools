@@ -391,6 +391,40 @@ def einlass_scanner(request):
 
 
 @scanner_required
+def einlass_name_search(request):
+    """Scanner: search orders by customer name (JSON, GET)."""
+    query = request.GET.get("q", "").strip()
+    if len(query) < 2:
+        return JsonResponse({"results": []})
+    terms = query.split()
+    # Build a broad OR filter: any term matching firstname or lastname qualifies.
+    combined = db_models.Q()
+    for term in terms:
+        combined |= (
+            db_models.Q(customer_firstname__icontains=term)
+            | db_models.Q(customer_lastname__icontains=term)
+        )
+    qs = (
+        TicketOrder.objects.select_related("concert")
+        .filter(combined)
+        .order_by("customer_lastname", "customer_firstname")[:50]
+    )
+    results = [
+        {
+            "code": o.confirmation_code,
+            "name": o.customer_full_name,
+            "concert": o.concert.name,
+            "status": o.status,
+            "status_display": o.get_status_display(),
+            "collected": o.collected,
+            "url": reverse("tickets:einlass_detail", args=[o.confirmation_code]),
+        }
+        for o in qs
+    ]
+    return JsonResponse({"results": results})
+
+
+@scanner_required
 def einlass_detail(request, confirmation_code):
     """Scanner: show order details and allow marking as collected."""
     order = get_object_or_404(TicketOrder, confirmation_code=confirmation_code)
