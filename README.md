@@ -33,3 +33,9 @@ pw: admin
 
 next steps:
 
+
+### set env vars from .venv
+
+```
+set -a; source .env; set +a
+```
