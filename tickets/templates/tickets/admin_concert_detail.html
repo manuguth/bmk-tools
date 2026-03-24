@@ -219,7 +219,7 @@
                         {% for order in recent_orders %}
                         <tr>
                             <td>
-                                <div class="fw-semibold" style="font-size:0.9rem;">{{ order.customer_name }}</div>
+                                <div class="fw-semibold" style="font-size:0.9rem;">{{ order.customer_full_name }}</div>
                                 <div class="text-muted" style="font-size:0.78rem;">{{ order.created_at|date:"d.m.Y H:i" }}</div>
                             </td>
                             <td class="text-center">{{ order.adult_count }}</td>

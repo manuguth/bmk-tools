@@ -86,6 +86,7 @@
                     <i class="bi bi-geo-alt me-3 mt-1" style="color: var(--tickets-gold); font-size:1.1rem; flex-shrink:0;"></i>
                     <div>
                         <div class="fw-semibold">{{ concert.venue }}</div>
+                        <small class="text-muted"><i class="bi bi-shuffle me-1"></i>Freie Platzwahl</small>
                     </div>
                 </div>
 
@@ -238,14 +239,25 @@
                     <i class="bi bi-person-badge me-2" style="color: var(--tickets-gold);"></i>Ihre Kontaktdaten
                 </h6>
 
-                <div class="mb-3">
-                    <label class="form-label" for="{{ form.customer_name.id_for_label }}">
-                        {{ form.customer_name.label }} <span class="text-danger">*</span>
-                    </label>
-                    {{ form.customer_name }}
-                    {% if form.customer_name.errors %}
-                        <div class="text-danger small mt-1">{{ form.customer_name.errors.0 }}</div>
-                    {% endif %}
+                <div class="row g-3 mb-3">
+                    <div class="col-6">
+                        <label class="form-label" for="{{ form.customer_firstname.id_for_label }}">
+                            {{ form.customer_firstname.label }} <span class="text-danger">*</span>
+                        </label>
+                        {{ form.customer_firstname }}
+                        {% if form.customer_firstname.errors %}
+                            <div class="text-danger small mt-1">{{ form.customer_firstname.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label" for="{{ form.customer_lastname.id_for_label }}">
+                            {{ form.customer_lastname.label }} <span class="text-danger">*</span>
+                        </label>
+                        {{ form.customer_lastname }}
+                        {% if form.customer_lastname.errors %}
+                            <div class="text-danger small mt-1">{{ form.customer_lastname.errors.0 }}</div>
+                        {% endif %}
+                    </div>
                 </div>
 
                 <div class="mb-3">
@@ -276,6 +288,18 @@
                     {% if form.notes.errors %}
                         <div class="text-danger small mt-1">{{ form.notes.errors.0 }}</div>
                     {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <div class="form-check">
+                        {{ form.confirm_data }}
+                        <label class="form-check-label small" for="{{ form.confirm_data.id_for_label }}">
+                            {{ form.confirm_data.label }}
+                        </label>
+                        {% if form.confirm_data.errors %}
+                            <div class="text-danger small mt-1">{{ form.confirm_data.errors.0 }}</div>
+                        {% endif %}
+                    </div>
                 </div>
 
                 <div class="d-grid">

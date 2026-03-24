@@ -187,14 +187,57 @@
         .badge-storniert  { background-color: #fee2e2; color: #991b1b; }
 
         /* ── Form styling ───────────────────────────────────── */
+        .form-control, .form-select {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            font-size: 0.95rem;
+            color: var(--tickets-text);
+            border: 1.5px solid var(--tickets-border);
+            border-radius: 8px;
+            background-color: #fff;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+        .form-control-lg {
+            font-size: 1rem;
+            border-radius: 8px;
+            padding: 0.6rem 0.875rem;
+        }
+        .form-control::placeholder, .form-select::placeholder {
+            color: var(--tickets-muted);
+            opacity: 0.7;
+            font-weight: 400;
+        }
         .form-control:focus, .form-select:focus {
             border-color: var(--tickets-gold);
-            box-shadow: 0 0 0 3px rgba(201,168,76,0.2);
+            box-shadow: 0 0 0 3px rgba(201,168,76,0.18);
+            outline: none;
         }
         .form-label {
             font-weight: 600;
             color: var(--tickets-navy);
-            font-size: 0.9rem;
+            font-size: 0.875rem;
+            margin-bottom: 0.35rem;
+        }
+        .form-check-input {
+            border: 1.5px solid var(--tickets-border);
+            border-radius: 4px;
+            width: 1.1em;
+            height: 1.1em;
+            margin-top: 0.15em;
+            cursor: pointer;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        .form-check-input:checked {
+            background-color: var(--tickets-navy);
+            border-color: var(--tickets-navy);
+        }
+        .form-check-input:focus {
+            border-color: var(--tickets-gold);
+            box-shadow: 0 0 0 3px rgba(201,168,76,0.18);
+        }
+        .form-check-label {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            color: var(--tickets-text);
+            cursor: pointer;
         }
 
         /* ── Price display ──────────────────────────────────── */

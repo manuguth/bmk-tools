@@ -14,7 +14,8 @@ class TicketOrderInline(admin.TabularInline):
     extra = 0
     readonly_fields = ("confirmation_code", "total_price", "created_at")
     fields = (
-        "customer_name",
+        "customer_firstname",
+        "customer_lastname",
         "customer_email",
         "adult_count",
         "child_count",
@@ -103,7 +104,7 @@ class ConcertAdmin(admin.ModelAdmin):
 @admin.register(TicketOrder)
 class TicketOrderAdmin(admin.ModelAdmin):
     list_display = (
-        "customer_name",
+        "customer_full_name",
         "concert",
         "adult_count",
         "child_count",
@@ -114,7 +115,8 @@ class TicketOrderAdmin(admin.ModelAdmin):
     )
     list_filter = ("status", "concert", "created_at")
     search_fields = (
-        "customer_name",
+        "customer_firstname",
+        "customer_lastname",
         "customer_email",
         "confirmation_code",
         "concert__name",
@@ -125,7 +127,7 @@ class TicketOrderAdmin(admin.ModelAdmin):
         (
             "Kundendaten",
             {
-                "fields": ("customer_name", "customer_email", "customer_phone"),
+                "fields": ("customer_firstname", "customer_lastname", "customer_email", "customer_phone"),
             },
         ),
         (

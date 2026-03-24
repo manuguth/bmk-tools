@@ -47,7 +47,7 @@
 
               <!-- Greeting -->
               <p style="margin:0 0 20px; font-size:16px; color:#1a1a2e;">
-                Sehr geehrte(r) <strong>{{ order.customer_name }}</strong>,
+                Sehr geehrte(r) <strong>{{ order.customer_full_name }}</strong>,
               </p>
               <p style="margin:0 0 28px; font-size:15px; color:#4b5563; line-height:1.6;">
                 vielen Dank für Ihre Kartenreservierung. Wir haben Ihre Bestellung erhalten.
@@ -99,7 +99,8 @@
                           <span style="color:#c9a84c; font-size:15px;">&#128205;</span>
                         </td>
                         <td style="padding-left:8px; font-size:14px; color:#4b5563;">
-                          {{ order.concert.venue }}
+                          {{ order.concert.venue }}<br>
+                          <span style="font-size:12px; color:#9ca3af;">Freie Platzwahl</span>
                         </td>
                       </tr>
                     </table>
