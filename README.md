@@ -20,6 +20,11 @@ python manage.py migrate
 python manage.py createsuperuser
 ```
 
+run server to be also visible in entire network
+```
+python manage.py runserver 0.0.0.0:8000
+```
+
 
 
 http://192.168.1.93:8000/festival/admin
@@ -33,3 +38,9 @@ pw: admin
 
 next steps:
 
+
+### set env vars from .venv
+
+```
+set -a; source .env; set +a
+```
