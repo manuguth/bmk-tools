@@ -25,7 +25,12 @@
     </div>
 
     <div class="ticket-card p-3 mb-4">
-        <div id="qr-reader"></div>
+        <div id="camera-start-wrap" class="text-center py-4">
+            <button id="start-camera" class="btn btn-tickets-primary">
+                <i class="bi bi-camera-video me-2"></i>Kamera starten
+            </button>
+        </div>
+        <div id="qr-reader" style="display:none;"></div>
         <div id="scan-status" class="mt-2 small text-center text-muted"></div>
         <div class="text-center mt-2">
             <button id="retry-camera" class="btn btn-sm btn-tickets-secondary" style="display:none;">
@@ -125,6 +130,8 @@
     }
 
     function startCamera() {
+        document.getElementById('camera-start-wrap').style.display = 'none';
+        document.getElementById('qr-reader').style.display = 'block';
         hideRetry();
         setStatus('Kamera wird gestartet…');
         html5QrCode.start(
@@ -137,6 +144,8 @@
         })
         .catch(function (err) {
             console.error(err);
+            document.getElementById('camera-start-wrap').style.display = 'block';
+            document.getElementById('qr-reader').style.display = 'none';
             if (err && (err.toString().includes('NotAllowedError') || err.toString().includes('Permission'))) {
                 setStatus('Kamerazugriff verweigert. Bitte Berechtigung erteilen und erneut versuchen.');
             } else if (!window.isSecureContext) {
@@ -147,6 +156,10 @@
             showRetry();
         });
     }
+
+    document.getElementById('start-camera').addEventListener('click', function () {
+        startCamera();
+    });
 
     if (retryBtn) {
         retryBtn.addEventListener('click', function () {
@@ -161,8 +174,6 @@
             navigateToCode(code);
         }
     });
-
-    startCamera();
 }());
 </script>
 {% endblock %}
