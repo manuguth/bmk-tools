@@ -221,8 +221,12 @@ class TicketOrder(models.Model):
     def save(self, *args, **kwargs):
         if not self.confirmation_code:
             self.confirmation_code = self.generate_confirmation_code()
-        self.total_price = (
-            self.adult_count * self.concert.adult_price
-            + self.child_count * self.concert.child_price
-        )
+        # Only auto-recalculate total_price when not explicitly managing it
+        # via update_fields (e.g. einlass_mark_collected sets its own price).
+        update_fields = kwargs.get("update_fields")
+        if not update_fields or "total_price" not in update_fields:
+            self.total_price = (
+                self.adult_count * self.concert.adult_price
+                + self.child_count * self.concert.child_price
+            )
         super().save(*args, **kwargs)
