@@ -51,42 +51,73 @@
 
                     {# Capacity bars #}
                     <div class="capacity-bar mb-3">
-                        <div class="d-flex justify-content-between small mb-1">
-                            <span class="text-muted"><i class="bi bi-person me-1"></i>Erwachsene</span>
-                            <span class="fw-semibold" style="color: var(--tickets-navy);">
-                                {% if concert.adults_remaining == 0 %}
-                                    <span style="color: var(--tickets-danger);">ausverkauft</span>
-                                {% else %}
-                                    {{ concert.adults_remaining }} / {{ concert.max_adults }} frei
+                        {% if concert.capacity_split_categories %}
+                            {# ── Split mode: separate bars per category ── #}
+                            <div class="d-flex justify-content-between small mb-1">
+                                <span class="text-muted"><i class="bi bi-person me-1"></i>Erwachsene</span>
+                                {% if concert.capacity_show_numbers %}
+                                <span class="fw-semibold" style="color: var(--tickets-navy);">
+                                    {% if concert.adults_remaining == 0 %}
+                                        <span style="color: var(--tickets-danger);">ausverkauft</span>
+                                    {% else %}
+                                        {{ concert.adults_remaining }} / {{ concert.max_adults }} verfügbar
+                                    {% endif %}
+                                </span>
                                 {% endif %}
-                            </span>
-                        </div>
-                        <div class="progress mb-2">
-                            <div class="progress-bar {% if concert.adults_remaining == 0 %}full{% elif concert.adults_remaining <= 10 %}almost-full{% endif %}"
-                                 role="progressbar"
-                                 style="width: {% widthratio concert.adults_sold concert.max_adults 100 %}%"
-                                 aria-valuenow="{{ concert.adults_sold }}"
-                                 aria-valuemin="0"
-                                 aria-valuemax="{{ concert.max_adults }}"></div>
-                        </div>
-                        <div class="d-flex justify-content-between small mb-1">
-                            <span class="text-muted"><i class="bi bi-people me-1"></i>Kinder (bis 12 J.)</span>
-                            <span class="fw-semibold" style="color: var(--tickets-navy);">
-                                {% if concert.children_remaining == 0 %}
-                                    <span style="color: var(--tickets-danger);">ausverkauft</span>
-                                {% else %}
-                                    {{ concert.children_remaining }} / {{ concert.max_children }} frei
+                            </div>
+                            <div class="progress mb-2">
+                                <div class="progress-bar {% if concert.adults_remaining == 0 %}full{% elif concert.adults_remaining <= 10 %}almost-full{% endif %}"
+                                     role="progressbar"
+                                     style="width: {% widthratio concert.adults_sold concert.max_adults 100 %}%"
+                                     aria-valuenow="{{ concert.adults_sold }}"
+                                     aria-valuemin="0"
+                                     aria-valuemax="{{ concert.max_adults }}"></div>
+                            </div>
+                            <div class="d-flex justify-content-between small mb-1">
+                                <span class="text-muted"><i class="bi bi-people me-1"></i>Kinder bis 12 Jahre</span>
+                                {% if concert.capacity_show_numbers %}
+                                <span class="fw-semibold" style="color: var(--tickets-navy);">
+                                    {% if concert.children_remaining == 0 %}
+                                        <span style="color: var(--tickets-danger);">ausverkauft</span>
+                                    {% else %}
+                                        {{ concert.children_remaining }} / {{ concert.max_children }} verfügbar
+                                    {% endif %}
+                                </span>
                                 {% endif %}
-                            </span>
-                        </div>
-                        <div class="progress">
-                            <div class="progress-bar {% if concert.children_remaining == 0 %}full{% elif concert.children_remaining <= 10 %}almost-full{% endif %}"
-                                 role="progressbar"
-                                 style="width: {% widthratio concert.children_sold concert.max_children 100 %}%"
-                                 aria-valuenow="{{ concert.children_sold }}"
-                                 aria-valuemin="0"
-                                 aria-valuemax="{{ concert.max_children }}"></div>
-                        </div>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar {% if concert.children_remaining == 0 %}full{% elif concert.children_remaining <= 10 %}almost-full{% endif %}"
+                                     role="progressbar"
+                                     style="width: {% widthratio concert.children_sold concert.max_children 100 %}%"
+                                     aria-valuenow="{{ concert.children_sold }}"
+                                     aria-valuemin="0"
+                                     aria-valuemax="{{ concert.max_children }}"></div>
+                            </div>
+                        {% else %}
+                            {# ── Merged mode: single combined bar ── #}
+                            {% with total_sold=concert.adults_sold|add:concert.children_sold total_max=concert.max_adults|add:concert.max_children total_remaining=concert.adults_remaining|add:concert.children_remaining %}
+                            <div class="d-flex justify-content-between small mb-1">
+                                <span class="text-muted"><i class="bi bi-ticket me-1"></i>Verfügbare Tickets</span>
+                                {% if concert.capacity_show_numbers %}
+                                <span class="fw-semibold" style="color: var(--tickets-navy);">
+                                    {% if total_remaining == 0 %}
+                                        <span style="color: var(--tickets-danger);">ausverkauft</span>
+                                    {% else %}
+                                        {{ total_remaining }} / {{ total_max }} verfügbar
+                                    {% endif %}
+                                </span>
+                                {% endif %}
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar {% if total_remaining == 0 %}full{% elif total_remaining <= 10 %}almost-full{% endif %}"
+                                     role="progressbar"
+                                     style="width: {% widthratio total_sold total_max 100 %}%"
+                                     aria-valuenow="{{ total_sold }}"
+                                     aria-valuemin="0"
+                                     aria-valuemax="{{ total_max }}"></div>
+                            </div>
+                            {% endwith %}
+                        {% endif %}
                     </div>
 
                     <div class="mt-auto">
