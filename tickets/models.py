@@ -57,6 +57,14 @@ class Concert(models.Model):
         validators=[_hex_validator],
         verbose_name='Hintergrundfarbe',
     )
+    capacity_show_numbers = models.BooleanField(
+        default=True,
+        verbose_name='Anzahl verbleibender Tickets anzeigen',
+    )
+    capacity_split_categories = models.BooleanField(
+        default=True,
+        verbose_name='Kategorien (Erwachsene/Kinder) getrennt anzeigen',
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

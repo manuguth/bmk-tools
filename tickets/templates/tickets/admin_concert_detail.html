@@ -161,8 +161,9 @@
                     </button>
                     <div class="collapse" id="advancedSettings">
                         <div class="border rounded p-3 mt-2 bg-light">
+                            <p class="text-muted small mb-3 fw-semibold">Farbgebung</p>
                             <p class="text-muted small mb-3">Farbgebung der öffentlichen Konzertseite. Standardwerte werden verwendet, wenn nichts geändert wird.</p>
-                            <div class="row g-3">
+                            <div class="row g-3 mb-4">
                                 <div class="col-4">
                                     <label class="form-label small fw-semibold" for="{{ form.color_primary.id_for_label }}">{{ form.color_primary.label }}</label>
                                     {{ form.color_primary }}
@@ -182,9 +183,23 @@
                                     {% if form.color_background.errors %}<div class="text-danger small">{{ form.color_background.errors.0 }}</div>{% endif %}
                                 </div>
                             </div>
+                            <p class="text-muted small mb-2 fw-semibold">Verfügbarkeitsanzeige</p>
+                            <p class="text-muted small mb-3">Steuert, wie die verbleibenden Tickets auf der öffentlichen Konzertseite dargestellt werden.</p>
+                            <div class="d-flex flex-column gap-2">
+                                <div class="form-check form-switch">
+                                    {{ form.capacity_show_numbers }}
+                                    <label class="form-check-label small" for="{{ form.capacity_show_numbers.id_for_label }}">{{ form.capacity_show_numbers.label }}</label>
+                                    {% if form.capacity_show_numbers.errors %}<div class="text-danger small">{{ form.capacity_show_numbers.errors.0 }}</div>{% endif %}
+                                </div>
+                                <div class="form-check form-switch">
+                                    {{ form.capacity_split_categories }}
+                                    <label class="form-check-label small" for="{{ form.capacity_split_categories.id_for_label }}">{{ form.capacity_split_categories.label }}</label>
+                                    {% if form.capacity_split_categories.errors %}<div class="text-danger small">{{ form.capacity_split_categories.errors.0 }}</div>{% endif %}
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    {% if concert.color_primary != '#0d1b2a' or concert.color_accent != '#c9a84c' or concert.color_background != '#f5f0e8' %}
+                    {% if concert.color_primary != '#0d1b2a' or concert.color_accent != '#c9a84c' or concert.color_background != '#f5f0e8' or not concert.capacity_show_numbers or not concert.capacity_split_categories %}
                     <script>
                         document.getElementById('advancedSettings').classList.add('show');
                         document.querySelector('[data-bs-target="#advancedSettings"]').setAttribute('aria-expanded', 'true');
