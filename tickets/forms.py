@@ -131,6 +131,8 @@ class ConcertForm(forms.ModelForm):
             "color_primary",
             "color_accent",
             "color_background",
+            "capacity_show_numbers",
+            "capacity_split_categories",
         ]
         widgets = {
             "name": forms.TextInput(
@@ -200,6 +202,8 @@ class ConcertForm(forms.ModelForm):
             "color_background": forms.TextInput(
                 attrs={"type": "color", "class": "form-control form-control-color"}
             ),
+            "capacity_show_numbers": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+            "capacity_split_categories": forms.CheckboxInput(attrs={"class": "form-check-input"}),
         }
         labels = {
             "name": "Bezeichnung",
@@ -215,6 +219,8 @@ class ConcertForm(forms.ModelForm):
             "color_primary": "Primärfarbe",
             "color_accent": "Akzentfarbe",
             "color_background": "Hintergrundfarbe",
+            "capacity_show_numbers": "Anzahl verbleibender Tickets anzeigen",
+            "capacity_split_categories": "Kategorien (Erwachsene/Kinder) getrennt anzeigen",
         }
         help_texts = {
             "color_primary": "Standard: #0d1b2a (Navy)",
