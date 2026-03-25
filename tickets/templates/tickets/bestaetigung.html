@@ -104,12 +104,21 @@
         </div>
 
         {# Email notice #}
+        {% if email_sent %}
         <div class="d-flex align-items-center p-3 rounded-3 mb-4" style="background: #eff6ff; border: 1px solid #bfdbfe;">
             <i class="bi bi-envelope-check me-3" style="font-size:1.5rem; color: #2563eb; flex-shrink:0;"></i>
             <div style="font-size:0.9rem; color: #1e40af;">
                 Eine Bestätigungs-E-Mail wurde an <strong>{{ order.customer_email }}</strong> gesendet.
             </div>
         </div>
+        {% else %}
+        <div class="d-flex align-items-center p-3 rounded-3 mb-4" style="background: #fef2f2; border: 1px solid #fecaca;">
+            <i class="bi bi-envelope-x me-3" style="font-size:1.5rem; color: #dc2626; flex-shrink:0;"></i>
+            <div style="font-size:0.9rem; color: #991b1b;">
+                Die Bestätigungs-E-Mail konnte leider nicht gesendet werden. Bitte notieren Sie sich Ihren Bestätigungscode: <strong>{{ order.confirmation_code }}</strong>
+            </div>
+        </div>
+        {% endif %}
 
         {# Back button #}
         <div class="text-center">

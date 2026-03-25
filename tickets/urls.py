@@ -25,6 +25,11 @@ urlpatterns = [
         name="admin_all_bestellungen",
     ),
     path(
+        "admin/bestellungen/export/",
+        views.admin_export_orders_csv,
+        name="admin_export_orders_csv",
+    ),
+    path(
         "admin/bestellung/<int:order_id>/status/",
         views.admin_order_status_update,
         name="admin_order_status_update",

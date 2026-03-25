@@ -88,6 +88,9 @@
         <i class="bi bi-x me-1"></i>Zurücksetzen
     </a>
     {% endif %}
+    <a href="{% url 'tickets:admin_export_orders_csv' %}{% if concert_filter %}?concert={{ concert_filter }}{% endif %}" class="btn btn-sm btn-tickets-secondary ms-auto" style="margin-bottom:2px;">
+        <i class="bi bi-download me-1"></i>CSV Export
+    </a>
 </form>
 
 {# Orders table #}
@@ -162,6 +165,23 @@
         </table>
     </div>
 </div>
+{% if orders.has_other_pages %}
+<nav class="mt-3 d-flex justify-content-center">
+    <ul class="pagination pagination-sm mb-0">
+        {% if orders.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page={{ orders.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if concert_filter %}&concert={{ concert_filter }}{% endif %}">‹</a></li>
+        {% endif %}
+        {% for num in orders.paginator.page_range %}
+        <li class="page-item {% if orders.number == num %}active{% endif %}">
+            <a class="page-link" href="?page={{ num }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if concert_filter %}&concert={{ concert_filter }}{% endif %}">{{ num }}</a>
+        </li>
+        {% endfor %}
+        {% if orders.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ orders.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if concert_filter %}&concert={{ concert_filter }}{% endif %}">›</a></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
 {% else %}
 <div class="text-center text-muted py-5">
     <i class="bi bi-inbox" style="font-size:3rem; opacity:0.4;"></i>

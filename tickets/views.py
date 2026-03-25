@@ -1,3 +1,4 @@
+import csv
 import io
 import json
 import logging
@@ -5,10 +6,11 @@ import logging
 from django.contrib import messages
 from .decorators import tickets_admin_required, scanner_required
 from django.core.mail import EmailMultiAlternatives
+from django.core.paginator import Paginator
 from django.template.loader import render_to_string
 from django.conf import settings
-from django.db import models as db_models
-from django.http import HttpResponse, JsonResponse
+from django.db import models as db_models, transaction
+from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.timezone import localtime
@@ -54,12 +56,14 @@ def _send_confirmation_email(order, request=None):
 
     try:
         email.send(fail_silently=False)
+        return True
     except Exception as exc:
         logger.error(
             "Failed to send confirmation email for order %s: %s",
             order.confirmation_code,
             exc,
         )
+        return False
 
 
 # ---------------------------------------------------------------------------
@@ -88,28 +92,35 @@ def concert_detail(request, slug):
         form = TicketOrderForm(request.POST)
         if form.is_valid():
             order = form.save(commit=False)
-            order.concert = concert
 
-            capacity_errors = []
-            if order.adult_count > concert.adults_remaining:
-                if concert.adults_remaining == 0:
-                    capacity_errors.append("Leider sind keine Erwachsenen-Tickets mehr verfügbar.")
+            # Lock the concert row to prevent overselling under concurrency.
+            with transaction.atomic():
+                concert = Concert.objects.select_for_update().get(pk=concert.pk)
+                order.concert = concert
+
+                capacity_errors = []
+                if order.adult_count > concert.adults_remaining:
+                    if concert.adults_remaining == 0:
+                        capacity_errors.append("Leider sind keine Erwachsenen-Tickets mehr verfügbar.")
+                    else:
+                        capacity_errors.append(
+                            f"Leider sind nur noch {concert.adults_remaining} Erwachsenen-Ticket(s) verfügbar."
+                        )
+                if order.child_count > concert.children_remaining:
+                    if concert.children_remaining == 0:
+                        capacity_errors.append("Leider sind keine Kinder-Tickets mehr verfügbar.")
+                    else:
+                        capacity_errors.append(
+                            f"Leider sind nur noch {concert.children_remaining} Kinder-Ticket(s) (bis 12 Jahre) verfügbar."
+                        )
+                if capacity_errors:
+                    form.add_error(None, " ".join(capacity_errors))
                 else:
-                    capacity_errors.append(
-                        f"Leider sind nur noch {concert.adults_remaining} Erwachsenen-Ticket(s) verfügbar."
-                    )
-            if order.child_count > concert.children_remaining:
-                if concert.children_remaining == 0:
-                    capacity_errors.append("Leider sind keine Kinder-Tickets mehr verfügbar.")
-                else:
-                    capacity_errors.append(
-                        f"Leider sind nur noch {concert.children_remaining} Kinder-Ticket(s) (bis 12 Jahre) verfügbar."
-                    )
-            if capacity_errors:
-                form.add_error(None, " ".join(capacity_errors))
-            else:
-                order.save()
-                _send_confirmation_email(order, request=request)
+                    order.save()
+
+            if not form.errors:
+                email_sent = _send_confirmation_email(order, request=request)
+                request.session["email_sent"] = email_sent
                 return redirect(
                     "tickets:bestaetigung",
                     slug=slug,
@@ -131,9 +142,11 @@ def bestaetigung(request, slug, confirmation_code):
     order = get_object_or_404(
         TicketOrder, confirmation_code=confirmation_code, concert=concert
     )
+    email_sent = request.session.pop("email_sent", True)
     context = {
         "concert": concert,
         "order": order,
+        "email_sent": email_sent,
     }
     return render(request, "tickets/bestaetigung.html", context)
 
@@ -291,9 +304,12 @@ def admin_concert_bestellungen(request, slug):
         ),
     )
 
+    paginator = Paginator(orders, 50)
+    page = paginator.get_page(request.GET.get("page"))
+
     context = {
         "concert": concert,
-        "orders": orders,
+        "orders": page,
         "order_stats": order_stats,
         "status_filter": status_filter,
     }
@@ -325,14 +341,57 @@ def admin_all_bestellungen(request):
         total_revenue=db_models.Sum("total_price"),
     )
 
+    paginator = Paginator(orders, 50)
+    page = paginator.get_page(request.GET.get("page"))
+
     context = {
-        "orders": orders,
+        "orders": page,
         "all_concerts": all_concerts,
         "status_filter": status_filter,
         "concert_filter": concert_filter,
         "total_stats": total_stats,
     }
     return render(request, "tickets/admin_all_bestellungen.html", context)
+
+
+@tickets_admin_required
+def admin_export_orders_csv(request):
+    """Admin: export orders as CSV download, optionally filtered by concert."""
+    concert_slug = request.GET.get("concert", "")
+    orders = TicketOrder.objects.select_related("concert").order_by("-created_at")
+    filename = "bestellungen_alle.csv"
+    if concert_slug:
+        concert = get_object_or_404(Concert, slug=concert_slug)
+        orders = orders.filter(concert=concert)
+        filename = f"bestellungen_{concert.slug}.csv"
+
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    response.write("\ufeff")  # BOM for Excel UTF-8
+
+    writer = csv.writer(response, delimiter=";")
+    writer.writerow([
+        "Konzert", "Datum", "Vorname", "Nachname", "E-Mail", "Telefon",
+        "Erwachsene", "Kinder", "Gesamtpreis", "Status", "Abgeholt",
+        "Bestätigungscode", "Erstellt am",
+    ])
+    for o in orders.iterator():
+        writer.writerow([
+            o.concert.name,
+            localtime(o.concert.date).strftime("%d.%m.%Y %H:%M") if o.concert.date else "",
+            o.customer_firstname,
+            o.customer_lastname,
+            o.customer_email,
+            o.customer_phone or "",
+            o.adult_count,
+            o.child_count,
+            f"{o.total_price:.2f}".replace(".", ","),
+            o.get_status_display(),
+            "Ja" if o.collected else "Nein",
+            o.confirmation_code,
+            localtime(o.created_at).strftime("%d.%m.%Y %H:%M"),
+        ])
+    return response
 
 
 @tickets_admin_required
@@ -357,8 +416,11 @@ def admin_order_status_update(request, order_id):
                 "status_display": order.get_status_display(),
             }
         )
-    except (json.JSONDecodeError, Exception) as exc:
-        return JsonResponse({"success": False, "error": str(exc)}, status=400)
+    except json.JSONDecodeError:
+        return JsonResponse({"success": False, "error": "Ungültige Anfrage."}, status=400)
+    except Exception as exc:
+        logger.error("Error updating order %s status: %s", order_id, exc)
+        return JsonResponse({"success": False, "error": "Interner Fehler."}, status=400)
 
 
 # ---------------------------------------------------------------------------
@@ -437,6 +499,13 @@ def einlass_detail(request, confirmation_code):
 def einlass_mark_collected(request, confirmation_code):
     """Scanner: mark a TicketOrder as collected, with optional count adjustment."""
     order = get_object_or_404(TicketOrder, confirmation_code=confirmation_code)
+
+    if order.status == "storniert":
+        messages.error(
+            request,
+            f"Bestellung {confirmation_code} ist storniert und kann nicht als abgeholt markiert werden.",
+        )
+        return redirect("tickets:einlass_detail", confirmation_code=confirmation_code)
 
     try:
         collected_adult = int(request.POST.get("collected_adult_count", order.adult_count))
