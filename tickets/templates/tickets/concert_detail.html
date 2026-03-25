@@ -331,21 +331,15 @@
                     {% endif %}
                 </div>
 
-                <div class="mb-3">
-                    <div class="form-check">
-                        {{ form.confirm_data }}
-                        <label class="form-check-label small" for="{{ form.confirm_data.id_for_label }}">
-                            {{ form.confirm_data.label }}
-                        </label>
-                        {% if form.confirm_data.errors %}
-                            <div class="text-danger small mt-1">{{ form.confirm_data.errors.0 }}</div>
-                        {% endif %}
-                    </div>
-                </div>
+                {# Hidden input for confirm_data — set by modal checkbox before submit #}
+                <input type="hidden" name="confirm_data" id="id_confirm_data" value="">
+                {% if form.confirm_data.errors %}
+                    <div class="text-danger small mt-1 mb-2">{{ form.confirm_data.errors.0 }}</div>
+                {% endif %}
 
                 <div class="d-grid">
-                    <button type="submit" class="btn btn-tickets-gold">
-                        <i class="bi bi-check2-circle me-2"></i>Verbindlich reservieren
+                    <button type="button" id="btn-open-confirm" class="btn btn-tickets-gold">
+                        <i class="bi bi-arrow-right-circle me-2"></i>Weiter zur Bestätigung
                     </button>
                 </div>
 
@@ -357,9 +351,113 @@
                     <p class="text-muted small text-center mt-2 mb-0">
                         Bei Fragen schreiben Sie gerne an <a href="mailto:tickets@bmk-buggingen.de">tickets@bmk-buggingen.de</a>.
                     </p>
+
             </form>
             {% endif %}
 
+        </div>
+    </div>
+</div>
+
+{# ── Confirmation modal (outside card/form to avoid stacking-context issues) ── #}
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border:2px solid var(--tickets-navy); border-radius:12px;">
+            <div class="modal-header" style="background: var(--tickets-navy); color: #fff; border-radius:10px 10px 0 0;">
+                <h5 class="modal-title" id="confirmModalLabel">
+                    <i class="bi bi-clipboard-check me-2"></i>Reservierung überprüfen
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Schließen"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p class="text-muted mb-3">Bitte überprüfen Sie Ihre Angaben vor der verbindlichen Reservierung.</p>
+
+                {# Concert info #}
+                <div class="mb-3">
+                    <div class="fw-bold" style="color: var(--tickets-navy);">
+                        <i class="bi bi-music-note-list me-1" style="color: var(--tickets-gold);"></i>
+                        {{ concert.name }}
+                    </div>
+                    <small class="text-muted">
+                        {{ concert.date|date:"l, d. F Y" }} &middot; {{ concert.date|date:"H:i" }} Uhr &middot; {{ concert.venue }}
+                    </small>
+                </div>
+
+                {# Ticket summary #}
+                <div class="p-3 rounded-3 mb-3" style="background:#f8f4ed; border:1px solid var(--tickets-border);">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Erwachsene</span>
+                        <span class="fw-semibold" id="modal-adults"></span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Kinder</span>
+                        <span class="fw-semibold" id="modal-children"></span>
+                    </div>
+                    <hr class="my-2">
+                    <div class="d-flex justify-content-between">
+                        <span class="fw-bold" style="color: var(--tickets-navy);">Gesamtbetrag</span>
+                        <span class="fw-bold" style="color: var(--tickets-navy);" id="modal-total"></span>
+                    </div>
+                    <div class="text-muted small mt-1">Zahlung an der Abendkasse</div>
+                </div>
+
+                {# Contact summary — email highlighted #}
+                <div class="mb-3">
+                    <div class="fw-semibold small text-muted mb-1">
+                        <i class="bi bi-person-badge me-1"></i>Kontaktdaten
+                    </div>
+                    <div id="modal-name" class="fw-semibold"></div>
+                    <div id="modal-phone" class="text-muted small"></div>
+                </div>
+
+                {# Email highlight box #}
+                <div class="p-3 rounded-3 mb-3" style="background: #fff8e1; border: 2px solid var(--tickets-gold);">
+                    <div class="d-flex align-items-center mb-1">
+                        <i class="bi bi-envelope-at me-2" style="color: var(--tickets-navy); font-size:1.1rem;"></i>
+                        <span class="fw-bold small" style="color: var(--tickets-navy);">Bestätigung wird gesendet an:</span>
+                    </div>
+                    <div id="modal-email" class="fw-bold" style="font-size:1.05rem; color: var(--tickets-navy); word-break: break-all;"></div>
+                    <div class="text-muted small mt-1">
+                        <i class="bi bi-exclamation-triangle me-1"></i>Bitte prüfen Sie die E-Mail-Adresse sorgfältig.
+                    </div>
+                </div>
+
+                {# Notes (if any) #}
+                <div id="modal-notes-section" class="mb-3" style="display:none;">
+                    <div class="fw-semibold small text-muted mb-1">
+                        <i class="bi bi-chat-left-text me-1"></i>Anmerkungen
+                    </div>
+                    <div id="modal-notes" class="small"></div>
+                </div>
+
+                {# Confirmation checkbox — styled as toggle card #}
+                <label for="modal-confirm-checkbox" class="d-flex align-items-start gap-3 mt-3 p-3 rounded-3" id="confirm-toggle-card"
+                       style="background:#fff; border:2px solid var(--tickets-border); cursor:pointer; transition: border-color .2s, background .2s;">
+                    <div class="flex-shrink-0 mt-1">
+                        <input class="form-check-input" type="checkbox" id="modal-confirm-checkbox"
+                               style="width:1.4em; height:1.4em; cursor:pointer;">
+                    </div>
+                    <div>
+                        <div class="fw-semibold" style="color: var(--tickets-navy); font-size:0.95rem;">
+                            Angaben bestätigen
+                        </div>
+                        <div class="text-muted" style="font-size:0.85rem; line-height:1.45; margin-top:2px;">
+                            Hiermit bestätige ich die Richtigkeit meiner Angaben und die verbindliche Reservierung der Tickets.
+                        </div>
+                    </div>
+                </label>
+            </div>
+            <div class="modal-footer d-block" style="border-top: 1px solid var(--tickets-border); padding: 1rem 1.5rem;">
+                <button type="button" id="btn-modal-submit" class="btn w-100 fw-bold" disabled
+                        style="background: var(--tickets-navy); color: var(--tickets-gold); border:none; padding: 0.85rem 1.5rem; font-size:1.1rem; border-radius:10px; transition: all .2s;">
+                    <i class="bi bi-check-lg me-2"></i>Jetzt verbindlich reservieren
+                </button>
+                <div class="text-center mt-2">
+                    <button type="button" class="btn btn-link text-muted small text-decoration-none" data-bs-dismiss="modal">
+                        <i class="bi bi-arrow-left me-1"></i>Zurück zur Bearbeitung
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -373,11 +471,15 @@ document.addEventListener('DOMContentLoaded', function () {
     var totalEl    = document.getElementById('total-price-display');
     if (!totalEl) return;
 
+    function formatPrice(val) {
+        return val.toFixed(2).replace('.', ',') + '\u00a0\u20ac';
+    }
+
     function updateTotal() {
         var adults   = parseInt(document.getElementById('id_adult_count').value) || 0;
         var children = parseInt(document.getElementById('id_child_count').value) || 0;
         var total    = (adults * adultPrice) + (children * childPrice);
-        totalEl.textContent = total.toFixed(2).replace('.', ',') + '\u00a0\u20ac';
+        totalEl.textContent = formatPrice(total);
     }
 
     document.querySelectorAll('.stepper-group').forEach(function (group) {
@@ -406,6 +508,115 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     updateTotal();
+
+    // ── Confirmation modal logic ─────────────────────────────
+    var form            = document.querySelector('form');
+    var btnOpen         = document.getElementById('btn-open-confirm');
+    var btnSubmit       = document.getElementById('btn-modal-submit');
+    var modalCheckbox   = document.getElementById('modal-confirm-checkbox');
+    var hiddenConfirm   = document.getElementById('id_confirm_data');
+    var confirmModalEl  = document.getElementById('confirmModal');
+    if (!btnOpen || !confirmModalEl) return;
+
+    var confirmModal = new bootstrap.Modal(confirmModalEl);
+
+    // Reset checkbox every time the modal opens
+    var toggleCard = document.getElementById('confirm-toggle-card');
+    confirmModalEl.addEventListener('show.bs.modal', function () {
+        modalCheckbox.checked = false;
+        btnSubmit.disabled = true;
+        btnSubmit.style.opacity = '0.45';
+        if (toggleCard) {
+            toggleCard.style.borderColor = 'var(--tickets-border)';
+            toggleCard.style.background = '#fff';
+        }
+    });
+
+    // Toggle submit button + card highlight based on checkbox
+    modalCheckbox.addEventListener('change', function () {
+        var checked = this.checked;
+        btnSubmit.disabled = !checked;
+        btnSubmit.style.opacity = checked ? '1' : '0.45';
+        if (toggleCard) {
+            toggleCard.style.borderColor = checked ? 'var(--tickets-navy)' : 'var(--tickets-border)';
+            toggleCard.style.background = checked ? '#edf2f7' : '#fff';
+        }
+    });
+
+    // Open modal: validate required fields first
+    btnOpen.addEventListener('click', function () {
+        var firstname = form.querySelector('[name="customer_firstname"]');
+        var lastname  = form.querySelector('[name="customer_lastname"]');
+        var email     = form.querySelector('[name="customer_email"]');
+        var adults    = parseInt(document.getElementById('id_adult_count').value) || 0;
+        var children  = parseInt(document.getElementById('id_child_count').value) || 0;
+
+        // Basic client-side check — server validates fully on POST
+        var firstInvalid = null;
+        [firstname, lastname, email].forEach(function (el) {
+            el.classList.remove('is-invalid');
+        });
+
+        if (!firstname.value.trim()) {
+            firstname.classList.add('is-invalid');
+            firstInvalid = firstInvalid || firstname;
+        }
+        if (!lastname.value.trim()) {
+            lastname.classList.add('is-invalid');
+            firstInvalid = firstInvalid || lastname;
+        }
+        if (!email.value.trim() || !email.validity.valid) {
+            email.classList.add('is-invalid');
+            firstInvalid = firstInvalid || email;
+        }
+        if (adults + children < 1) {
+            firstInvalid = firstInvalid || document.querySelector('.stepper-group');
+        }
+
+        if (firstInvalid) {
+            firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            firstInvalid.focus && firstInvalid.focus();
+            return;
+        }
+
+        // Populate modal summary
+        var total = (adults * adultPrice) + (children * childPrice);
+        document.getElementById('modal-adults').textContent  = adults + ' \u00d7 Erwachsene  \u2013  ' + formatPrice(adults * adultPrice);
+        document.getElementById('modal-children').textContent = children + ' \u00d7 Kinder  \u2013  ' + formatPrice(children * childPrice);
+        document.getElementById('modal-total').textContent    = formatPrice(total);
+
+        document.getElementById('modal-name').textContent  = firstname.value.trim() + ' ' + lastname.value.trim();
+        document.getElementById('modal-email').textContent = email.value.trim();
+
+        var phone = form.querySelector('[name="customer_phone"]');
+        var phoneEl = document.getElementById('modal-phone');
+        if (phone && phone.value.trim()) {
+            phoneEl.textContent = phone.value.trim();
+            phoneEl.style.display = '';
+        } else {
+            phoneEl.style.display = 'none';
+        }
+
+        var notes = form.querySelector('[name="notes"]');
+        var notesSection = document.getElementById('modal-notes-section');
+        var notesEl      = document.getElementById('modal-notes');
+        if (notes && notes.value.trim()) {
+            notesEl.textContent = notes.value.trim();
+            notesSection.style.display = '';
+        } else {
+            notesSection.style.display = 'none';
+        }
+
+        confirmModal.show();
+    });
+
+    // Submit form from modal
+    btnSubmit.addEventListener('click', function () {
+        hiddenConfirm.value = 'on';
+        btnSubmit.disabled = true;
+        btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Wird gesendet\u2026';
+        form.submit();
+    });
 });
 </script>
 {% endblock %}
