@@ -233,3 +233,56 @@ class ConcertForm(forms.ModelForm):
         if date and timezone.is_naive(date):
             date = timezone.make_aware(date)
         return date
+
+
+class AdminOrderEditForm(forms.ModelForm):
+    """Admin-only form for editing an existing TicketOrder."""
+
+    class Meta:
+        model = TicketOrder
+        fields = [
+            "customer_firstname",
+            "customer_lastname",
+            "customer_email",
+            "customer_phone",
+            "adult_count",
+            "child_count",
+            "notes",
+            "status",
+            "paid",
+            "collected",
+        ]
+        widgets = {
+            "customer_firstname": forms.TextInput(attrs={"class": "form-control"}),
+            "customer_lastname": forms.TextInput(attrs={"class": "form-control"}),
+            "customer_email": forms.EmailInput(attrs={"class": "form-control"}),
+            "customer_phone": forms.TextInput(attrs={"class": "form-control"}),
+            "adult_count": forms.NumberInput(attrs={"class": "form-control", "min": "0", "max": "200"}),
+            "child_count": forms.NumberInput(attrs={"class": "form-control", "min": "0", "max": "200"}),
+            "notes": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
+            "status": forms.Select(attrs={"class": "form-select"}),
+            "paid": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+            "collected": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+        }
+        labels = {
+            "customer_firstname": "Vorname",
+            "customer_lastname": "Nachname",
+            "customer_email": "E-Mail-Adresse",
+            "customer_phone": "Telefon (optional)",
+            "adult_count": "Anzahl Erwachsene",
+            "child_count": "Anzahl Kinder",
+            "notes": "Anmerkungen",
+            "status": "Status",
+            "paid": "Bezahlt",
+            "collected": "Abgeholt",
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        adult_count = cleaned_data.get("adult_count") or 0
+        child_count = cleaned_data.get("child_count") or 0
+        if adult_count + child_count < 1:
+            raise forms.ValidationError(
+                "Bitte wählen Sie mindestens ein Ticket (Erwachsene oder Kinder)."
+            )
+        return cleaned_data

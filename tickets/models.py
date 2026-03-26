@@ -188,6 +188,10 @@ class TicketOrder(models.Model):
         blank=True,
         verbose_name="Abgeholt Kinder",
     )
+    paid = models.BooleanField(
+        default=False,
+        verbose_name="Bezahlt",
+    )
     class Meta:
         ordering = ["-created_at"]
         verbose_name = "Bestellung"
