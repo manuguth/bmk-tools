@@ -86,6 +86,7 @@ class Participant(models.Model):
     signed_up_at = models.DateTimeField(auto_now_add=True)
     notes = models.TextField(blank=True)
     masked = models.BooleanField(default=False)
+    pinned = models.BooleanField(default=False)
     konzertmeister_user_id = models.IntegerField(null=True, blank=True)
     konzertmeister_response_status = models.CharField(
         max_length=20,

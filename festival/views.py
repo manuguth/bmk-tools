@@ -551,6 +551,10 @@ def api_update_participant(request, festival_slug, participant_id):
         if 'notes' in data:
             participant.notes = data['notes']
 
+        # Update pinned status
+        if 'pinned' in data:
+            participant.pinned = data['pinned'] in ['true', True, 'True', '1', 1]
+
         participant.save()
         return JsonResponse({
             'success': True,
@@ -559,6 +563,7 @@ def api_update_participant(request, festival_slug, participant_id):
                 'name': participant.name,
                 'masked': participant.masked,
                 'notes': participant.notes,
+                'pinned': participant.pinned,
             }
         })
     except json.JSONDecodeError:
@@ -635,11 +640,12 @@ def api_create_participant(request, festival_slug, task_id):
         if not data.get('name'):
             return JsonResponse({'success': False, 'error': 'Participant name is required'}, status=400)
 
-        # Create the participant
+        # Pin the participant only when the task is KM-synced so it survives sync deletions
         participant = Participant.objects.create(
             task=task,
             name=data['name'].strip(),
-            notes=data.get('notes', '').strip()
+            notes=data.get('notes', '').strip(),
+            pinned=task.has_km_integration
         )
 
         return JsonResponse({
@@ -650,6 +656,7 @@ def api_create_participant(request, festival_slug, task_id):
                 'name': participant.name,
                 'notes': participant.notes,
                 'masked': participant.masked,
+                'pinned': participant.pinned,
             }
         })
     except json.JSONDecodeError:
