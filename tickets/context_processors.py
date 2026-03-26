@@ -5,4 +5,10 @@ def tickets_admin(request):
             request.user.groups.filter(name="Tickets Admin").exists()
         )
     )
-    return {"is_tickets_admin": is_tickets_admin}
+    is_scanner = (
+        request.user.is_authenticated and (
+            request.user.is_staff or
+            request.user.groups.filter(name__in={"Tickets Admin", "Ticket Scanner"}).exists()
+        )
+    )
+    return {"is_tickets_admin": is_tickets_admin, "is_scanner": is_scanner}

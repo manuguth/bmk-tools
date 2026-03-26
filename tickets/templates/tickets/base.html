@@ -398,6 +398,8 @@
                             <span class="admin-badge">ADMIN</span>
                         </a>
                     </li>
+                    {% endif %}
+                    {% if is_scanner %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'tickets:einlass_scanner' %}">
                             <i class="bi bi-qr-code-scan me-1"></i>Einlass
