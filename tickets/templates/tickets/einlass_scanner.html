@@ -14,6 +14,27 @@
 #qr-reader video { width: 100% !important; }
 #qr-reader__scan_region { width: 100% !important; }
 #scan-wrapper { max-width: 500px; margin: 0 auto; }
+#qr-close-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.55);
+    border: 2px solid rgba(255,255,255,0.7);
+    color: #fff;
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    transition: background 0.15s;
+}
+#qr-close-btn:hover { background: rgba(220,38,38,0.8); }
+#qr-reader-wrap { position: relative; }
 {% endblock %}
 
 {% block page_content %}
@@ -30,7 +51,12 @@
                 <i class="bi bi-camera-video me-2"></i>Kamera starten
             </button>
         </div>
-        <div id="qr-reader" style="display:none;"></div>
+        <div id="qr-reader-wrap" style="display:none;">
+            <div id="qr-reader"></div>
+            <button id="qr-close-btn" title="Kamera schließen" aria-label="Kamera schließen">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
         <div id="scan-status" class="mt-2 small text-center text-muted"></div>
         <div class="text-center mt-2">
             <button id="retry-camera" class="btn btn-sm btn-tickets-secondary" style="display:none;">
@@ -150,9 +176,18 @@
         if (retryBtn) retryBtn.style.display = 'none';
     }
 
+    function stopCamera() {
+        html5QrCode.stop().catch(function () {}).finally(function () {
+            document.getElementById('qr-reader-wrap').style.display = 'none';
+            document.getElementById('camera-start-wrap').style.display = 'block';
+            setStatus('');
+            hideRetry();
+        });
+    }
+
     function startCamera() {
         document.getElementById('camera-start-wrap').style.display = 'none';
-        document.getElementById('qr-reader').style.display = 'block';
+        document.getElementById('qr-reader-wrap').style.display = 'block';
         hideRetry();
         setStatus('Kamera wird gestartet…');
         html5QrCode.start(
@@ -166,7 +201,7 @@
         .catch(function (err) {
             console.error(err);
             document.getElementById('camera-start-wrap').style.display = 'block';
-            document.getElementById('qr-reader').style.display = 'none';
+            document.getElementById('qr-reader-wrap').style.display = 'none';
             if (err && (err.toString().includes('NotAllowedError') || err.toString().includes('Permission'))) {
                 setStatus('Kamerazugriff verweigert. Bitte Berechtigung erteilen und erneut versuchen.');
             } else if (!window.isSecureContext) {
@@ -180,6 +215,10 @@
 
     document.getElementById('start-camera').addEventListener('click', function () {
         startCamera();
+    });
+
+    document.getElementById('qr-close-btn').addEventListener('click', function () {
+        stopCamera();
     });
 
     if (retryBtn) {
