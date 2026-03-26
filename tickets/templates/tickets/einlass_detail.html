@@ -81,6 +81,38 @@
 }
 .count-display::-webkit-outer-spin-button,
 .count-display::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+.paid-banner-prominent {
+    background: #dbeafe;
+    border: 2px solid #3b82f6;
+    border-radius: 12px;
+    padding: 1.25rem;
+    text-align: center;
+}
+.paid-chip {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.82rem;
+    font-weight: 700;
+    border-radius: 20px;
+    padding: 0.3rem 0.85rem;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+.paid-chip-yes {
+    background: #dbeafe;
+    color: #1d4ed8;
+    border: 1.5px solid #3b82f6;
+}
+.paid-chip-no {
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1.5px solid #fca5a5;
+}
+.paid-toggle-box {
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+}
 {% endblock %}
 
 {% block page_content %}
@@ -90,34 +122,50 @@
         <i class="bi bi-arrow-left me-1"></i>Zurück zum Scanner
     </a>
 
-    {% if messages %}
-    {% for message in messages %}
-    <div class="alert alert-success alert-dismissible fade show py-2 small" role="alert">
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    {% endfor %}
-    {% endif %}
-
     {% if order.collected %}
     <div class="collected-banner mb-4">
-        <i class="bi bi-check-circle-fill" style="font-size: 3rem; color: #059669;"></i>
-        <div class="fw-bold mt-2" style="font-size: 1.3rem; color: #065f46;">Bereits abgeholt</div>
-        {% if order.amount_adjusted %}
-        <div class="mt-2 small" style="color: #065f46;">
-            Abgeholt: <strong>{{ order.collected_adult_count }} Erw. / {{ order.collected_child_count }} Kinder</strong>
-            <span class="adjusted-badge"><i class="bi bi-pencil-fill me-1"></i>Angepasst</span>
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div>
+                <i class="bi bi-check-circle-fill" style="font-size: 2.2rem; color: #059669;"></i>
+                <div class="fw-bold mt-1" style="font-size: 1.2rem; color: #065f46;">Bereits abgeholt</div>
+                {% if order.amount_adjusted %}
+                <div class="mt-1 small" style="color: #065f46;">
+                    Abgeholt: <strong>{{ order.collected_adult_count }} Erw. / {{ order.collected_child_count }} Kinder</strong>
+                    <span class="adjusted-badge"><i class="bi bi-pencil-fill me-1"></i>Angepasst</span>
+                </div>
+                <div class="text-muted small">Bestellt: {{ order.adult_count }} Erw. / {{ order.child_count }} Kinder</div>
+                {% else %}
+                <div class="text-muted small mt-1">Bereits als abgeholt markiert.</div>
+                {% endif %}
+            </div>
+            {% if order.paid %}
+            <div class="paid-chip paid-chip-yes"><i class="bi bi-check-circle-fill me-1"></i>Bezahlt</div>
+            {% else %}
+            <div class="paid-chip paid-chip-no"><i class="bi bi-exclamation-circle-fill me-1"></i>Nicht bezahlt</div>
+            {% endif %}
         </div>
-        <div class="text-muted small mt-1">Bestellt: {{ order.adult_count }} Erw. / {{ order.child_count }} Kinder</div>
-        {% else %}
-        <div class="text-muted small mt-1">Diese Bestellung wurde bereits als abgeholt markiert.</div>
-        {% endif %}
     </div>
     {% else %}
     <div class="not-collected-banner mb-3">
-        <i class="bi bi-hourglass-split" style="font-size: 1.4rem; color: #92400e;"></i>
-        <div class="fw-semibold mt-1" style="color: #92400e;">Noch nicht abgeholt</div>
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div>
+                <i class="bi bi-hourglass-split" style="font-size: 1.2rem; color: #92400e;"></i>
+                <span class="fw-semibold ms-1" style="color: #92400e;">Noch nicht abgeholt</span>
+            </div>
+            {% if order.paid %}
+            <div class="paid-chip paid-chip-yes"><i class="bi bi-check-circle-fill me-1"></i>Bezahlt</div>
+            {% else %}
+            <div class="paid-chip paid-chip-no"><i class="bi bi-exclamation-circle-fill me-1"></i>Nicht bezahlt</div>
+            {% endif %}
+        </div>
     </div>
+    {% if order.paid %}
+    <div class="paid-banner-prominent mb-4">
+        <i class="bi bi-check-circle-fill" style="font-size: 2rem; color: #1d4ed8;"></i>
+        <div class="fw-bold mt-1" style="font-size: 1.1rem; color: #1e3a8a;">Zahlung bereits erhalten ✓</div>
+        <div class="small mt-1" style="color: #1e40af;">Kein Kassenvorgang beim Einlass notwendig.</div>
+    </div>
+    {% endif %}
     {% endif %}
 
     <div class="ticket-card p-4 mb-4">
@@ -178,10 +226,13 @@
         <i class="bi bi-x-octagon-fill me-2" style="font-size:1.3rem;"></i>
         <div>Diese Bestellung wurde <strong>storniert</strong> und kann nicht abgeholt werden.</div>
     </div>
-    {% elif not order.collected %}
+    {% else %}
+
+    {% if not order.collected %}
+    {# ── Combined: Einlass + Zahlung ── #}
     <div class="ticket-card p-4 mb-3">
         <h6 class="fw-bold mb-3" style="color: var(--tickets-navy);">
-            <i class="bi bi-people me-1" style="color: var(--tickets-gold);"></i>Anzahl beim Einlass
+            <i class="bi bi-people me-1" style="color: var(--tickets-gold);"></i>Einlass &amp; Zahlung
         </h6>
         <form method="post" action="{% url 'tickets:einlass_mark_collected' order.confirmation_code %}">
             {% csrf_token %}
@@ -196,7 +247,7 @@
                 </div>
             </div>
 
-            <div class="mb-4">
+            <div class="mb-3">
                 <label class="form-label fw-semibold small" style="color: var(--tickets-muted);">Kinder</label>
                 <div class="count-control">
                     <button type="button" class="count-btn" data-target="id_collected_child_count" data-delta="-1">−</button>
@@ -206,16 +257,60 @@
                 </div>
             </div>
 
-            <div class="d-flex align-items-center justify-content-between mb-4 px-1">
+            <div class="d-flex align-items-center justify-content-between mb-3 px-1">
                 <span class="fw-semibold small" style="color: var(--tickets-muted);">Preis beim Einlass</span>
                 <span id="live-price" class="fw-bold" style="font-size: 1.1rem; color: var(--tickets-navy);">{{ order.total_price|floatformat:2 }} &euro;</span>
             </div>
 
+            {# Paid reminder / toggle within collect form #}
+            {% if order.paid %}
+            <div class="paid-toggle-box mb-4" style="background:#dbeafe; border:1.5px solid #3b82f6;">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-check-circle-fill" style="color:#1d4ed8; font-size:1.1rem;"></i>
+                    <span class="fw-bold" style="color:#1d4ed8; font-size:1rem;">Bereits bezahlt – kein Kassenvorgang nötig</span>
+                </div>
+                <input type="hidden" name="mark_paid" value="1">
+            </div>
             <button type="submit" class="btn-collect">
                 <i class="bi bi-check-circle me-2"></i>Abgeholt ✓
             </button>
+            {% else %}
+            <div class="paid-toggle-box mb-4" style="background:#fef2f2; border:1.5px solid #fca5a5;">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-exclamation-circle-fill" style="color:#b91c1c; font-size:1.1rem;"></i>
+                    <span class="fw-bold" style="color:#b91c1c; font-size:1rem;">Noch nicht bezahlt – Zahlung jetzt entgegennehmen</span>
+                </div>
+                <input type="hidden" name="mark_paid" value="1">
+            </div>
+            <button type="submit" class="btn-collect">
+                <i class="bi bi-check-circle me-2"></i>Abgeholt &amp; bezahlt ✓
+            </button>
+            {% endif %}
         </form>
     </div>
+    {% else %}
+    {# ── Bezahlt toggle (already collected) ── #}
+    <div class="ticket-card p-3 mb-3">
+        <div class="d-flex align-items-center justify-content-between gap-3">
+            <span class="fw-semibold" style="color: var(--tickets-navy);">
+                <i class="bi bi-cash-coin me-1" style="color: var(--tickets-gold);"></i>Zahlung
+            </span>
+            <form method="post" action="{% url 'tickets:einlass_toggle_paid' order.confirmation_code %}">
+                {% csrf_token %}
+                {% if order.paid %}
+                <button type="submit" class="btn btn-sm" style="background:#dbeafe; color:#1d4ed8; border:1.5px solid #3b82f6; font-weight:600;">
+                    <i class="bi bi-check-circle-fill me-1"></i>Als unbezahlt markieren
+                </button>
+                {% else %}
+                <button type="submit" class="btn btn-sm" style="background:#fef2f2; color:#b91c1c; border:1.5px solid #fca5a5; font-weight:600;">
+                    <i class="bi bi-cash-coin me-1"></i>Als bezahlt markieren
+                </button>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
     {% endif %}
 
 </div>

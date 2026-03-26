@@ -1,6 +1,6 @@
 Hallo {{ order.customer_full_name }},
 
-Ihre Reservierung ist bei uns eingegangen und erfolgreich vorgemerkt.
+{% if is_update %}Ihre Reservierungsdetails wurden aktualisiert. Nachfolgend finden Sie Ihre neuen Buchungsdetails.{% else %}Ihre Reservierung ist bei uns eingegangen und erfolgreich vorgemerkt.{% endif %}
 
 ==================================================
 RESERVIERUNGSDETAILS
@@ -23,7 +23,7 @@ WICHTIG FUER DEN KONZERTABEND
 - Bitte zeigen Sie am Einlass den QR-Code aus dieser E-Mail.
 - Alternativ reicht auch Ihr Name an der Abendkasse.
 - Die Karten sind auf Ihren Namen reserviert.
-- WICHTIG: DIE ZAHLUNG ERFOLGT AUSSCHLIESSLICH VOR ORT AN DER ABENDKASSE.
+{% if order.paid %}- ZAHLUNG: BEREITS ERHALTEN – VIELEN DANK!{% else %}- WICHTIG: DIE ZAHLUNG ERFOLGT AUSSCHLIESSLICH VOR ORT AN DER ABENDKASSE.{% endif %}
 - QR-Code für den Einlass: {% if qr_url %}{{ qr_url }}{% else %}nicht verfügbar{% endif %}
 - Falls der QR-Code nicht verfügbar ist: Bestätigungscode {{ order.confirmation_code }}
 Wenn Sie Fragen haben, antworten Sie einfach auf diese E-Mail.

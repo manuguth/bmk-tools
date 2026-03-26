@@ -1,0 +1,254 @@
+{% extends "tickets/base.html" %}
+
+{% block title %}Bestellung {{ order.confirmation_code }} – {{ concert.name }}{% endblock %}
+
+{% block page_content %}
+
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="{% url 'tickets:admin_concert_list' %}" style="color: var(--tickets-gold); text-decoration:none;">Verwaltung</a>
+        </li>
+        <li class="breadcrumb-item">
+            <a href="{% url 'tickets:admin_concert_detail' concert.slug %}" style="color: var(--tickets-gold); text-decoration:none;">{{ concert.name }}</a>
+        </li>
+        <li class="breadcrumb-item">
+            <a href="{% url 'tickets:admin_concert_bestellungen' concert.slug %}" style="color: var(--tickets-gold); text-decoration:none;">Bestellungen</a>
+        </li>
+        <li class="breadcrumb-item active">{{ order.confirmation_code }}</li>
+    </ol>
+</nav>
+
+<div class="section-header mb-4">
+    <h2><i class="bi bi-pencil-square me-2" style="color: var(--tickets-gold);"></i>Bestellung bearbeiten</h2>
+    <p>{{ concert.name }} · {{ concert.date|date:"d. F Y" }}, {{ concert.date|date:"H:i" }} Uhr</p>
+</div>
+
+<div class="row g-4">
+
+    {# ── Left column: edit form ── #}
+    <div class="col-lg-8">
+        <div class="ticket-card p-4">
+            <h5 class="fw-bold mb-4" style="color: var(--tickets-navy);">
+                <i class="bi bi-person me-2" style="color: var(--tickets-gold);"></i>Kundendaten &amp; Bestellung
+            </h5>
+
+            <form method="post">
+                {% csrf_token %}
+
+                {# Customer name #}
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label for="{{ form.customer_firstname.id_for_label }}" class="form-label fw-semibold small" style="color: var(--tickets-muted);">
+                            {{ form.customer_firstname.label }}
+                        </label>
+                        {{ form.customer_firstname }}
+                        {% if form.customer_firstname.errors %}
+                        <div class="invalid-feedback d-block">{{ form.customer_firstname.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label for="{{ form.customer_lastname.id_for_label }}" class="form-label fw-semibold small" style="color: var(--tickets-muted);">
+                            {{ form.customer_lastname.label }}
+                        </label>
+                        {{ form.customer_lastname }}
+                        {% if form.customer_lastname.errors %}
+                        <div class="invalid-feedback d-block">{{ form.customer_lastname.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {# Contact #}
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label for="{{ form.customer_email.id_for_label }}" class="form-label fw-semibold small" style="color: var(--tickets-muted);">
+                            {{ form.customer_email.label }}
+                        </label>
+                        {{ form.customer_email }}
+                        {% if form.customer_email.errors %}
+                        <div class="invalid-feedback d-block">{{ form.customer_email.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label for="{{ form.customer_phone.id_for_label }}" class="form-label fw-semibold small" style="color: var(--tickets-muted);">
+                            {{ form.customer_phone.label }}
+                        </label>
+                        {{ form.customer_phone }}
+                        {% if form.customer_phone.errors %}
+                        <div class="invalid-feedback d-block">{{ form.customer_phone.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {# Ticket counts #}
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <label for="{{ form.adult_count.id_for_label }}" class="form-label fw-semibold small" style="color: var(--tickets-muted);">
+                            {{ form.adult_count.label }}
+                        </label>
+                        {{ form.adult_count }}
+                        {% if form.adult_count.errors %}
+                        <div class="invalid-feedback d-block">{{ form.adult_count.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <label for="{{ form.child_count.id_for_label }}" class="form-label fw-semibold small" style="color: var(--tickets-muted);">
+                            {{ form.child_count.label }}
+                        </label>
+                        {{ form.child_count }}
+                        {% if form.child_count.errors %}
+                        <div class="invalid-feedback d-block">{{ form.child_count.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end pb-1">
+                        <div>
+                            <div class="text-muted small">Gesamtpreis (neu)</div>
+                            <div id="preview-price" class="fw-bold" style="font-size: 1.15rem; color: var(--tickets-navy);">
+                                {{ order.total_price|floatformat:2 }} &euro;
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {# Notes #}
+                <div class="mb-3">
+                    <label for="{{ form.notes.id_for_label }}" class="form-label fw-semibold small" style="color: var(--tickets-muted);">
+                        {{ form.notes.label }}
+                    </label>
+                    {{ form.notes }}
+                </div>
+
+                {# Status + Paid + Collected #}
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <label for="{{ form.status.id_for_label }}" class="form-label fw-semibold small" style="color: var(--tickets-muted);">
+                            {{ form.status.label }}
+                        </label>
+                        {{ form.status }}
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <div class="form-check">
+                            {{ form.paid }}
+                            <label class="form-check-label fw-semibold" for="{{ form.paid.id_for_label }}"
+                                   style="color: var(--tickets-navy);">
+                                <i class="bi bi-cash-coin me-1" style="color: var(--tickets-gold);"></i>{{ form.paid.label }}
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <div class="form-check">
+                            {{ form.collected }}
+                            <label class="form-check-label fw-semibold" for="{{ form.collected.id_for_label }}"
+                                   style="color: var(--tickets-navy);">
+                                <i class="bi bi-bag-check me-1" style="color: var(--tickets-gold);"></i>{{ form.collected.label }}
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger py-2 small">{{ form.non_field_errors }}</div>
+                {% endif %}
+
+                {# Email option #}
+                <div class="ticket-card p-3 mb-4" style="background: #f0f9ff; border: 1px solid #bae6fd;">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="send_email" value="1" id="id_send_email">
+                        <label class="form-check-label" for="id_send_email">
+                            <i class="bi bi-envelope me-1" style="color: #0284c7;"></i>
+                            <strong>Aktualisierte Bestätigung an Kunden senden</strong>
+                            <span class="text-muted ms-1" style="font-size: 0.85rem;">– {{ order.customer_email }}</span>
+                        </label>
+                    </div>
+                    <div class="text-muted mt-1" style="font-size: 0.8rem; padding-left: 1.75rem;">
+                        Sendet eine E-Mail mit den aktuellen Reservierungsdetails (inkl. QR-Code) an den Kunden.
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2 flex-wrap">
+                    <button type="submit" class="btn btn-tickets-primary">
+                        <i class="bi bi-check-lg me-1"></i>Speichern
+                    </button>
+                    <a href="{% url 'tickets:admin_concert_bestellungen' concert.slug %}" class="btn btn-tickets-secondary">
+                        <i class="bi bi-arrow-left me-1"></i>Zurück zu Bestellungen
+                    </a>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    {# ── Right column: read-only info ── #}
+    <div class="col-lg-4">
+
+        <div class="ticket-card p-4 mb-3">
+            <h6 class="fw-bold mb-3" style="color: var(--tickets-navy);">
+                <i class="bi bi-info-circle me-2" style="color: var(--tickets-gold);"></i>Bestellinfo
+            </h6>
+            <dl class="row g-2 mb-0 small">
+                <dt class="col-5" style="color: var(--tickets-muted); font-weight: 500;">Code</dt>
+                <dd class="col-7 mb-0">
+                    <code style="color: var(--tickets-navy); letter-spacing: 0.08em;">{{ order.confirmation_code }}</code>
+                </dd>
+
+                <dt class="col-5" style="color: var(--tickets-muted); font-weight: 500;">Bestellt am</dt>
+                <dd class="col-7 mb-0">{{ order.created_at|date:"d.m.Y H:i" }}</dd>
+
+                <dt class="col-5" style="color: var(--tickets-muted); font-weight: 500;">Abgeholt</dt>
+                <dd class="col-7 mb-0">
+                    {% if order.collected %}
+                        <span style="color: #059669;" class="fw-semibold">
+                            <i class="bi bi-check-circle-fill me-1"></i>Ja
+                        </span>
+                        {% if order.amount_adjusted %}
+                        <br><span class="text-muted" style="font-size:0.78rem;">
+                            Angepasst: {{ order.collected_adult_count }} Erw. / {{ order.collected_child_count }} Ki.
+                        </span>
+                        {% endif %}
+                    {% else %}
+                        <span class="text-muted">Nein</span>
+                    {% endif %}
+                </dd>
+            </dl>
+        </div>
+
+        <div class="ticket-card p-4">
+            <h6 class="fw-bold mb-3" style="color: var(--tickets-navy);">
+                <i class="bi bi-qr-code me-2" style="color: var(--tickets-gold);"></i>QR-Code
+            </h6>
+            <div class="text-center">
+                <img src="{% url 'tickets:ticket_qr_code' order.confirmation_code %}"
+                     width="130" height="130"
+                     alt="QR {{ order.confirmation_code }}"
+                     style="border: 2px solid var(--tickets-navy); border-radius: 6px;">
+                <div class="mt-2 text-muted" style="font-size: 0.8rem;">{{ order.confirmation_code }}</div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function () {
+    'use strict';
+    var adultPrice = {{ concert.adult_price|stringformat:".2f" }};
+    var childPrice = {{ concert.child_price|stringformat:".2f" }};
+    var adultInput = document.querySelector('[name="adult_count"]');
+    var childInput = document.querySelector('[name="child_count"]');
+    var priceDisplay = document.getElementById('preview-price');
+
+    function updatePrice() {
+        var adults = parseInt(adultInput.value, 10) || 0;
+        var children = parseInt(childInput.value, 10) || 0;
+        var total = adults * adultPrice + children * childPrice;
+        priceDisplay.textContent = total.toFixed(2).replace('.', ',') + '\u00a0\u20ac';
+    }
+
+    if (adultInput) adultInput.addEventListener('input', updatePrice);
+    if (childInput) childInput.addEventListener('input', updatePrice);
+})();
+</script>
+{% endblock %}

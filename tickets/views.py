@@ -18,7 +18,7 @@ from django.views.decorators.http import require_http_methods
 
 import qrcode
 
-from .forms import ConcertForm, TicketOrderForm
+from .forms import AdminOrderEditForm, ConcertForm, TicketOrderForm
 from .models import Concert, TicketOrder
 
 logger = logging.getLogger(__name__)
@@ -60,6 +60,45 @@ def _send_confirmation_email(order, request=None):
     except Exception as exc:
         logger.error(
             "Failed to send confirmation email for order %s: %s",
+            order.confirmation_code,
+            exc,
+        )
+        return False
+
+
+def _send_order_update_email(order, request=None):
+    """Send German-language update notification email to the customer (HTML + plain text)."""
+    qr_url = None
+    if request is not None:
+        qr_url = request.build_absolute_uri(
+            reverse("tickets:ticket_qr_code", args=[order.confirmation_code])
+        )
+    context = {
+        "order": order,
+        "adult_subtotal": order.adult_count * order.concert.adult_price,
+        "child_subtotal": order.child_count * order.concert.child_price,
+        "qr_url": qr_url,
+        "is_update": True,
+    }
+
+    subject = f"Aktualisierte Reservierungsbestätigung: {order.concert.name}"
+    text_body = render_to_string("tickets/email_confirmation.txt", context)
+    html_body = render_to_string("tickets/email_confirmation.html", context)
+
+    email = EmailMultiAlternatives(
+        subject=subject,
+        body=text_body,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[order.customer_email],
+    )
+    email.attach_alternative(html_body, "text/html")
+
+    try:
+        email.send(fail_silently=False)
+        return True
+    except Exception as exc:
+        logger.error(
+            "Failed to send update email for order %s: %s",
             order.confirmation_code,
             exc,
         )
@@ -470,15 +509,16 @@ def admin_export_orders_pdf(request):
         story.append(Spacer(1, 4 * mm))
 
     # Table
-    col_headers = ["#", "Name", "Telefon", "Erw.", "Ki.", "Preis", "Bestätigungscode", "Notizen", "Abgeholt"]
+    col_headers = ["#", "Name", "Telefon", "Erw.", "Ki.", "Preis", "Bestätigungscode", "Notizen", "Abgeholt", "Bezahlt"]
     # Column widths (total content width ~186 mm on A4 portrait with 12 mm margins each)
-    col_widths = [7 * mm, 40 * mm, 28 * mm, 9 * mm, 9 * mm, 15 * mm, 26 * mm, 42 * mm, 10 * mm]
+    col_widths = [7 * mm, 40 * mm, 28 * mm, 9 * mm, 9 * mm, 15 * mm, 26 * mm, 37 * mm, 10 * mm, 10 * mm]
 
     header_row = [Paragraph(h, header_cell_style) for h in col_headers]
     rows = [header_row]
 
     for idx, o in enumerate(orders, start=1):
         collected_cell = "\u2713" if o.collected else ""  # ✓ or empty
+        paid_cell = "\u2713" if o.paid else ""
         rows.append([
             Paragraph(str(idx), cell_style),
             Paragraph(f"{o.customer_lastname}, {o.customer_firstname}", cell_style),
@@ -489,6 +529,7 @@ def admin_export_orders_pdf(request):
             Paragraph(o.confirmation_code, cell_style),
             Paragraph(o.notes or "", cell_style),
             Paragraph(collected_cell, cell_style),
+            Paragraph(paid_cell, cell_style),
         ])
 
     table = Table(rows, colWidths=col_widths, repeatRows=1)
@@ -505,6 +546,7 @@ def admin_export_orders_pdf(request):
         ("ALIGN", (3, 0), (4, -1), "CENTER"),   # Erw./Ki.
         ("ALIGN", (5, 0), (5, -1), "RIGHT"),    # Preis
         ("ALIGN", (8, 0), (8, -1), "CENTER"),   # Abgeholt
+        ("ALIGN", (9, 0), (9, -1), "CENTER"),   # Bezahlt
         # Padding
         ("TOPPADDING", (0, 0), (-1, -1), 3),
         ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
@@ -547,6 +589,53 @@ def admin_order_status_update(request, order_id):
     except Exception as exc:
         logger.error("Error updating order %s status: %s", order_id, exc)
         return JsonResponse({"success": False, "error": "Interner Fehler."}, status=400)
+
+
+@tickets_admin_required
+def admin_order_edit(request, order_id):
+    """Admin: display and process an edit form for a single TicketOrder."""
+    order = get_object_or_404(TicketOrder.objects.select_related("concert"), id=order_id)
+
+    if request.method == "POST":
+        form = AdminOrderEditForm(request.POST, instance=order)
+        if form.is_valid():
+            updated_order = form.save(commit=False)
+            # When unchecking Abgeholt, clear the per-item collected counts.
+            if not updated_order.collected:
+                updated_order.collected_adult_count = None
+                updated_order.collected_child_count = None
+            updated_order.save()  # model.save() auto-recalculates total_price
+            order = updated_order
+            send_email = request.POST.get("send_email") == "1"
+            email_sent = False
+            if send_email:
+                email_sent = _send_order_update_email(order, request)
+            if send_email and email_sent:
+                messages.success(
+                    request,
+                    f"Bestellung {order.confirmation_code} gespeichert und Bestätigungs-E-Mail an {order.customer_email} gesendet.",
+                )
+            elif send_email and not email_sent:
+                messages.warning(
+                    request,
+                    f"Bestellung {order.confirmation_code} gespeichert, aber E-Mail konnte nicht gesendet werden.",
+                )
+            else:
+                messages.success(
+                    request,
+                    f"Bestellung {order.confirmation_code} erfolgreich gespeichert.",
+                )
+        else:
+            messages.error(request, "Bitte korrigieren Sie die markierten Felder.")
+    else:
+        form = AdminOrderEditForm(instance=order)
+
+    context = {
+        "order": order,
+        "form": form,
+        "concert": order.concert,
+    }
+    return render(request, "tickets/admin_order_edit.html", context)
 
 
 # ---------------------------------------------------------------------------
@@ -652,11 +741,13 @@ def einlass_mark_collected(request, confirmation_code):
         + collected_child * order.concert.child_price
     )
 
+    mark_paid = request.POST.get("mark_paid") == "1"
     order.collected = True
     order.collected_adult_count = collected_adult
     order.collected_child_count = collected_child
     order.total_price = new_price
-    order.save(update_fields=["collected", "collected_adult_count", "collected_child_count", "total_price"])
+    order.paid = mark_paid
+    order.save(update_fields=["collected", "collected_adult_count", "collected_child_count", "total_price", "paid"])
 
     if adjusted:
         messages.success(
@@ -669,4 +760,14 @@ def einlass_mark_collected(request, confirmation_code):
     else:
         messages.success(request, f"Bestellung {confirmation_code} als abgeholt markiert.")
 
+    return redirect("tickets:einlass_detail", confirmation_code=confirmation_code)
+
+
+@scanner_required
+@require_http_methods(["POST"])
+def einlass_toggle_paid(request, confirmation_code):
+    """Scanner: toggle the paid flag on a TicketOrder."""
+    order = get_object_or_404(TicketOrder, confirmation_code=confirmation_code)
+    order.paid = not order.paid
+    order.save(update_fields=["paid"])
     return redirect("tickets:einlass_detail", confirmation_code=confirmation_code)

@@ -36,7 +36,11 @@
             <td style="background-color:#d1fae5; padding:16px 40px; text-align:center;
                        border-bottom:1px solid #a7f3d0;">
               <p style="margin:0; color:#065f46; font-size:15px; font-weight:600;">
+                {% if is_update %}
+                &#9998;&nbsp; Ihre Reservierungsdetails wurden aktualisiert
+                {% else %}
                 &#10003;&nbsp; Ihre Reservierung wurde bestätigt
+                {% endif %}
               </p>
             </td>
           </tr>
@@ -50,7 +54,11 @@
                 Hallo <strong>{{ order.customer_full_name }}</strong>,
               </p>
               <p style="margin:0 0 28px; font-size:15px; color:#4b5563; line-height:1.6;">
+                {% if is_update %}
+                Ihre Reservierungsdetails wurden aktualisiert. Nachfolgend finden Sie Ihre neuen Buchungsdetails.
+                {% else %}
                 Ihre Reservierung ist bei uns eingegangen und erfolgreich vorgemerkt.
+                {% endif %}
               </p>
 
               <!-- Section label -->
@@ -194,9 +202,15 @@
                       Alternativ reicht auch Ihr Name an der Abendkasse.
                       Die Karten sind auf Ihren Namen reserviert.
                     </p>
+                    {% if order.paid %}
+                    <p style="margin:10px 0 0; font-size:13px; font-weight:800; color:#166534; letter-spacing:0.02em;">
+                      &#10003;&nbsp;Zahlung bereits erhalten – vielen Dank!
+                    </p>
+                    {% else %}
                     <p style="margin:10px 0 0; font-size:13px; font-weight:800; color:#7c2d12; letter-spacing:0.02em;">
                       Zahlung vor Ort an der Abendkasse.
                     </p>
+                    {% endif %}
                   </td>
                 </tr>
               </table>
