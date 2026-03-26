@@ -510,7 +510,7 @@ document.addEventListener('DOMContentLoaded', function () {
     updateTotal();
 
     // ── Confirmation modal logic ─────────────────────────────
-    var form            = document.querySelector('form');
+    var form            = document.querySelector('form[method="post"][novalidate]');
     var btnOpen         = document.getElementById('btn-open-confirm');
     var btnSubmit       = document.getElementById('btn-modal-submit');
     var modalCheckbox   = document.getElementById('modal-confirm-checkbox');
