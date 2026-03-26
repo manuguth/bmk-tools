@@ -245,9 +245,9 @@ def sync_participants_for_task(task) -> Dict:
                 synced_count += 1
                 logger.info(f"Created new participant '{km_name}' for task {task.id}")
 
-        # Delete unmatched participants
+        # Delete unmatched participants (skip pinned ones - they are manually added by admins)
         from .models import Participant
-        unmatched_participants = task.participants.exclude(id__in=matched_participant_ids)
+        unmatched_participants = task.participants.filter(pinned=False).exclude(id__in=matched_participant_ids)
         for participant in unmatched_participants:
             logger.info(f"Deleted participant '{participant.name}' for task {task.id} (not in Konzertmeister)")
             deleted_count += 1
