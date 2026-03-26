@@ -92,6 +92,9 @@
     <a href="{% url 'tickets:admin_export_orders_csv' %}?concert={{ concert.slug }}" class="btn btn-sm btn-tickets-secondary ms-auto">
         <i class="bi bi-download me-1"></i>CSV Export
     </a>
+    <a href="{% url 'tickets:admin_export_orders_pdf' %}?concert={{ concert.slug }}" class="btn btn-sm btn-tickets-secondary">
+        <i class="bi bi-file-earmark-pdf me-1"></i>PDF Einlasskontrolle
+    </a>
 </div>
 
 {# Orders table #}

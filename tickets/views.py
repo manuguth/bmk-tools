@@ -395,6 +395,132 @@ def admin_export_orders_csv(request):
 
 
 @tickets_admin_required
+@require_http_methods(["GET"])
+def admin_export_orders_pdf(request):
+    """Admin: export confirmed/pending orders as a PDF entrance list."""
+    from io import BytesIO
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import mm
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+    from reportlab.lib.enums import TA_LEFT, TA_CENTER
+
+    concert_slug = request.GET.get("concert", "")
+    orders = (
+        TicketOrder.objects
+        .select_related("concert")
+        .exclude(status="storniert")
+        .order_by("customer_lastname", "customer_firstname")
+    )
+    concert = None
+    filename = "einlasskontrolle_alle.pdf"
+    if concert_slug:
+        concert = get_object_or_404(Concert, slug=concert_slug)
+        orders = orders.filter(concert=concert)
+        filename = f"einlasskontrolle_{concert.slug}.pdf"
+
+    orders = list(orders)
+
+    buf = BytesIO()
+    doc = SimpleDocTemplate(
+        buf,
+        pagesize=A4,
+        leftMargin=12 * mm,
+        rightMargin=12 * mm,
+        topMargin=15 * mm,
+        bottomMargin=15 * mm,
+    )
+
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle(
+        "title", parent=styles["Normal"],
+        fontSize=13, fontName="Helvetica-Bold", spaceAfter=2 * mm,
+    )
+    subtitle_style = ParagraphStyle(
+        "subtitle", parent=styles["Normal"],
+        fontSize=9, fontName="Helvetica", spaceAfter=6 * mm, textColor=colors.grey,
+    )
+    cell_style = ParagraphStyle(
+        "cell", parent=styles["Normal"],
+        fontSize=8, fontName="Helvetica", leading=10,
+    )
+    header_cell_style = ParagraphStyle(
+        "header_cell", parent=styles["Normal"],
+        fontSize=8, fontName="Helvetica-Bold", leading=10, textColor=colors.white,
+    )
+
+    story = []
+
+    # Title block
+    if concert:
+        title_text = f"Einlasskontrolle: {concert.name}"
+        date_text = (
+            localtime(concert.date).strftime("%d.%m.%Y, %H:%M Uhr")
+            + (f" · {concert.venue}" if concert.venue else "")
+            if concert.date else ""
+        )
+    else:
+        title_text = "Einlasskontrolle – alle Konzerte"
+        date_text = ""
+    story.append(Paragraph(title_text, title_style))
+    if date_text:
+        story.append(Paragraph(date_text, subtitle_style))
+    else:
+        story.append(Spacer(1, 4 * mm))
+
+    # Table
+    col_headers = ["#", "Name", "Telefon", "Erw.", "Ki.", "Preis", "Bestätigungscode", "Notizen", "Abgeholt"]
+    # Column widths (total content width ~186 mm on A4 portrait with 12 mm margins each)
+    col_widths = [7 * mm, 40 * mm, 28 * mm, 9 * mm, 9 * mm, 15 * mm, 26 * mm, 42 * mm, 10 * mm]
+
+    header_row = [Paragraph(h, header_cell_style) for h in col_headers]
+    rows = [header_row]
+
+    for idx, o in enumerate(orders, start=1):
+        collected_cell = "\u2713" if o.collected else ""  # ✓ or empty
+        rows.append([
+            Paragraph(str(idx), cell_style),
+            Paragraph(f"{o.customer_lastname}, {o.customer_firstname}", cell_style),
+            Paragraph(o.customer_phone or "", cell_style),
+            Paragraph(str(o.adult_count), cell_style),
+            Paragraph(str(o.child_count), cell_style),
+            Paragraph(f"{o.total_price:.2f}".replace(".", ",") + " €", cell_style),
+            Paragraph(o.confirmation_code, cell_style),
+            Paragraph(o.notes or "", cell_style),
+            Paragraph(collected_cell, cell_style),
+        ])
+
+    table = Table(rows, colWidths=col_widths, repeatRows=1)
+    table.setStyle(TableStyle([
+        # Header styling
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1e293b")),
+        ("FONTSIZE", (0, 0), (-1, -1), 8),
+        ("LEADING", (0, 0), (-1, -1), 10),
+        # Grid
+        ("GRID", (0, 0), (-1, -1), 0.3, colors.HexColor("#cbd5e1")),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f8fafc")]),
+        # Alignment
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("ALIGN", (3, 0), (4, -1), "CENTER"),   # Erw./Ki.
+        ("ALIGN", (5, 0), (5, -1), "RIGHT"),    # Preis
+        ("ALIGN", (8, 0), (8, -1), "CENTER"),   # Abgeholt
+        # Padding
+        ("TOPPADDING", (0, 0), (-1, -1), 3),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+        ("LEFTPADDING", (0, 0), (-1, -1), 3),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 3),
+    ]))
+    story.append(table)
+
+    doc.build(story)
+    buf.seek(0)
+    response = HttpResponse(buf, content_type="application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    return response
+
+
+@tickets_admin_required
 @require_http_methods(["POST"])
 def admin_order_status_update(request, order_id):
     """Admin: update an order's status via AJAX POST."""

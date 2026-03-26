@@ -30,6 +30,11 @@ urlpatterns = [
         name="admin_export_orders_csv",
     ),
     path(
+        "admin/bestellungen/export-pdf/",
+        views.admin_export_orders_pdf,
+        name="admin_export_orders_pdf",
+    ),
+    path(
         "admin/bestellung/<int:order_id>/status/",
         views.admin_order_status_update,
         name="admin_order_status_update",
