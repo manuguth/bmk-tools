@@ -17,6 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import urls as auth_urls
+from django.views.generic import TemplateView
 from info_mail import views
 
 
@@ -30,4 +31,5 @@ urlpatterns = [
     path("aktuelle-themen", views.latest_info_mail, name="latest_info_mail"),
     path("tickets/", include(("tickets.urls", "tickets"), namespace="tickets")),
     path("bring/", include(("bring_list.urls", "bring_list"), namespace="bring_list")),
+    path("robots.txt", TemplateView.as_view(template_name="robots.txt", content_type="text/plain")),
 ]
