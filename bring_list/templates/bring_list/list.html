@@ -10,7 +10,7 @@
         box-shadow: 0 2px 12px rgba(0,0,0,0.08);
         border-left: 5px solid var(--festival-primary);
         padding: 1.25rem 1.25rem;
-        margin-bottom: 2rem;
+        margin-bottom: 1rem;
         animation: fadeInDown 0.6s ease;
         display: flex;
         align-items: flex-start;
@@ -20,7 +20,8 @@
     }
 
     @media (min-width: 576px) {
-        .list-hero { padding: 1.75rem 2rem; gap: 1rem; }
+        .list-hero { padding: 1.75rem 2rem; gap: 1rem; margin-bottom: 2rem; }
+        .items-card { margin-bottom: 2rem; }
     }
 
     .list-title {
@@ -53,7 +54,7 @@
         border-radius: 12px;
         box-shadow: 0 2px 12px rgba(0,0,0,0.08);
         overflow: hidden;
-        margin-bottom: 2rem;
+        margin-bottom: 1rem;
         animation: fadeInUp 0.6s ease 0.1s backwards;
     }
 
@@ -80,43 +81,99 @@
 
     .items-table tbody tr:last-child td { border-bottom: none; }
 
-    /* --- Mobile stacked table --- */
+    /* --- Mobile compact table: single line per row --- */
     @media (max-width: 575.98px) {
         .items-table thead { display: none; }
 
         .items-table tbody tr {
-            display: block;
-            border-bottom: 2px solid var(--festival-primary);
-            padding: 0.75rem 0;
-            background: white;
+            display: flex;
+            flex-wrap: nowrap;
+            align-items: center;
+            padding: 0.35rem 0.75rem;
+            border-bottom: 1px solid #e5e7eb;
+            gap: 0 0.3rem;
+            min-height: 0;
         }
 
         .items-table tbody tr:last-child { border-bottom: none; }
 
-        .items-table tbody td {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.4rem 1rem;
-            border-bottom: 1px solid #f3f4f6;
-            font-size: 0.9rem;
-        }
+        .items-table tbody td { padding: 0; border: none; font-size: 0.88rem; line-height: 1.2; }
 
-        .items-table tbody td:last-child { border-bottom: none; }
-
-        .items-table tbody td::before {
-            content: attr(data-label);
+        /* Label grows to fill available space, truncates if necessary */
+        .td-label {
+            flex: 1 1 0;
+            min-width: 0;
             font-weight: 600;
-            font-size: 0.78rem;
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-            color: var(--festival-primary);
-            flex-shrink: 0;
-            margin-right: 0.75rem;
+            color: var(--festival-dark);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        .items-table tbody td[data-label=""]::before { display: none; }
-        .items-table tbody td[data-label=""] { justify-content: flex-end; }
+        .td-qty {
+            flex: 0 0 auto;
+            font-size: 0.7rem;
+            color: var(--festival-primary);
+            background: #ede9fe;
+            border-radius: 10px;
+            padding: 0.05rem 0.35rem;
+            white-space: nowrap;
+        }
+
+        .td-name {
+            flex: 0 0 auto;
+            color: #6b7280;
+            font-size: 0.78rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 30vw;
+        }
+        .td-name::before { content: '· '; color: #d1d5db; }
+
+        /* Note: inline icon, no new row */
+        .td-note { flex: 0 0 auto; }
+        .note-desktop { display: none; }
+        .note-mobile { display: inline-block; position: relative; }
+
+        .note-mobile summary {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            cursor: pointer;
+            list-style: none;
+            display: inline-flex;
+            align-items: center;
+            padding: 0 0.1rem;
+            user-select: none;
+        }
+        .note-mobile summary::-webkit-details-marker { display: none; }
+        .note-mobile .note-text {
+            position: absolute;
+            right: 0;
+            top: 1.4rem;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            font-size: 0.78rem;
+            color: #374151;
+            padding: 0.4rem 0.6rem;
+            white-space: normal;
+            width: 180px;
+            z-index: 10;
+        }
+
+        .td-actions { flex: 0 0 auto; }
+    }
+
+    @media (min-width: 576px) { .note-mobile { display: none; } }
+
+    /* Mobile spacing */
+    @media (max-width: 575.98px) {
+        .add-card h3 { font-size: 1rem; margin-bottom: 0.6rem; padding-bottom: 0.4rem; }
+        .form-group { margin-bottom: 0.6rem; }
+        .form-label { margin-bottom: 0.25rem !important; font-size: 0.82rem; }
+        .btn-primary-gradient { width: 100%; padding: 0.65rem 1rem; }
     }
 
     .empty-state {
@@ -241,16 +298,25 @@
         <tbody>
             {% for item in items %}
             <tr onmouseover="this.style.backgroundColor='#f9fafb'" onmouseout="this.style.backgroundColor='white'">
-                <td data-label="Was" style="font-weight:600">{{ item.label }}</td>
-                {% if bring_list.show_quantity %}<td data-label="Menge">{{ item.quantity }}</td>{% endif %}
-                <td data-label="Name">{{ item.contributor_name }}</td>
-                <td data-label="Anmerkung" style="color:#6b7280;font-size:0.9rem">{{ item.note|default:"–" }}</td>
+                <td class="td-label" data-label="Was">{{ item.label }}</td>
+                {% if bring_list.show_quantity %}<td class="td-qty" data-label="Menge">{{ item.quantity }}</td>{% endif %}
+                <td class="td-name" data-label="Name">{{ item.contributor_name }}</td>
+                <td class="td-note" data-label="Anmerkung" style="color:#6b7280;font-size:0.9rem">
+                    <span class="note-desktop">{{ item.note|default:"–" }}</span>
+                    {% if item.note %}
+                    <details class="note-mobile">
+                        <summary><i class="bi bi-chat-text"></i></summary>
+                        <span class="note-text">{{ item.note }}</span>
+                    </details>
+                    {% endif %}
+                </td>
                 {% if bring_list.edit_mode != "insert_only" %}
-                <td data-label="" style="text-align:right">
+                <td class="td-actions" data-label="" style="text-align:right">
                     {% if bring_list.edit_mode == "free" or item.edit_token|stringformat:"s" in owned %}
                     <a class="btn-edit"
-                       href="{% url 'bring_list:edit_item' public_token=bring_list.public_token edit_token=item.edit_token %}">
-                        <i class="bi bi-pencil me-1"></i>Bearbeiten
+                       href="{% url 'bring_list:edit_item' public_token=bring_list.public_token edit_token=item.edit_token %}"
+                       title="Bearbeiten">
+                        <i class="bi bi-pencil"></i>
                     </a>
                     {% endif %}
                 </td>
@@ -273,7 +339,7 @@
     <h3><i class="bi bi-plus-circle me-2" style="color:var(--festival-primary)"></i>Eintrag hinzufügen</h3>
     <form method="post" action="{% url 'bring_list:add_item' public_token=bring_list.public_token %}">
         {% csrf_token %}
-        <div class="row g-3">
+        <div class="row gy-2 gx-3">
             <div class="col-md-5">
                 <div class="form-group">
                     <label class="form-label">{{ form.label.label }}</label>

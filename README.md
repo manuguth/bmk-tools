@@ -44,3 +44,10 @@ next steps:
 ```
 set -a; source .env; set +a
 ```
+
+# New Features - ToDos
+
+* Adding overview page with all apps
+* integrating weekly newsletters into webapp
+  * everyone with access can edit and send from here
+  * add machanics to avoid duplicate sending
