@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Bring-Liste{% endblock title %}</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+    <style>
+        :root {
+            --festival-primary: #6366f1;
+            --festival-secondary: #8b5cf6;
+            --festival-success: #10b981;
+            --festival-accent: #f59e0b;
+            --festival-dark: #1f2937;
+            --festival-light: #f9fafb;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: linear-gradient(135deg, var(--festival-light) 0%, #f3f4f6 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            min-height: 100vh;
+            color: var(--festival-dark);
+        }
+
+        .festival-navbar {
+            background: linear-gradient(135deg, var(--festival-primary) 0%, var(--festival-secondary) 100%);
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.15);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .festival-navbar-brand {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: white !important;
+            text-decoration: none;
+        }
+
+        .festival-navbar .nav-link {
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .festival-navbar .nav-link:hover { color: white !important; }
+
+        .festival-main { padding: 2rem 1rem; }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <nav class="festival-navbar">
+        <div class="container d-flex align-items-center justify-content-between">
+            <a class="festival-navbar-brand" href="{% url 'bring_list:admin_overview' %}">
+                <i class="bi bi-bag-heart-fill me-2"></i>Bring-Listen
+            </a>
+            <div class="d-flex align-items-center gap-2">
+                {% block nav_extra %}{% endblock %}
+                {% if user.is_staff %}
+                <a class="nav-link" href="{% url 'bring_list:admin_overview' %}">
+                    <i class="bi bi-speedometer2 me-1"></i>Admin
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <main class="festival-main">
+        <div class="container">
+            {% block page_content %}{% endblock %}
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

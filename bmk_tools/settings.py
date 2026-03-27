@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     "festival.apps.FestivalConfig",
     "info_mail.apps.InfoMailConfig",
     "tickets.apps.TicketsConfig",
+    "bring_list.apps.BringListConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
