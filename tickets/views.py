@@ -2,6 +2,7 @@ import csv
 import io
 import json
 import logging
+from datetime import date as date_type
 
 from django.contrib import messages
 from .decorators import tickets_admin_required, scanner_required
@@ -664,7 +665,21 @@ def ticket_qr_code(request, confirmation_code):
 @scanner_required
 def einlass_scanner(request):
     """Scanner: mobile QR code scanner page for Einlass."""
-    return render(request, "tickets/einlass_scanner.html")
+    today = date_type.today()
+    active_concerts = Concert.objects.filter(is_active=True).order_by("date")
+    # Determine if there is a single direct target for the Abendkasse button.
+    today_concerts = [c for c in active_concerts if c.date == today]
+    if active_concerts.count() == 1:
+        abendkasse_direct = active_concerts.first()
+    elif len(today_concerts) == 1:
+        abendkasse_direct = today_concerts[0]
+    else:
+        abendkasse_direct = None
+    context = {
+        "active_concerts": active_concerts,
+        "abendkasse_direct": abendkasse_direct,
+    }
+    return render(request, "tickets/einlass_scanner.html", context)
 
 
 @scanner_required
@@ -771,3 +786,110 @@ def einlass_toggle_paid(request, confirmation_code):
     order.paid = not order.paid
     order.save(update_fields=["paid"])
     return redirect("tickets:einlass_detail", confirmation_code=confirmation_code)
+
+
+@scanner_required
+def abendkasse_view(request, slug):
+    """Abendkasse: live capacity stats and quick ticket sales for a concert."""
+    concert = get_object_or_404(Concert, slug=slug)
+
+    error = None
+    success = request.method == "GET" and request.GET.get("success") == "1"
+
+    if request.method == "POST":
+        try:
+            adult_count = int(request.POST.get("adult_count", 0))
+            child_count = int(request.POST.get("child_count", 0))
+        except (ValueError, TypeError):
+            adult_count = 0
+            child_count = 0
+
+        adult_count = max(0, adult_count)
+        child_count = max(0, child_count)
+
+        if adult_count == 0 and child_count == 0:
+            error = "Bitte mindestens ein Ticket auswählen."
+        else:
+            with transaction.atomic():
+                # Re-read capacity inside the transaction to prevent races.
+                concert_locked = Concert.objects.select_for_update().get(pk=concert.pk)
+                if adult_count > concert_locked.adults_remaining:
+                    error = (
+                        f"Nicht genug freie Erwachsenen-Plätze. "
+                        f"Verfügbar: {concert_locked.adults_remaining}."
+                    )
+                elif child_count > concert_locked.children_remaining:
+                    error = (
+                        f"Nicht genug freie Kinder-Plätze. "
+                        f"Verfügbar: {concert_locked.children_remaining}."
+                    )
+                else:
+                    TicketOrder.objects.create(
+                        concert=concert_locked,
+                        customer_firstname="Abendkasse",
+                        customer_lastname="",
+                        customer_email="abendkasse@abendkasse.local",
+                        adult_count=adult_count,
+                        child_count=child_count,
+                        status="bestaetigt",
+                        paid=True,
+                        collected=True,
+                        abendkasse=True,
+                    )
+                    return redirect(
+                        reverse("tickets:abendkasse", kwargs={"slug": slug}) + "?success=1"
+                    )
+
+    # Compute stats for GET (and for POST with error, refresh concert data).
+    active_statuses = ["ausstehend", "bestaetigt"]
+    all_orders = concert.orders.filter(status__in=active_statuses)
+    online_orders = all_orders.filter(abendkasse=False)
+    box_orders = all_orders.filter(abendkasse=True)
+
+    def sum_field(qs, field):
+        from django.db.models import Sum
+        return qs.aggregate(total=Sum(field))["total"] or 0
+
+    online_adults = sum_field(online_orders, "adult_count")
+    online_children = sum_field(online_orders, "child_count")
+    box_adults = sum_field(box_orders, "adult_count")
+    box_children = sum_field(box_orders, "child_count")
+
+    total_adults = online_adults + box_adults
+    total_children = online_children + box_children
+
+    # Collected counts use adjusted values when available.
+    collected_orders = all_orders.filter(collected=True)
+
+    collected_adult_total = 0
+    collected_child_total = 0
+    for o in collected_orders:
+        collected_adult_total += o.collected_adult_count if o.collected_adult_count is not None else o.adult_count
+        collected_child_total += o.collected_child_count if o.collected_child_count is not None else o.child_count
+
+    adults_remaining = max(0, concert.max_adults - total_adults)
+    children_remaining = max(0, concert.max_children - total_children)
+
+    context = {
+        "concert": concert,
+        "error": error,
+        "success": success,
+        # Adults stats
+        "online_adults": online_adults,
+        "box_adults": box_adults,
+        "total_adults": total_adults,
+        "collected_adults": collected_adult_total,
+        "adults_remaining": adults_remaining,
+        "max_adults": concert.max_adults,
+        # Children stats
+        "online_children": online_children,
+        "box_children": box_children,
+        "total_children": total_children,
+        "collected_children": collected_child_total,
+        "children_remaining": children_remaining,
+        "max_children": concert.max_children,
+        # Prices as strings for JS
+        "adult_price": str(concert.adult_price),
+        "child_price": str(concert.child_price),
+    }
+    return render(request, "tickets/abendkasse.html", context)

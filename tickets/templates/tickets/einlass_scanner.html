@@ -45,6 +45,38 @@
         <p>QR-Code scannen oder Code manuell eingeben</p>
     </div>
 
+    <!-- Abendkasse quick-link -->
+    {% if abendkasse_direct %}
+    <div class="mb-3">
+        <a href="{% url 'tickets:abendkasse' slug=abendkasse_direct.slug %}"
+           class="btn btn-tickets-primary w-100"
+           style="font-size:1rem; min-height:48px; display:flex; align-items:center; justify-content:center; gap:0.5rem;">
+            <i class="bi bi-cash-coin"></i>
+            Abendkasse – {{ abendkasse_direct.name }}
+        </a>
+    </div>
+    {% elif active_concerts %}
+    <div class="mb-3" id="abendkasse-picker-wrap">
+        <button type="button" id="abendkasse-toggle-btn"
+                class="btn btn-tickets-primary w-100"
+                style="font-size:1rem; min-height:48px; display:flex; align-items:center; justify-content:center; gap:0.5rem;">
+            <i class="bi bi-cash-coin"></i>
+            Abendkasse
+            <i class="bi bi-chevron-down ms-auto" id="abendkasse-chevron"></i>
+        </button>
+        <div id="abendkasse-dropdown" style="display:none;" class="mt-1">
+            {% for c in active_concerts %}
+            <a href="{% url 'tickets:abendkasse' slug=c.slug %}"
+               class="d-block ticket-card p-3 mb-1 text-decoration-none"
+               style="border-left: 3px solid var(--tickets-gold);">
+                <span class="fw-semibold" style="color:var(--tickets-navy);">{{ c.name }}</span>
+                {% if c.date %}<small class="text-muted ms-2">{{ c.date|date:"d.m.Y" }}</small>{% endif %}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
     <div class="ticket-card p-3 mb-4">
         <div id="camera-start-wrap" class="text-center py-4">
             <button id="start-camera" class="btn btn-tickets-primary">
@@ -114,6 +146,21 @@
 {% endblock %}
 
 {% block extra_scripts %}
+<script>
+(function () {
+    'use strict';
+    var toggleBtn = document.getElementById('abendkasse-toggle-btn');
+    if (toggleBtn) {
+        var dropdown = document.getElementById('abendkasse-dropdown');
+        var chevron  = document.getElementById('abendkasse-chevron');
+        toggleBtn.addEventListener('click', function () {
+            var open = dropdown.style.display !== 'none';
+            dropdown.style.display = open ? 'none' : 'block';
+            chevron.className = open ? 'bi bi-chevron-down ms-auto' : 'bi bi-chevron-up ms-auto';
+        });
+    }
+}());
+</script>
 <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
 (function () {

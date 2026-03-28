@@ -197,6 +197,11 @@ class TicketOrder(models.Model):
         default=False,
         verbose_name="Bezahlt",
     )
+    abendkasse = models.BooleanField(
+        default=False,
+        verbose_name="Abendkasse",
+        help_text="Gibt an, ob das Ticket an der Abendkasse verkauft wurde.",
+    )
     late_collection = models.BooleanField(
         default=False,
         verbose_name="Späte Abholung (nach Deadline)",

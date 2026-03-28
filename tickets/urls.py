@@ -68,6 +68,11 @@ urlpatterns = [
         views.einlass_toggle_paid,
         name="einlass_toggle_paid",
     ),
+    path(
+        "einlass/<slug:slug>/abendkasse/",
+        views.abendkasse_view,
+        name="abendkasse",
+    ),
     path("<slug:slug>/", views.concert_detail, name="concert_detail"),
     path(
         "<slug:slug>/bestaetigung/<str:confirmation_code>/",
