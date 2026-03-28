@@ -130,17 +130,17 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/tickets/">
+                        <a class="nav-link" href="{% url 'tickets:concert_list' %}">
                             <i class="bi bi-ticket-perforated me-1"></i>Tickets
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/event/">
+                        <a class="nav-link" href="{% url 'event:landing' %}">
                             <i class="bi bi-calendar-event me-1"></i>Helferpläne
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/bring/">
+                        <a class="nav-link" href="{% url 'bring_list:landing' %}">
                             <i class="bi bi-list-check me-1"></i>Bring-Listen
                         </a>
                     </li>
@@ -153,10 +153,10 @@
                             <li><a class="dropdown-item" href="/info_mails/overview">
                                 <i class="bi bi-list-ul me-1"></i>Mail-Übersicht
                             </a></li>
-                            <li><a class="dropdown-item" href="/info_mails/display_media">
+                            <li><a class="dropdown-item" href="/info_mails/display_media/">
                                 <i class="bi bi-images me-1"></i>Medien-Übersicht
                             </a></li>
-                            <li><a class="dropdown-item" href="/info_mails/media_upload">
+                            <li><a class="dropdown-item" href="/info_mails/media_upload/">
                                 <i class="bi bi-upload me-1"></i>Medien hochladen
                             </a></li>
                         </ul>

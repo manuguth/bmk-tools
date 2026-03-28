@@ -162,7 +162,11 @@
                 {% if active_festivals_count > 0 %}
                 <div class="stat-badge">
                     <i class="bi bi-lightning-charge-fill" style="color:#f59e0b;"></i>
-                    {{ active_festivals_count }} aktive{{ active_festivals_count|pluralize:",s" }} Helferplan{{ active_festivals_count|pluralize:",ä" }}
+                    {% if active_festivals_count == 1 %}
+                        {{ active_festivals_count }} aktiver Helferplan
+                    {% else %}
+                        {{ active_festivals_count }} aktive Helferpläne
+                    {% endif %}
                 </div>
                 {% else %}
                 <div class="stat-badge">

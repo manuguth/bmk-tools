@@ -6,7 +6,11 @@ from . import views
 app_name = "festival"
 
 urlpatterns = [
-    path("", RedirectView.as_view(url="/event/admin/", permanent=False), name="landing"),
+    path(
+        "",
+        RedirectView.as_view(pattern_name="festival:admin_festival_list", permanent=False),
+        name="landing",
+    ),
     path("admin/", views.admin_festival_list, name="admin_festival_list"),
     path("<slug:festival_slug>/admin/", views.admin_overview, name="admin_overview"),
     path("<slug:festival_slug>/admin/edit/", views.admin_edit, name="admin_edit"),
