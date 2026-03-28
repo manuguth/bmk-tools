@@ -145,6 +145,17 @@
                         </div>
                     </div>
                 </div>
+                {# Late collection flag #}
+                <div class="mb-4">
+                    <div class="form-check">
+                        {{ form.late_collection }}
+                        <label class="form-check-label fw-semibold" for="{{ form.late_collection.id_for_label }}"
+                               style="color: var(--tickets-navy);">
+                            <i class="bi bi-clock-history me-1" style="color: #d97706;"></i>{{ form.late_collection.label }}
+                        </label>
+                    </div>
+                    <div class="form-text ms-4">{{ form.late_collection.help_text }}</div>
+                </div>
 
                 {% if form.non_field_errors %}
                 <div class="alert alert-danger py-2 small">{{ form.non_field_errors }}</div>

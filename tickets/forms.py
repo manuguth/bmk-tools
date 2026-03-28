@@ -112,6 +112,16 @@ class ConcertForm(forms.ModelForm):
         label="Einlass",
         help_text="Optional: Einlasszeit (z.B. 18:30 Uhr)",
     )
+    collection_deadline = forms.TimeField(
+        input_formats=["%H:%M"],
+        required=False,
+        widget=forms.TimeInput(
+            attrs={"class": "form-control", "type": "time"},
+            format="%H:%M",
+        ),
+        label="Tickets abholen bis",
+        help_text="Optional: Spätester Zeitpunkt zum Abholen an der Abendkasse (z.B. 20:30 Uhr). Nicht abgeholte Plätze können danach freigegeben werden.",
+    )
 
     class Meta:
         model = Concert
@@ -121,6 +131,7 @@ class ConcertForm(forms.ModelForm):
             "description",
             "date",
             "einlass",
+            "collection_deadline",
             "venue",
             "adult_price",
             "child_price",
@@ -251,6 +262,7 @@ class AdminOrderEditForm(forms.ModelForm):
             "status",
             "paid",
             "collected",
+            "late_collection",
         ]
         widgets = {
             "customer_firstname": forms.TextInput(attrs={"class": "form-control"}),
@@ -263,6 +275,7 @@ class AdminOrderEditForm(forms.ModelForm):
             "status": forms.Select(attrs={"class": "form-select"}),
             "paid": forms.CheckboxInput(attrs={"class": "form-check-input"}),
             "collected": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+            "late_collection": forms.CheckboxInput(attrs={"class": "form-check-input"}),
         }
         labels = {
             "customer_firstname": "Vorname",
@@ -275,6 +288,7 @@ class AdminOrderEditForm(forms.ModelForm):
             "status": "Status",
             "paid": "Bezahlt",
             "collected": "Abgeholt",
+            "late_collection": "Späte Abholung (Deadline-Ausnahme)",
         }
 
     def clean(self):
