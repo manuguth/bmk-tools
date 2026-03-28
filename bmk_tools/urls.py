@@ -18,17 +18,18 @@ from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import urls as auth_urls
 from django.views.generic import TemplateView
-from info_mail import views
+from bmk_tools import views
+from info_mail import views as info_mail_views
 
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("festival/", include(("festival.urls", "festival"), namespace="festival")),
     path("event/", include(("festival.urls", "festival"), namespace="event")),
-    path("", include("info_mail.urls")),
+    path("", views.home, name="home"),
     path("info_mails/", include("info_mail.urls")),
     path("accounts/", include(auth_urls)),
-    path("aktuelle-themen", views.latest_info_mail, name="latest_info_mail"),
+    path("aktuelle-themen", info_mail_views.latest_info_mail, name="latest_info_mail"),
     path("tickets/", include(("tickets.urls", "tickets"), namespace="tickets")),
     path("bring/", include(("bring_list.urls", "bring_list"), namespace="bring_list")),
     path("robots.txt", TemplateView.as_view(template_name="robots.txt", content_type="text/plain")),

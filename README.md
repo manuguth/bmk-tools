@@ -52,3 +52,4 @@ set -a; source .env; set +a
   * everyone with access can edit and send from here
   * add mechanics to avoid duplicate sending
 * Add testcases in PR GitHub action
+* implement Entra for login

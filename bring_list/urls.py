@@ -1,8 +1,10 @@
 from django.urls import path
+from django.views.generic import RedirectView
 
 from . import views
 
 urlpatterns = [
+    path("", RedirectView.as_view(url="/bring/admin/", permanent=False), name="landing"),
     # Public
     path("<uuid:public_token>/", views.list_view, name="list"),
     path("<uuid:public_token>/add/", views.add_item_view, name="add_item"),
