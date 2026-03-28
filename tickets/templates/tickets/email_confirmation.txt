@@ -26,6 +26,12 @@ WICHTIG FUER DEN KONZERTABEND
 {% if order.paid %}- ZAHLUNG: BEREITS ERHALTEN – VIELEN DANK!{% else %}- WICHTIG: DIE ZAHLUNG ERFOLGT AUSSCHLIESSLICH VOR ORT AN DER ABENDKASSE.{% endif %}
 - QR-Code für den Einlass: {% if qr_url %}{{ qr_url }}{% else %}nicht verfügbar{% endif %}
 - Falls der QR-Code nicht verfügbar ist: Bestätigungscode {{ order.confirmation_code }}
+{% if order.concert.collection_deadline %}
+!!! ABHOLDEADLINE: Bitte holen Sie Ihre Karten bis {{ order.concert.collection_deadline|time:"H:i" }} Uhr ab!
+    Nicht abgeholte Karten koennen danach freigegeben werden.
+    Kommen Sie spaeter? Schreiben Sie uns: tickets@bmk-buggingen.de
+    oder vermerken Sie es in den Anmerkungen bei der Bestellung.
+{% endif %}
 Wenn Sie Fragen haben, antworten Sie einfach auf diese E-Mail.
 
 Viele Grüße

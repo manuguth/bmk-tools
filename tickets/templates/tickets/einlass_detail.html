@@ -159,6 +159,19 @@
             {% endif %}
         </div>
     </div>
+    {% if order.late_collection %}
+    <div class="d-flex align-items-start gap-2 mb-3 p-3 rounded-3"
+         style="background:#fff7ed; border:2px solid #fed7aa;">
+        <i class="bi bi-clock-history mt-1" style="font-size:1.3rem; color:#d97706; flex-shrink:0;"></i>
+        <div>
+            <div class="fw-bold" style="color:#9a3412;">Späte Abholung – Deadline-Ausnahme aktiv</div>
+            <div class="small mt-1" style="color:#7c2d12;">
+                Dieser Kunde hat angekündigt, nach der Abholdeadline einzutreffen.
+                Die reservierten Plätze <strong>dürfen nicht freigegeben</strong> werden.
+            </div>
+        </div>
+    </div>
+    {% endif %}
     {% if order.paid %}
     <div class="paid-banner-prominent mb-4">
         <i class="bi bi-check-circle-fill" style="font-size: 2rem; color: #1d4ed8;"></i>
@@ -211,6 +224,15 @@
                     {{ order.get_status_display }}
                 </span>
             </dd>
+
+            {% if order.late_collection %}
+            <dt class="col-5" style="color: var(--tickets-muted); font-weight: 500;">Abholung</dt>
+            <dd class="col-7 mb-0">
+                <span style="color:#9a3412; font-weight:700; font-size:0.88rem;">
+                    <i class="bi bi-clock-history me-1" style="color:#d97706;"></i>Späte Abholung – Plätze nicht freigeben
+                </span>
+            </dd>
+            {% endif %}
 
             <dt class="col-5" style="color: var(--tickets-muted); font-weight: 500;">Code</dt>
             <dd class="col-7 mb-0">

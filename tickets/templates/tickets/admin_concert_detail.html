@@ -112,6 +112,12 @@
                         {% if form.einlass.errors %}<div class="text-danger small mt-1">{{ form.einlass.errors.0 }}</div>{% endif %}
                     </div>
                     <div class="col-12">
+                        <label class="form-label" for="{{ form.collection_deadline.id_for_label }}">{{ form.collection_deadline.label }}</label>
+                        {{ form.collection_deadline }}
+                        <div class="form-text">{{ form.collection_deadline.help_text }}</div>
+                        {% if form.collection_deadline.errors %}<div class="text-danger small mt-1">{{ form.collection_deadline.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-12">
                         <label class="form-label" for="{{ form.venue.id_for_label }}">{{ form.venue.label }}</label>
                         {{ form.venue }}
                     </div>

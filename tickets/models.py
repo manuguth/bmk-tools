@@ -21,6 +21,11 @@ class Concert(models.Model):
         blank=True,
         verbose_name="Einlass",
     )
+    collection_deadline = models.TimeField(
+        null=True,
+        blank=True,
+        verbose_name="Tickets abholen bis",
+    )
     venue = models.CharField(max_length=255, verbose_name="Veranstaltungsort")
     adult_price = models.DecimalField(
         max_digits=6, decimal_places=2, verbose_name="Preis Erwachsene (€)"
@@ -191,6 +196,11 @@ class TicketOrder(models.Model):
     paid = models.BooleanField(
         default=False,
         verbose_name="Bezahlt",
+    )
+    late_collection = models.BooleanField(
+        default=False,
+        verbose_name="Späte Abholung (nach Deadline)",
+        help_text="Markiert Bestellungen, bei denen der Kunde nach der Abholdeadline eintrifft. Diese Plätze werden nicht freigegeben.",
     )
     class Meta:
         ordering = ["-created_at"]
