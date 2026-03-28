@@ -4,7 +4,7 @@ from django.views.generic import RedirectView
 from . import views
 
 urlpatterns = [
-    path("", RedirectView.as_view(pattern_name="admin_overview", permanent=False), name="landing"),
+    path("", RedirectView.as_view(pattern_name="bring_list:admin_overview", permanent=False), name="landing"),
     # Public
     path("<uuid:public_token>/", views.list_view, name="list"),
     path("<uuid:public_token>/add/", views.add_item_view, name="add_item"),

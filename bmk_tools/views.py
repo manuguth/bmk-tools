@@ -35,12 +35,15 @@ def home(request):
     """
     today = date.today()
 
-    # Tickets: active / upcoming concerts
-    active_concerts = Concert.objects.filter(is_active=True).order_by("date")
-    next_concert = active_concerts.filter(date__date__gte=today).first()
+    # Tickets: active / upcoming concerts – materialise once to avoid extra
+    # count() + iteration queries.
+    active_concerts = list(Concert.objects.filter(is_active=True).order_by("date"))
+    next_concert = next(
+        (c for c in active_concerts if c.date.date() >= today), None
+    )
 
-    # Festival: currently active festivals
-    active_festivals = Festival.objects.filter(status="active").order_by("start_date")
+    # Festival: currently active festivals – same single-query approach.
+    active_festivals = list(Festival.objects.filter(status="active").order_by("start_date"))
 
     # Bring-Listen: total list count
     bring_list_count = BringList.objects.count()
@@ -51,9 +54,9 @@ def home(request):
     context = {
         "active_concerts": active_concerts,
         "next_concert": next_concert,
-        "active_concerts_count": active_concerts.count(),
+        "active_concerts_count": len(active_concerts),
         "active_festivals": active_festivals,
-        "active_festivals_count": active_festivals.count(),
+        "active_festivals_count": len(active_festivals),
         "bring_list_count": bring_list_count,
         "latest_mail": latest_mail,
         "today": today,
