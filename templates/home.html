@@ -133,7 +133,11 @@
                 {% elif active_concerts_count > 0 %}
                 <div class="stat-badge">
                     <i class="bi bi-ticket-perforated"></i>
-                    {{ active_concerts_count }} aktive{{ active_concerts_count|pluralize:",s" }} Konzert{{ active_concerts_count|pluralize:","}}
+                    {% if active_concerts_count == 1 %}
+                    {{ active_concerts_count }} aktives Konzert
+                    {% else %}
+                    {{ active_concerts_count }} aktive Konzerte
+                    {% endif %}
                 </div>
                 {% else %}
                 <div class="stat-badge">
