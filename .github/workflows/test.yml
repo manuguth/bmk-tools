@@ -1,0 +1,80 @@
+name: Tests
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    name: test
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: bmk_test
+          POSTGRES_USER: bmk
+          POSTGRES_PASSWORD: bmk_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U bmk"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DB_NAME: bmk_test
+      DB_USER: bmk
+      DB_PASSWORD: bmk_password
+      DB_HOST: localhost
+      DB_PORT: "5432"
+      DJANGO_SETTINGS_MODULE: bmk_tools.settings
+      SECRET_KEY: ci-insecure-secret-key-for-testing-only
+      DEFAULT_FROM_EMAIL: noreply@example.com
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-test.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -r requirements-test.txt
+
+      - name: Run tests with coverage
+        run: |
+          coverage run manage.py test --verbosity=2
+
+      - name: Generate coverage reports
+        run: |
+          coverage xml
+          coverage html
+          coverage report
+
+      - name: Upload HTML coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-html
+          path: htmlcov/
+          retention-days: 14
+
+      - name: Upload XML coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-xml
+          path: coverage.xml
+          retention-days: 14
