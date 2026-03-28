@@ -3,7 +3,7 @@ Scanning QR codes
 
 ## Improvements
 * stats menu for Einlass
-  * how many people checkded in, how many are left
+  * how many people checked in, how many are left
 * Add a text Karten sind reserviert bis 15h45
 
 

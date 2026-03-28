@@ -3,8 +3,8 @@
 
 ## Improvements - ToDos
 
-* mobile optmisations
+* mobile optimisations
   * website moves left and right on phone
-  * edit mode looks weird not optimised
-  * now elements are too narrow to each other on mobile view
+  * edit mode looks weird and is not well optimised
+  * UI elements are too close together in the mobile view
 * custom url slug - for readability
