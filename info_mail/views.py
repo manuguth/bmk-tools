@@ -21,11 +21,6 @@ from datetime import date
 
 
 @login_required
-def home(request):
-    return render(request, "info_mail/home.html", {})
-
-
-@login_required
 def info_mail_index(request: HttpRequest) -> HttpResponse:
     weekly_mails = WeeklyMails.objects.order_by("-year", "-week")
     context = {"weekly_mails": weekly_mails}

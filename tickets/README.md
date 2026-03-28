@@ -5,5 +5,6 @@ Scanning QR codes
 * stats menu for Einlass
   * how many people checked in, how many are left
 * Add a text Karten sind reserviert bis 15h45
+* website visiting stats
 
 
