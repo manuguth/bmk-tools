@@ -1,4 +1,5 @@
 from django.contrib.admin.views.decorators import staff_member_required
+from django.db.models import Count
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 
@@ -90,6 +91,10 @@ def edit_item_view(request, public_token, edit_token):
     if bring_list.edit_mode == "insert_only":
         return HttpResponseForbidden("Bearbeiten ist für diese Liste nicht erlaubt.")
 
+    if bring_list.edit_mode == "own":
+        if str(edit_token) not in _owned_tokens(request, public_token):
+            return HttpResponseForbidden("Du kannst nur deine eigenen Einträge bearbeiten.")
+
     if request.method == "POST":
         form = BringItemForm(request.POST, instance=item, show_quantity=bring_list.show_quantity)
         if form.is_valid():
@@ -116,7 +121,7 @@ def edit_item_view(request, public_token, edit_token):
 
 @staff_member_required
 def admin_overview_view(request):
-    lists = BringList.objects.all()
+    lists = BringList.objects.annotate(item_count=Count("items"))
     return render(request, "bring_list/admin_overview.html", {"lists": lists})
 
 
