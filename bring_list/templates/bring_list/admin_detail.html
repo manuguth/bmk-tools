@@ -1,0 +1,308 @@
+{% extends "bring_list/base.html" %}
+
+{% block title %}{{ bring_list.name }} – Admin{% endblock %}
+
+{% block extra_head %}
+<style>
+    .page-header {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        border-left: 5px solid var(--festival-primary);
+        padding: 1.75rem 2rem;
+        margin-bottom: 1.5rem;
+        animation: fadeInDown 0.6s ease;
+    }
+
+    .page-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, var(--festival-primary) 0%, var(--festival-secondary) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.25rem;
+    }
+
+    .page-meta { color: #6b7280; font-size: 0.9rem; }
+
+    .mode-badge {
+        display: inline-block; padding: 0.4rem 0.9rem;
+        border-radius: 20px; font-size: 0.8rem; font-weight: 600;
+    }
+
+    .mode-badge.free    { background: #d1fae5; color: #10b981; }
+    .mode-badge.own     { background: #fef3c7; color: #d97706; }
+    .mode-badge.insert_only { background: #e5e7eb; color: #6b7280; }
+
+    .share-box {
+        background: #f0f9ff;
+        border-left: 4px solid var(--festival-primary);
+        border-radius: 8px;
+        padding: 1rem 1.25rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .share-url {
+        font-family: monospace;
+        font-size: 0.85rem;
+        color: #1e40af;
+        word-break: break-all;
+        flex: 1;
+    }
+
+    .btn-copy {
+        background: linear-gradient(135deg, var(--festival-primary) 0%, var(--festival-secondary) 100%);
+        color: white; border: none;
+        padding: 0.4rem 1rem;
+        border-radius: 6px; font-size: 0.85rem; font-weight: 600;
+        cursor: pointer; transition: all 0.3s ease; white-space: nowrap;
+    }
+
+    .btn-copy:hover { box-shadow: 0 4px 12px rgba(99,102,241,0.4); transform: translateY(-2px); }
+
+    .items-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        overflow: hidden;
+        margin-bottom: 2rem;
+        animation: fadeInUp 0.6s ease 0.1s backwards;
+    }
+
+    .items-card-header {
+        background: linear-gradient(135deg, var(--festival-primary) 0%, var(--festival-secondary) 100%);
+        color: white;
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .items-card-header h3 { font-size: 1rem; font-weight: 600; margin: 0; }
+
+    .items-table { width: 100%; border-collapse: collapse; }
+
+    .items-table thead tr {
+        background: #f9fafb;
+    }
+
+    .items-table thead th {
+        padding: 0.75rem 1.25rem;
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #6b7280;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    .items-table tbody td {
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .items-table tbody tr:last-child td { border-bottom: none; }
+
+    .btn-edit-sm {
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        color: white; border: none;
+        padding: 0.3rem 0.75rem;
+        border-radius: 6px; font-size: 0.78rem; font-weight: 600;
+        text-decoration: none; display: inline-block;
+        transition: all 0.3s ease;
+    }
+
+    .btn-edit-sm:hover { color:white; box-shadow: 0 4px 12px rgba(139,92,246,0.4); transform:translateY(-2px); }
+
+    .btn-delete-sm {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white; border: none;
+        padding: 0.3rem 0.75rem;
+        border-radius: 6px; font-size: 0.78rem; font-weight: 600;
+        cursor: pointer; transition: all 0.3s ease;
+    }
+
+    .btn-delete-sm:hover { box-shadow: 0 4px 12px rgba(239,68,68,0.4); transform:translateY(-2px); }
+
+    .btn-add-item {
+        background: linear-gradient(135deg, var(--festival-success) 0%, #059669 100%);
+        color: white; border: none;
+        padding: 0.4rem 1rem;
+        border-radius: 6px; font-size: 0.85rem; font-weight: 600;
+        text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-add-item:hover { color:white; box-shadow: 0 4px 12px rgba(16,185,129,0.4); transform:translateY(-2px); }
+
+    .action-bar {
+        display: flex; gap: 0.75rem; flex-wrap: wrap;
+        margin-bottom: 1.5rem;
+    }
+
+    .btn-secondary-action {
+        background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+        color: white; border: none;
+        padding: 0.6rem 1.25rem;
+        border-radius: 8px; font-size: 0.875rem; font-weight: 600;
+        text-decoration: none; display: inline-flex; align-items: center; gap: 0.4rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-secondary-action:hover { color:white; box-shadow: 0 4px 12px rgba(107,114,128,0.4); transform:translateY(-2px); }
+
+    .btn-primary-action {
+        background: linear-gradient(135deg, var(--festival-primary) 0%, var(--festival-secondary) 100%);
+        color: white; border: none;
+        padding: 0.6rem 1.25rem;
+        border-radius: 8px; font-size: 0.875rem; font-weight: 600;
+        text-decoration: none; display: inline-flex; align-items: center; gap: 0.4rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary-action:hover { color:white; box-shadow: 0 4px 12px rgba(99,102,241,0.4); transform:translateY(-2px); }
+
+    .empty-state { text-align:center; padding: 3rem 2rem; color:#6b7280; }
+    .empty-state i { font-size:2.5rem; color:#d1d5db; margin-bottom:0.75rem; }
+</style>
+{% endblock %}
+
+{% block page_content %}
+<!-- Back + actions -->
+<div class="action-bar">
+    <a href="{% url 'bring_list:admin_overview' %}" class="btn-secondary-action">
+        <i class="bi bi-arrow-left"></i>Übersicht
+    </a>
+    <a href="{% url 'bring_list:admin_edit_list' slug=bring_list.slug %}" class="btn-primary-action">
+        <i class="bi bi-pencil"></i>Liste bearbeiten
+    </a>
+</div>
+
+<!-- Page header -->
+<div class="page-header">
+    <div class="d-flex align-items-start justify-content-between flex-wrap gap-2">
+        <div>
+            <div class="page-title">{{ bring_list.name }}</div>
+            {% if bring_list.date %}
+            <div class="page-meta"><i class="bi bi-calendar3 me-1"></i>{{ bring_list.date|date:"d. F Y" }}</div>
+            {% endif %}
+            {% if bring_list.description %}
+            <div class="page-meta mt-1">{{ bring_list.description }}</div>
+            {% endif %}
+        </div>
+        <div>
+            {% if bring_list.edit_mode == "free" %}
+                <span class="mode-badge free"><i class="bi bi-pencil-fill me-1"></i>Frei bearbeitbar</span>
+            {% elif bring_list.edit_mode == "own" %}
+                <span class="mode-badge own"><i class="bi bi-person-lock me-1"></i>Eigene Einträge</span>
+            {% else %}
+                <span class="mode-badge insert_only"><i class="bi bi-lock-fill me-1"></i>Nur hinzufügen</span>
+            {% endif %}
+            <!-- Quantity toggle -->
+            <form method="post" action="{% url 'bring_list:admin_toggle_quantity' slug=bring_list.slug %}" style="display:inline">
+                {% csrf_token %}
+                <button type="submit" title="Mengenfeld umschalten"
+                    style="border:none;background:none;padding:0;cursor:pointer">
+                    {% if bring_list.show_quantity %}
+                        <span class="mode-badge" style="background:#dbeafe;color:#2563eb">
+                            <i class="bi bi-hash me-1"></i>Menge: an
+                        </span>
+                    {% else %}
+                        <span class="mode-badge" style="background:#f3f4f6;color:#9ca3af">
+                            <i class="bi bi-slash-circle me-1"></i>Menge: aus
+                        </span>
+                    {% endif %}
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Shareable link -->
+<div class="share-box">
+    <i class="bi bi-link-45deg" style="color:var(--festival-primary);font-size:1.2rem;flex-shrink:0"></i>
+    <div style="flex:1">
+        <div style="font-weight:600;color:#1e40af;font-size:0.85rem;margin-bottom:0.2rem">Teilnahme-Link</div>
+        <div class="share-url" id="shareUrl">{{ request.scheme }}://{{ request.get_host }}{% url 'bring_list:list' public_token=bring_list.public_token %}</div>
+    </div>
+    <button class="btn-copy" onclick="copyShareUrl()">
+        <i class="bi bi-clipboard me-1"></i>Kopieren
+    </button>
+</div>
+
+<!-- Items -->
+<div class="items-card">
+    <div class="items-card-header">
+        <h3><i class="bi bi-list-ul me-2"></i>Einträge ({{ items|length }})</h3>
+        <a href="{% url 'bring_list:list' public_token=bring_list.public_token %}" class="btn-add-item" target="_blank">
+            <i class="bi bi-box-arrow-up-right"></i>Öffentliche Liste
+        </a>
+    </div>
+
+    {% if items %}
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th>Was</th>
+                <th>Menge</th>
+                <th>Name</th>
+                <th>Anmerkung</th>
+                <th style="text-align:right">Aktionen</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr onmouseover="this.style.backgroundColor='#f9fafb'" onmouseout="this.style.backgroundColor='white'">
+                <td style="font-weight:600">{{ item.label }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.contributor_name }}</td>
+                <td style="color:#6b7280;font-size:0.9rem">{{ item.note|default:"–" }}</td>
+                <td style="text-align:right">
+                    <div class="d-flex gap-1 justify-content-end">
+                        <a href="{% url 'bring_list:admin_edit_item' slug=bring_list.slug pk=item.pk %}"
+                           class="btn-edit-sm">
+                            <i class="bi bi-pencil me-1"></i>Bearbeiten
+                        </a>
+                        <form method="post"
+                              action="{% url 'bring_list:admin_delete_item' slug=bring_list.slug pk=item.pk %}"
+                              onsubmit="return confirm('Eintrag wirklich löschen?')"
+                              style="display:inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-delete-sm">
+                                <i class="bi bi-trash me-1"></i>Löschen
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <div><i class="bi bi-bag-plus"></i></div>
+        <p style="font-weight:600;color:var(--festival-dark);margin-bottom:0.25rem">Noch keine Einträge</p>
+        <p>Teile den Link oben, damit Teilnehmer Einträge hinzufügen können.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function copyShareUrl() {
+    const url = document.getElementById('shareUrl').textContent.trim();
+    navigator.clipboard.writeText(url).then(() => {
+        const btn = document.querySelector('.btn-copy');
+        const orig = btn.innerHTML;
+        btn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Kopiert!';
+        setTimeout(() => { btn.innerHTML = orig; }, 2000);
+    });
+}
+</script>
+{% endblock %}

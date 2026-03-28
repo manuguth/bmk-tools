@@ -1,0 +1,381 @@
+{% extends "bring_list/base.html" %}
+
+{% block title %}{{ bring_list.name }}{% endblock %}
+
+{% block extra_head %}
+<style>
+    .list-hero {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        border-left: 5px solid var(--festival-primary);
+        padding: 1.25rem 1.25rem;
+        margin-bottom: 1rem;
+        animation: fadeInDown 0.6s ease;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    @media (min-width: 576px) {
+        .list-hero { padding: 1.75rem 2rem; gap: 1rem; margin-bottom: 2rem; }
+        .items-card { margin-bottom: 2rem; }
+    }
+
+    .list-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, var(--festival-primary) 0%, var(--festival-secondary) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.25rem;
+    }
+
+    .list-meta { color: #6b7280; font-size: 0.95rem; }
+
+    .mode-badge {
+        display: inline-block;
+        padding: 0.4rem 0.9rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .mode-badge.free    { background: #d1fae5; color: #10b981; }
+    .mode-badge.own     { background: #fef3c7; color: #d97706; }
+    .mode-badge.insert_only { background: #e5e7eb; color: #6b7280; }
+
+    .items-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        overflow: hidden;
+        margin-bottom: 1rem;
+        animation: fadeInUp 0.6s ease 0.1s backwards;
+    }
+
+    .items-table { width: 100%; border-collapse: collapse; }
+
+    .items-table thead tr {
+        background: linear-gradient(135deg, var(--festival-primary) 0%, var(--festival-secondary) 100%);
+        color: white;
+    }
+
+    .items-table thead th {
+        padding: 1rem 1.25rem;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .items-table tbody td {
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid #e5e7eb;
+        color: var(--festival-dark);
+    }
+
+    .items-table tbody tr:last-child td { border-bottom: none; }
+
+    /* --- Mobile compact table: single line per row --- */
+    @media (max-width: 575.98px) {
+        .items-table thead { display: none; }
+
+        .items-table tbody tr {
+            display: flex;
+            flex-wrap: nowrap;
+            align-items: center;
+            padding: 0.35rem 0.75rem;
+            border-bottom: 1px solid #e5e7eb;
+            gap: 0 0.3rem;
+            min-height: 0;
+        }
+
+        .items-table tbody tr:last-child { border-bottom: none; }
+
+        .items-table tbody td { padding: 0; border: none; font-size: 0.88rem; line-height: 1.2; }
+
+        /* Label grows to fill available space, truncates if necessary */
+        .td-label {
+            flex: 1 1 0;
+            min-width: 0;
+            font-weight: 600;
+            color: var(--festival-dark);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .td-qty {
+            flex: 0 0 auto;
+            font-size: 0.7rem;
+            color: var(--festival-primary);
+            background: #ede9fe;
+            border-radius: 10px;
+            padding: 0.05rem 0.35rem;
+            white-space: nowrap;
+        }
+
+        .td-name {
+            flex: 0 0 auto;
+            color: #6b7280;
+            font-size: 0.78rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 30vw;
+        }
+        .td-name::before { content: '· '; color: #d1d5db; }
+
+        /* Note: inline icon, no new row */
+        .td-note { flex: 0 0 auto; }
+        .note-desktop { display: none; }
+        .note-mobile { display: inline-block; position: relative; }
+
+        .note-mobile summary {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            cursor: pointer;
+            list-style: none;
+            display: inline-flex;
+            align-items: center;
+            padding: 0 0.1rem;
+            user-select: none;
+        }
+        .note-mobile summary::-webkit-details-marker { display: none; }
+        .note-mobile .note-text {
+            position: absolute;
+            right: 0;
+            top: 1.4rem;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            font-size: 0.78rem;
+            color: #374151;
+            padding: 0.4rem 0.6rem;
+            white-space: normal;
+            width: 180px;
+            z-index: 10;
+        }
+
+        .td-actions { flex: 0 0 auto; }
+    }
+
+    @media (min-width: 576px) { .note-mobile { display: none; } }
+
+    /* Mobile spacing */
+    @media (max-width: 575.98px) {
+        .add-card h3 { font-size: 1rem; margin-bottom: 0.6rem; padding-bottom: 0.4rem; }
+        .form-group { margin-bottom: 0.6rem; }
+        .form-label { margin-bottom: 0.25rem !important; font-size: 0.82rem; }
+        .btn-primary-gradient { width: 100%; padding: 0.65rem 1rem; }
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: #6b7280;
+    }
+
+    .empty-state i { font-size: 3rem; color: #d1d5db; margin-bottom: 1rem; }
+
+    .add-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        padding: 1.25rem 1.25rem;
+        animation: fadeInUp 0.6s ease 0.2s backwards;
+    }
+
+    @media (min-width: 576px) {
+        .add-card { padding: 1.75rem 2rem; }
+    }
+
+    .add-card h3 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--festival-dark);
+        margin-bottom: 1.25rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    .form-group { margin-bottom: 1rem; }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: var(--festival-dark);
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .form-error { color: #dc2626; font-size: 0.85rem; margin-top: 0.35rem; }
+
+    .btn-primary-gradient {
+        background: linear-gradient(135deg, var(--festival-primary) 0%, var(--festival-secondary) 100%);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.75rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary-gradient:hover {
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        box-shadow: 0 4px 12px rgba(99,102,241,0.4);
+        transform: translateY(-2px);
+    }
+
+    .btn-edit {
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        color: white;
+        border: none;
+        padding: 0.35rem 0.9rem;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+    }
+
+    .btn-edit:hover {
+        color: white;
+        box-shadow: 0 4px 12px rgba(139,92,246,0.4);
+        transform: translateY(-2px);
+    }
+</style>
+{% endblock %}
+
+{% block page_content %}
+<!-- List header -->
+<div class="list-hero">
+    <div>
+        <div class="list-title">{{ bring_list.name }}</div>
+        {% if bring_list.date %}
+        <div class="list-meta">
+            <i class="bi bi-calendar3 me-1" style="color:var(--festival-primary)"></i>
+            {{ bring_list.date|date:"d. F Y" }}
+        </div>
+        {% endif %}
+        {% if bring_list.description %}
+        <div class="list-meta mt-1">{{ bring_list.description }}</div>
+        {% endif %}
+    </div>
+    <div>
+        {% if bring_list.edit_mode == "free" %}
+            <span class="mode-badge free"><i class="bi bi-pencil-fill me-1"></i>Frei bearbeitbar</span>
+        {% elif bring_list.edit_mode == "own" %}
+            <span class="mode-badge own"><i class="bi bi-person-lock me-1"></i>Eigene Einträge</span>
+        {% else %}
+            <span class="mode-badge insert_only"><i class="bi bi-lock-fill me-1"></i>Nur hinzufügen</span>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Items table -->
+<div class="items-card">
+    {% if items %}
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th>Was</th>
+                {% if bring_list.show_quantity %}<th>Menge</th>{% endif %}
+                <th>Name</th>
+                <th>Anmerkung</th>
+                {% if bring_list.edit_mode != "insert_only" %}<th></th>{% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr onmouseover="this.style.backgroundColor='#f9fafb'" onmouseout="this.style.backgroundColor='white'">
+                <td class="td-label" data-label="Was">{{ item.label }}</td>
+                {% if bring_list.show_quantity %}<td class="td-qty" data-label="Menge">{{ item.quantity }}</td>{% endif %}
+                <td class="td-name" data-label="Name">{{ item.contributor_name }}</td>
+                <td class="td-note" data-label="Anmerkung" style="color:#6b7280;font-size:0.9rem">
+                    <span class="note-desktop">{{ item.note|default:"–" }}</span>
+                    {% if item.note %}
+                    <details class="note-mobile">
+                        <summary><i class="bi bi-chat-text"></i></summary>
+                        <span class="note-text">{{ item.note }}</span>
+                    </details>
+                    {% endif %}
+                </td>
+                {% if bring_list.edit_mode != "insert_only" %}
+                <td class="td-actions" data-label="" style="text-align:right">
+                    {% if bring_list.edit_mode == "free" or item.edit_token|stringformat:"s" in owned %}
+                    <a class="btn-edit"
+                       href="{% url 'bring_list:edit_item' public_token=bring_list.public_token edit_token=item.edit_token %}"
+                       title="Bearbeiten">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                    {% endif %}
+                </td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <div><i class="bi bi-bag-plus"></i></div>
+        <p style="font-size:1.05rem;font-weight:600;margin-bottom:0.25rem;color:var(--festival-dark)">Noch keine Einträge</p>
+        <p>Füge gleich das erste Item hinzu!</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Add item form -->
+<div class="add-card">
+    <h3><i class="bi bi-plus-circle me-2" style="color:var(--festival-primary)"></i>Eintrag hinzufügen</h3>
+    <form method="post" action="{% url 'bring_list:add_item' public_token=bring_list.public_token %}">
+        {% csrf_token %}
+        <div class="row gy-2 gx-3">
+            <div class="col-md-5">
+                <div class="form-group">
+                    <label class="form-label">{{ form.label.label }}</label>
+                    {{ form.label }}
+                    {% for e in form.label.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+                </div>
+            </div>
+            {% if bring_list.show_quantity %}
+            <div class="col-md-2">
+                <div class="form-group">
+                    <label class="form-label">{{ form.quantity.label }}</label>
+                    {{ form.quantity }}
+                    {% for e in form.quantity.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            <div class="col-md-{% if bring_list.show_quantity %}5{% else %}7{% endif %}">
+                <div class="form-group">
+                    <label class="form-label">{{ form.contributor_name.label }}</label>
+                    {{ form.contributor_name }}
+                    {% for e in form.contributor_name.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="form-group">
+                    <label class="form-label">{{ form.note.label }}</label>
+                    {{ form.note }}
+                    {% for e in form.note.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="mt-2">
+            <button type="submit" class="btn-primary-gradient">
+                <i class="bi bi-plus-lg me-1"></i>Hinzufügen
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

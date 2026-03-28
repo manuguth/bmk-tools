@@ -44,3 +44,11 @@ next steps:
 ```
 set -a; source .env; set +a
 ```
+
+# New Features - ToDos
+
+* Adding overview page with all apps
+* integrating weekly newsletters into webapp
+  * everyone with access can edit and send from here
+  * add mechanics to avoid duplicate sending
+* Add testcases in PR GitHub action
