@@ -1,6 +1,25 @@
 [build-system]
 requires = ["setuptools", "wheel"]
 
+[tool.coverage.run]
+source = [".",]
+omit = [
+    "*/migrations/*",
+    "manage.py",
+    "*/asgi.py",
+    "*/wsgi.py",
+    "bmk_tools/production.py",
+    "playground/*",
+    "get_access_token.py",
+    "pw_convert-hex.py",
+]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+fail_under = 60
+
 [tool.black]
 line-length = 88
 target-version = ['py38']
