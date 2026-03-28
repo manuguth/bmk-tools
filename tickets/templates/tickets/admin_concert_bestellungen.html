@@ -126,6 +126,7 @@
                     <th>Code</th>
                     <th class="text-center">Abgeholt</th>
                     <th class="text-center">Bezahlt</th>
+                    <th class="text-center">Spät</th>
                 </tr>
             </thead>
             <tbody>
@@ -177,6 +178,13 @@
                     <td class="text-center">
                         {% if order.paid %}
                             <i class="bi bi-check-circle-fill" style="color: #2563eb;" title="Bezahlt"></i>
+                        {% else %}
+                            <span class="text-muted">–</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        {% if order.late_collection %}
+                            <i class="bi bi-clock-history" style="color: #d97706;" title="Späte Abholung – Deadline-Ausnahme aktiv"></i>
                         {% else %}
                             <span class="text-muted">–</span>
                         {% endif %}
