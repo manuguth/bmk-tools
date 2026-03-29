@@ -6,4 +6,4 @@ Scanning QR codes
   * how many people checked in, how many are left
 * website visiting stats
 * setting when to close online selling
-
+* create manual

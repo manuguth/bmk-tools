@@ -696,7 +696,7 @@ def einlass_scanner(request):
     today = date_type.today()
     active_concerts = Concert.objects.filter(is_active=True).order_by("date")
     # Determine if there is a single direct target for the Abendkasse button.
-    today_concerts = [c for c in active_concerts if c.date == today]
+    today_concerts = [c for c in active_concerts if localtime(c.date).date() == today]
     if active_concerts.count() == 1:
         abendkasse_direct = active_concerts.first()
     elif len(today_concerts) == 1:
@@ -806,33 +806,47 @@ def einlass_mark_collected(request, confirmation_code):
     raw_adult = max(0, raw_adult)
     raw_child = max(0, raw_child)
 
-    # Extras beyond the original reservation → separate Abendkasse order.
-    # We store the full raw count on the original order for traceability;
-    # adults_sold caps at adult_count via Least() so there's no double-counting.
-    extra_adult = max(0, raw_adult - order.adult_count)
-    extra_child = max(0, raw_child - order.child_count)
-
-    # Extras can only be granted on the first scan (order not yet collected).
-    # Re-scans ignore extras.
-    if order.collected:
-        extra_adult = 0
-        extra_child = 0
-
-    adjusted = raw_adult != order.adult_count or raw_child != order.child_count
-
-    # Price is based only on the original reservation; extras are tracked in the AK order.
-    reserved_adult = min(raw_adult, order.adult_count)
-    reserved_child = min(raw_child, order.child_count)
-    new_price = (
-        reserved_adult * order.concert.adult_price
-        + reserved_child * order.concert.child_price
-    )
-
     mark_paid = request.POST.get("mark_paid") == "1"
 
     with transaction.atomic():
-        # Validate extras against remaining capacity inside the transaction so the
-        # select_for_update lock is held until the writes complete (no TOCTOU race).
+        # Lock the order row so concurrent scans cannot both see collected=False,
+        # both compute extras, and both create duplicate Abendkasse orders.
+        order = TicketOrder.objects.select_for_update().select_related("concert").get(
+            pk=order.pk
+        )
+
+        # Re-check status under the lock in case it changed since the outer fetch.
+        if order.status == "storniert":
+            messages.error(
+                request,
+                f"Bestellung {confirmation_code} ist storniert und kann nicht als abgeholt markiert werden.",
+            )
+            return redirect("tickets:einlass_detail", confirmation_code=confirmation_code)
+
+        # Extras beyond the original reservation → separate Abendkasse order.
+        # Recomputed under the lock so only one concurrent request can pass the
+        # order.collected == False guard.
+        extra_adult = max(0, raw_adult - order.adult_count)
+        extra_child = max(0, raw_child - order.child_count)
+
+        # Extras can only be granted on the first scan (order not yet collected).
+        # Re-scans ignore extras.
+        if order.collected:
+            extra_adult = 0
+            extra_child = 0
+
+        adjusted = raw_adult != order.adult_count or raw_child != order.child_count
+
+        # Price is based only on the original reservation; extras are tracked in the AK order.
+        reserved_adult = min(raw_adult, order.adult_count)
+        reserved_child = min(raw_child, order.child_count)
+        new_price = (
+            reserved_adult * order.concert.adult_price
+            + reserved_child * order.concert.child_price
+        )
+
+        # Validate extras against remaining capacity; lock the Concert row so the
+        # capacity check and the write are atomic.
         if extra_adult > 0 or extra_child > 0:
             concert_locked = Concert.objects.select_for_update().get(pk=order.concert_id)
             if extra_adult > concert_locked.abendkasse_adults_remaining:
