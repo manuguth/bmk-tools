@@ -220,7 +220,7 @@
         <div class="stats-col">
             <div class="stats-cat"><i class="bi bi-person me-1"></i>Erwachsene</div>
             <div class="stats-free {% if adults_remaining == 0 %}sold{% elif adults_remaining <= 5 %}warn{% else %}ok{% endif %}">{{ adults_remaining }}</div>
-            <div class="stats-free-label">frei von {{ max_adults }}</div>
+            <div class="stats-free-label">frei von {{ max_adults }}{% if abendkasse_extra_adults %} <span style="font-size:0.65rem; color:var(--tickets-gold); font-weight:700;">+{{ abendkasse_extra_adults }} Extra</span>{% endif %}</div>
             <div class="stats-bar">
                 {% if max_adults > 0 %}
                 <div class="stats-bar-vvk" style="width:{% widthratio online_adults max_adults 100 %}%"></div>
@@ -237,7 +237,7 @@
         <div class="stats-col">
             <div class="stats-cat"><i class="bi bi-person-hearts me-1"></i>Kinder</div>
             <div class="stats-free {% if children_remaining == 0 %}sold{% elif children_remaining <= 5 %}warn{% else %}ok{% endif %}">{{ children_remaining }}</div>
-            <div class="stats-free-label">frei von {{ max_children }}</div>
+            <div class="stats-free-label">frei von {{ max_children }}{% if abendkasse_extra_children %} <span style="font-size:0.65rem; color:var(--tickets-gold); font-weight:700;">+{{ abendkasse_extra_children }} Extra</span>{% endif %}</div>
             <div class="stats-bar">
                 {% if max_children > 0 %}
                 <div class="stats-bar-vvk" style="width:{% widthratio online_children max_children 100 %}%"></div>

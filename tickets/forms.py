@@ -137,6 +137,8 @@ class ConcertForm(forms.ModelForm):
             "child_price",
             "max_adults",
             "max_children",
+            "abendkasse_extra_adults",
+            "abendkasse_extra_children",
             "is_active",
             "image",
             "color_primary",
@@ -215,6 +217,20 @@ class ConcertForm(forms.ModelForm):
             ),
             "capacity_show_numbers": forms.CheckboxInput(attrs={"class": "form-check-input"}),
             "capacity_split_categories": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+            "abendkasse_extra_adults": forms.NumberInput(
+                attrs={
+                    "class": "form-control",
+                    "min": "0",
+                    "placeholder": "0",
+                }
+            ),
+            "abendkasse_extra_children": forms.NumberInput(
+                attrs={
+                    "class": "form-control",
+                    "min": "0",
+                    "placeholder": "0",
+                }
+            ),
         }
         labels = {
             "name": "Bezeichnung",
@@ -232,11 +248,15 @@ class ConcertForm(forms.ModelForm):
             "color_background": "Hintergrundfarbe",
             "capacity_show_numbers": "Anzahl verbleibender Tickets anzeigen",
             "capacity_split_categories": "Kategorien (Erwachsene/Kinder) getrennt anzeigen",
+            "abendkasse_extra_adults": "Extra Abendkasse-Plätze Erwachsene",
+            "abendkasse_extra_children": "Extra Abendkasse-Plätze Kinder",
         }
         help_texts = {
             "color_primary": "Standard: #0d1b2a (Navy)",
             "color_accent": "Standard: #c9a84c (Gold)",
             "color_background": "Standard: #f5f0e8 (Beige)",
+            "abendkasse_extra_adults": "Zusätzliche Plätze für den Direktverkauf an der Abendkasse (gilt nicht für den Online-Vorverkauf).",
+            "abendkasse_extra_children": "Zusätzliche Kinder-Plätze für den Direktverkauf an der Abendkasse (gilt nicht für den Online-Vorverkauf).",
         }
 
     def clean_date(self):

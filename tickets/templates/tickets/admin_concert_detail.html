@@ -147,6 +147,21 @@
                     </div>
                 </div>
 
+                <div class="row g-3 mb-3">
+                    <div class="col-6">
+                        <label class="form-label" for="{{ form.abendkasse_extra_adults.id_for_label }}">{{ form.abendkasse_extra_adults.label }}</label>
+                        {{ form.abendkasse_extra_adults }}
+                        <div class="form-text">{{ form.abendkasse_extra_adults.help_text }}</div>
+                        {% if form.abendkasse_extra_adults.errors %}<div class="text-danger small mt-1">{{ form.abendkasse_extra_adults.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label" for="{{ form.abendkasse_extra_children.id_for_label }}">{{ form.abendkasse_extra_children.label }}</label>
+                        {{ form.abendkasse_extra_children }}
+                        <div class="form-text">{{ form.abendkasse_extra_children.help_text }}</div>
+                        {% if form.abendkasse_extra_children.errors %}<div class="text-danger small mt-1">{{ form.abendkasse_extra_children.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
                 <div class="mb-3">
                     <label class="form-label" for="{{ form.image.id_for_label }}">{{ form.image.label }}</label>
                     {{ form.image }}

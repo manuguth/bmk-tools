@@ -771,8 +771,8 @@ def einlass_detail(request, confirmation_code):
     order = get_object_or_404(TicketOrder, confirmation_code=confirmation_code)
     context = {
         "order": order,
-        "adults_can_add": order.concert.adults_remaining,
-        "children_can_add": order.concert.children_remaining,
+        "adults_can_add": order.concert.abendkasse_adults_remaining,
+        "children_can_add": order.concert.abendkasse_children_remaining,
     }
     return render(request, "tickets/einlass_detail.html", context)
 
@@ -835,18 +835,18 @@ def einlass_mark_collected(request, confirmation_code):
         # select_for_update lock is held until the writes complete (no TOCTOU race).
         if extra_adult > 0 or extra_child > 0:
             concert_locked = Concert.objects.select_for_update().get(pk=order.concert_id)
-            if extra_adult > concert_locked.adults_remaining:
+            if extra_adult > concert_locked.abendkasse_adults_remaining:
                 messages.error(
                     request,
                     f"Nicht genug freie Erwachsenen-Plätze für die Zusatztickets. "
-                    f"Verfügbar: {concert_locked.adults_remaining}.",
+                    f"Verfügbar: {concert_locked.abendkasse_adults_remaining}.",
                 )
                 return redirect("tickets:einlass_detail", confirmation_code=confirmation_code)
-            if extra_child > concert_locked.children_remaining:
+            if extra_child > concert_locked.abendkasse_children_remaining:
                 messages.error(
                     request,
                     f"Nicht genug freie Kinder-Plätze für die Zusatztickets. "
-                    f"Verfügbar: {concert_locked.children_remaining}.",
+                    f"Verfügbar: {concert_locked.abendkasse_children_remaining}.",
                 )
                 return redirect("tickets:einlass_detail", confirmation_code=confirmation_code)
 
@@ -928,15 +928,15 @@ def abendkasse_view(request, slug):
             with transaction.atomic():
                 # Re-read capacity inside the transaction to prevent races.
                 concert_locked = Concert.objects.select_for_update().get(pk=concert.pk)
-                if adult_count > concert_locked.adults_remaining:
+                if adult_count > concert_locked.abendkasse_adults_remaining:
                     error = (
                         f"Nicht genug freie Erwachsenen-Plätze. "
-                        f"Verfügbar: {concert_locked.adults_remaining}."
+                        f"Verfügbar: {concert_locked.abendkasse_adults_remaining}."
                     )
-                elif child_count > concert_locked.children_remaining:
+                elif child_count > concert_locked.abendkasse_children_remaining:
                     error = (
                         f"Nicht genug freie Kinder-Plätze. "
-                        f"Verfügbar: {concert_locked.children_remaining}."
+                        f"Verfügbar: {concert_locked.abendkasse_children_remaining}."
                     )
                 else:
                     TicketOrder.objects.create(
@@ -1008,8 +1008,8 @@ def abendkasse_view(request, slug):
 
     # Use the model property so the displayed number matches the POST capacity check.
     # The model accounts for collected_adult_count (actual attendees vs. ordered).
-    adults_remaining = concert.adults_remaining
-    children_remaining = concert.children_remaining
+    adults_remaining = concert.abendkasse_adults_remaining
+    children_remaining = concert.abendkasse_children_remaining
 
     # Seats reserved for late pickup (not yet collected, explicitly marked)
     late_orders = all_orders.filter(late_collection=True, collected=False)
@@ -1035,14 +1035,16 @@ def abendkasse_view(request, slug):
         "total_adults": total_adults,
         "collected_adults": collected_adult_total,
         "adults_remaining": adults_remaining,
-        "max_adults": concert.max_adults,
+        "max_adults": concert.max_adults + concert.abendkasse_extra_adults,
+        "abendkasse_extra_adults": concert.abendkasse_extra_adults,
         # Children stats
         "online_children": online_children,
         "box_children": box_children,
         "total_children": total_children,
         "collected_children": collected_child_total,
         "children_remaining": children_remaining,
-        "max_children": concert.max_children,
+        "max_children": concert.max_children + concert.abendkasse_extra_children,
+        "abendkasse_extra_children": concert.abendkasse_extra_children,
         # Late collection & deadline stats
         "late_adults": late_adults,
         "late_children": late_children,
