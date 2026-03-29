@@ -11,6 +11,7 @@ from django.core.paginator import Paginator
 from django.template.loader import render_to_string
 from django.conf import settings
 from django.db import models as db_models, transaction
+from django.db.models.functions import Least
 from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -31,6 +32,8 @@ logger = logging.getLogger(__name__)
 
 def _send_confirmation_email(order, request=None):
     """Send German-language confirmation email to the customer (HTML + plain text)."""
+    if order.abendkasse:
+        return False
     qr_url = None
     if request is not None:
         qr_url = request.build_absolute_uri(
@@ -69,6 +72,8 @@ def _send_confirmation_email(order, request=None):
 
 def _send_order_update_email(order, request=None):
     """Send German-language update notification email to the customer (HTML + plain text)."""
+    if order.abendkasse:
+        return False
     qr_url = None
     if request is not None:
         qr_url = request.build_absolute_uri(
@@ -207,9 +212,32 @@ def admin_concert_list(request):
     for concert in concerts:
         agg = concert.orders.filter(
             status__in=["ausstehend", "bestaetigt"]
+        ).annotate(
+            _effective_adults=db_models.Case(
+                db_models.When(
+                    collected=True,
+                    collected_adult_count__isnull=False,
+                    then=Least(
+                        db_models.F("collected_adult_count"), db_models.F("adult_count")
+                    ),
+                ),
+                default=db_models.F("adult_count"),
+                output_field=db_models.IntegerField(),
+            ),
+            _effective_children=db_models.Case(
+                db_models.When(
+                    collected=True,
+                    collected_child_count__isnull=False,
+                    then=Least(
+                        db_models.F("collected_child_count"), db_models.F("child_count")
+                    ),
+                ),
+                default=db_models.F("child_count"),
+                output_field=db_models.IntegerField(),
+            ),
         ).aggregate(
-            adults=db_models.Sum("adult_count"),
-            children=db_models.Sum("child_count"),
+            adults=db_models.Sum("_effective_adults"),
+            children=db_models.Sum("_effective_children"),
             revenue=db_models.Sum("total_price"),
         )
         order_count = concert.orders.count()
@@ -684,17 +712,38 @@ def einlass_scanner(request):
 
 @scanner_required
 def einlass_name_search(request):
-    """Scanner: search orders by customer name (JSON, GET)."""
+    """Scanner: search orders by customer name or confirmation code (JSON, GET)."""
     query = request.GET.get("q", "").strip()
     if len(query) < 2:
         return JsonResponse({"results": []})
+
+    # If the query looks like a bare confirmation code, try an exact match first
+    # so the scanner can also type codes here without being redirected.
+    code_like = query.upper()
+    if len(code_like) >= 8 and code_like.replace(" ", "").isalnum():
+        exact = TicketOrder.objects.select_related("concert").filter(
+            confirmation_code=code_like.replace(" ", "")
+        )
+        if exact.exists():
+            o = exact.first()
+            return JsonResponse({"results": [{
+                "code": o.confirmation_code,
+                "name": o.customer_full_name,
+                "concert": o.concert.name,
+                "status": o.status,
+                "status_display": o.get_status_display(),
+                "collected": o.collected,
+                "url": reverse("tickets:einlass_detail", args=[o.confirmation_code]),
+            }]})
+
     terms = query.split()
-    # Build a broad OR filter: any term matching firstname or lastname qualifies.
+    # Match any term against firstname, lastname, or confirmation code.
     combined = db_models.Q()
     for term in terms:
         combined |= (
             db_models.Q(customer_firstname__icontains=term)
             | db_models.Q(customer_lastname__icontains=term)
+            | db_models.Q(confirmation_code__icontains=term.upper())
         )
     qs = (
         TicketOrder.objects.select_related("concert")
@@ -769,24 +818,6 @@ def einlass_mark_collected(request, confirmation_code):
         extra_adult = 0
         extra_child = 0
 
-    # Validate extras against remaining capacity before touching anything.
-    if extra_adult > 0 or extra_child > 0:
-        concert_for_check = Concert.objects.select_for_update().get(pk=order.concert_id)
-        if extra_adult > concert_for_check.adults_remaining:
-            messages.error(
-                request,
-                f"Nicht genug freie Erwachsenen-Plätze für die Zusatztickets. "
-                f"Verfügbar: {concert_for_check.adults_remaining}.",
-            )
-            return redirect("tickets:einlass_detail", confirmation_code=confirmation_code)
-        if extra_child > concert_for_check.children_remaining:
-            messages.error(
-                request,
-                f"Nicht genug freie Kinder-Plätze für die Zusatztickets. "
-                f"Verfügbar: {concert_for_check.children_remaining}.",
-            )
-            return redirect("tickets:einlass_detail", confirmation_code=confirmation_code)
-
     adjusted = raw_adult != order.adult_count or raw_child != order.child_count
 
     # Price is based only on the original reservation; extras are tracked in the AK order.
@@ -800,6 +831,25 @@ def einlass_mark_collected(request, confirmation_code):
     mark_paid = request.POST.get("mark_paid") == "1"
 
     with transaction.atomic():
+        # Validate extras against remaining capacity inside the transaction so the
+        # select_for_update lock is held until the writes complete (no TOCTOU race).
+        if extra_adult > 0 or extra_child > 0:
+            concert_locked = Concert.objects.select_for_update().get(pk=order.concert_id)
+            if extra_adult > concert_locked.adults_remaining:
+                messages.error(
+                    request,
+                    f"Nicht genug freie Erwachsenen-Plätze für die Zusatztickets. "
+                    f"Verfügbar: {concert_locked.adults_remaining}.",
+                )
+                return redirect("tickets:einlass_detail", confirmation_code=confirmation_code)
+            if extra_child > concert_locked.children_remaining:
+                messages.error(
+                    request,
+                    f"Nicht genug freie Kinder-Plätze für die Zusatztickets. "
+                    f"Verfügbar: {concert_locked.children_remaining}.",
+                )
+                return redirect("tickets:einlass_detail", confirmation_code=confirmation_code)
+
         order.collected = True
         order.collected_adult_count = raw_adult  # full count for traceability
         order.collected_child_count = raw_child
@@ -808,10 +858,6 @@ def einlass_mark_collected(request, confirmation_code):
         order.save(update_fields=["collected", "collected_adult_count", "collected_child_count", "total_price", "paid"])
 
         if extra_adult > 0 or extra_child > 0:
-            extra_price = (
-                extra_adult * order.concert.adult_price
-                + extra_child * order.concert.child_price
-            )
             TicketOrder.objects.create(
                 concert=order.concert,
                 customer_firstname="Abendkasse",
@@ -823,20 +869,21 @@ def einlass_mark_collected(request, confirmation_code):
                 paid=True,
                 collected=True,
                 abendkasse=True,
+                source_order=order,
             )
 
     if extra_adult > 0 or extra_child > 0:
         messages.success(
             request,
             f"Bestellung {confirmation_code} abgeholt — "
-            f"{collected_adult} Erw. / {collected_child} Kinder aus Reservierung, "
+            f"{reserved_adult} Erw. / {reserved_child} Kinder aus Reservierung, "
             f"+ {extra_adult} Erw. / {extra_child} Kinder als Abendkasse-Zusatztickets.",
         )
     elif adjusted:
         messages.success(
             request,
             f"Bestellung {confirmation_code} abgeholt — Anzahl angepasst: "
-            f"{collected_adult} Erw. / {collected_child} Kinder "
+            f"{reserved_adult} Erw. / {reserved_child} Kinder "
             f"(reserviert: {order.adult_count} Erw. / {order.child_count} Kinder). "
             f"Neuer Preis: {new_price:.2f} €.",
         )
@@ -918,8 +965,29 @@ def abendkasse_view(request, slug):
         from django.db.models import Sum
         return qs.aggregate(total=Sum(field))["total"] or 0
 
-    online_adults = sum_field(online_orders, "adult_count")
-    online_children = sum_field(online_orders, "child_count")
+    def adjusted_sum(qs, count_field, collected_count_field):
+        """Sum tickets using actual collected counts for scanned orders (same logic as adults_sold)."""
+        return qs.aggregate(
+            total=db_models.Sum(
+                db_models.Case(
+                    db_models.When(
+                        collected=True,
+                        **{f"{collected_count_field}__isnull": False},
+                        then=Least(
+                            db_models.F(collected_count_field),
+                            db_models.F(count_field),
+                        ),
+                    ),
+                    default=db_models.F(count_field),
+                    output_field=db_models.IntegerField(),
+                )
+            )
+        )["total"] or 0
+
+    # Use adjusted counts for VVK so numbers are consistent with capacity (adults_sold).
+    # AK orders always have collected_adult_count=None, so adjusted_sum == raw sum for them.
+    online_adults = adjusted_sum(online_orders, "adult_count", "collected_adult_count")
+    online_children = adjusted_sum(online_orders, "child_count", "collected_child_count")
     box_adults = sum_field(box_orders, "adult_count")
     box_children = sum_field(box_orders, "child_count")
 

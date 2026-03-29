@@ -77,7 +77,7 @@
     </div>
     {% endif %}
 
-    <div class="ticket-card p-3 mb-4">
+    <div class="ticket-card p-4 mb-4">
         <div id="camera-start-wrap" class="text-center py-4">
             <button id="start-camera" class="btn btn-tickets-primary">
                 <i class="bi bi-camera-video me-2"></i>Kamera starten
@@ -97,49 +97,26 @@
         </div>
     </div>
 
+    {# ── Combined search (name or code) ── #}
     <div class="ticket-card p-4">
         <h6 class="fw-bold mb-3" style="color: var(--tickets-navy);">
-            <i class="bi bi-keyboard me-1" style="color: var(--tickets-gold);"></i>Code manuell eingeben
-        </h6>
-        <form id="manual-form">
-            <div class="input-group">
-                <input
-                    type="text"
-                    id="manual-code"
-                    class="form-control form-control-lg text-uppercase"
-                    placeholder="z.B. AB1C2D3E"
-                    maxlength="12"
-                    autocomplete="off"
-                    autocapitalize="characters"
-                    autocorrect="off"
-                    spellcheck="false"
-                    style="letter-spacing: 0.12em; font-family: monospace;">
-                <button type="submit" class="btn btn-tickets-primary">
-                    <i class="bi bi-search me-1"></i>Suchen
-                </button>
-            </div>
-        </form>
-    </div>
-
-    <div class="ticket-card p-4 mt-3">
-        <h6 class="fw-bold mb-3" style="color: var(--tickets-navy);">
-            <i class="bi bi-person-search me-1" style="color: var(--tickets-gold);"></i>Nach Name suchen
+            <i class="bi bi-search me-1" style="color: var(--tickets-gold);"></i>Name oder Code suchen
         </h6>
         <div class="input-group mb-3">
             <input
                 type="text"
-                id="name-search-input"
+                id="unified-search-input"
                 class="form-control form-control-lg"
-                placeholder="Vor- oder Nachname …"
+                placeholder="Name oder Bestätigungscode …"
                 autocomplete="off"
                 autocorrect="off"
-                spellcheck="false"
-                minlength="2">
-            <button id="name-search-btn" class="btn btn-tickets-primary" type="button">
+                autocapitalize="off"
+                spellcheck="false">
+            <button id="unified-search-btn" class="btn btn-tickets-primary" type="button">
                 <i class="bi bi-search me-1"></i>Suchen
             </button>
         </div>
-        <div id="name-search-results"></div>
+        <div id="unified-search-results"></div>
     </div>
 
 </div>
@@ -274,10 +251,10 @@
         });
     }
 
-    document.getElementById('manual-form').addEventListener('submit', function (e) {
+    document.getElementById('manual-form') && document.getElementById('manual-form').addEventListener('submit', function (e) {
         e.preventDefault();
-        var code = document.getElementById('manual-code').value.trim();
-        if (code.length >= 8) {
+        var code = document.getElementById('manual-code') && document.getElementById('manual-code').value.trim();
+        if (code && code.length >= 8) {
             navigateToCode(code);
         }
     });
@@ -289,14 +266,25 @@
     'use strict';
 
     var searchUrl = "{% url 'tickets:einlass_name_search' %}";
-    var input = document.getElementById('name-search-input');
-    var btn = document.getElementById('name-search-btn');
-    var resultsDiv = document.getElementById('name-search-results');
+    var detailUrlTemplate = "{% url 'tickets:einlass_detail' 'PLACEHOLDER' %}";
+    var input = document.getElementById('unified-search-input');
+    var btn = document.getElementById('unified-search-btn');
+    var resultsDiv = document.getElementById('unified-search-results');
     var debounceTimer = null;
+
+    function isCodeLike(q) {
+        // 8–12 chars, only uppercase letters and digits
+        return /^[A-Z0-9]{8,12}$/.test(q.toUpperCase().replace(/\s/g, ''));
+    }
 
     function renderResults(data) {
         if (!data.results || data.results.length === 0) {
             resultsDiv.innerHTML = '<p class="text-muted small mb-0">Keine Ergebnisse gefunden.</p>';
+            return;
+        }
+        // If exactly one result and input looks like a code, jump straight to it.
+        if (data.results.length === 1 && isCodeLike(input.value.trim())) {
+            window.location.href = data.results[0].url;
             return;
         }
         var html = '<ul class="list-group list-group-flush">';

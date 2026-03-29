@@ -270,7 +270,7 @@
                 </div>
                 {% if adults_can_add > 0 %}
                 <div class="mt-1" style="font-size:0.75rem; color:{% if adults_can_add <= 5 %}#d97706{% else %}var(--tickets-muted){% endif %};">
-                    <i class="bi bi-plus-circle me-1"></i>noch {{ adults_can_add }} Platz{{ adults_can_add|pluralize:",&#x200b;&#x200b;" }} frei (Abendkasse)
+                    <i class="bi bi-plus-circle me-1"></i>noch {{ adults_can_add }} {% if adults_can_add == 1 %}Platz{% else %}Plätze{% endif %} frei (Abendkasse)
                 </div>
                 {% else %}
                 <div class="mt-1" style="font-size:0.75rem; color:#dc2626;">
@@ -290,7 +290,7 @@
                 </div>
                 {% if children_can_add > 0 %}
                 <div class="mt-1" style="font-size:0.75rem; color:{% if children_can_add <= 5 %}#d97706{% else %}var(--tickets-muted){% endif %};">
-                    <i class="bi bi-plus-circle me-1"></i>noch {{ children_can_add }} Platz{{ children_can_add|pluralize:",&#x200b;" }} frei (Abendkasse)
+                    <i class="bi bi-plus-circle me-1"></i>noch {{ children_can_add }} {% if children_can_add == 1 %}Platz{% else %}Plätze{% endif %} frei (Abendkasse)
                 </div>
                 {% else %}
                 <div class="mt-1" style="font-size:0.75rem; color:#dc2626;">

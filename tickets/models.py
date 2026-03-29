@@ -210,6 +210,15 @@ class TicketOrder(models.Model):
         verbose_name="Späte Abholung (nach Deadline)",
         help_text="Markiert Bestellungen, bei denen der Kunde nach der Abholdeadline eintrifft. Diese Plätze werden nicht freigegeben.",
     )
+    source_order = models.ForeignKey(
+        "self",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="extra_orders",
+        verbose_name="Ursprungsbestellung",
+        help_text="Nur bei automatisch erstellten Abendkasse-Zusatztickets gefüllt: Verweis auf die Vorbestellung, bei deren Einlass Extratickets hinzugefügt wurden.",
+    )
     class Meta:
         ordering = ["-created_at"]
         verbose_name = "Bestellung"
@@ -225,6 +234,12 @@ class TicketOrder(models.Model):
     @property
     def amount_adjusted(self):
         if not self.collected:
+            return False
+        # AK orders (direct sales or auto-created extras) have no meaningful
+        # "original reservation" to compare against; never flag them as adjusted.
+        if self.abendkasse:
+            return False
+        if self.collected_adult_count is None or self.collected_child_count is None:
             return False
         return (
             self.collected_adult_count != self.adult_count
