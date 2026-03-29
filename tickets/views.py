@@ -720,14 +720,24 @@ def einlass_name_search(request):
 def einlass_detail(request, confirmation_code):
     """Scanner: show order details and allow marking as collected."""
     order = get_object_or_404(TicketOrder, confirmation_code=confirmation_code)
-    context = {"order": order}
+    context = {
+        "order": order,
+        "adults_can_add": order.concert.adults_remaining,
+        "children_can_add": order.concert.children_remaining,
+    }
     return render(request, "tickets/einlass_detail.html", context)
 
 
 @scanner_required
 @require_http_methods(["POST"])
 def einlass_mark_collected(request, confirmation_code):
-    """Scanner: mark a TicketOrder as collected, with optional count adjustment."""
+    """Scanner: mark a TicketOrder as collected, with optional count adjustment.
+
+    Counts may be reduced below the ordered amount (no-shows → frees up VVK seats).
+    Counts may be increased above the ordered amount only on the first scan; the
+    extra tickets are automatically created as a separate Abendkasse order so they
+    appear correctly in the Abendkasse stats and capacity is properly tracked.
+    """
     order = get_object_or_404(TicketOrder, confirmation_code=confirmation_code)
 
     if order.status == "storniert":
@@ -738,33 +748,91 @@ def einlass_mark_collected(request, confirmation_code):
         return redirect("tickets:einlass_detail", confirmation_code=confirmation_code)
 
     try:
-        collected_adult = int(request.POST.get("collected_adult_count", order.adult_count))
-        collected_child = int(request.POST.get("collected_child_count", order.child_count))
+        raw_adult = int(request.POST.get("collected_adult_count", order.adult_count))
+        raw_child = int(request.POST.get("collected_child_count", order.child_count))
     except (ValueError, TypeError):
-        collected_adult = order.adult_count
-        collected_child = order.child_count
+        raw_adult = order.adult_count
+        raw_child = order.child_count
 
-    collected_adult = max(0, collected_adult)
-    collected_child = max(0, collected_child)
+    raw_adult = max(0, raw_adult)
+    raw_child = max(0, raw_child)
 
-    adjusted = (
-        collected_adult != order.adult_count or collected_child != order.child_count
-    )
+    # Extras beyond the original reservation → separate Abendkasse order.
+    # We store the full raw count on the original order for traceability;
+    # adults_sold caps at adult_count via Least() so there's no double-counting.
+    extra_adult = max(0, raw_adult - order.adult_count)
+    extra_child = max(0, raw_child - order.child_count)
 
+    # Extras can only be granted on the first scan (order not yet collected).
+    # Re-scans ignore extras.
+    if order.collected:
+        extra_adult = 0
+        extra_child = 0
+
+    # Validate extras against remaining capacity before touching anything.
+    if extra_adult > 0 or extra_child > 0:
+        concert_for_check = Concert.objects.select_for_update().get(pk=order.concert_id)
+        if extra_adult > concert_for_check.adults_remaining:
+            messages.error(
+                request,
+                f"Nicht genug freie Erwachsenen-Plätze für die Zusatztickets. "
+                f"Verfügbar: {concert_for_check.adults_remaining}.",
+            )
+            return redirect("tickets:einlass_detail", confirmation_code=confirmation_code)
+        if extra_child > concert_for_check.children_remaining:
+            messages.error(
+                request,
+                f"Nicht genug freie Kinder-Plätze für die Zusatztickets. "
+                f"Verfügbar: {concert_for_check.children_remaining}.",
+            )
+            return redirect("tickets:einlass_detail", confirmation_code=confirmation_code)
+
+    adjusted = raw_adult != order.adult_count or raw_child != order.child_count
+
+    # Price is based only on the original reservation; extras are tracked in the AK order.
+    reserved_adult = min(raw_adult, order.adult_count)
+    reserved_child = min(raw_child, order.child_count)
     new_price = (
-        collected_adult * order.concert.adult_price
-        + collected_child * order.concert.child_price
+        reserved_adult * order.concert.adult_price
+        + reserved_child * order.concert.child_price
     )
 
     mark_paid = request.POST.get("mark_paid") == "1"
-    order.collected = True
-    order.collected_adult_count = collected_adult
-    order.collected_child_count = collected_child
-    order.total_price = new_price
-    order.paid = mark_paid
-    order.save(update_fields=["collected", "collected_adult_count", "collected_child_count", "total_price", "paid"])
 
-    if adjusted:
+    with transaction.atomic():
+        order.collected = True
+        order.collected_adult_count = raw_adult  # full count for traceability
+        order.collected_child_count = raw_child
+        order.total_price = new_price
+        order.paid = mark_paid
+        order.save(update_fields=["collected", "collected_adult_count", "collected_child_count", "total_price", "paid"])
+
+        if extra_adult > 0 or extra_child > 0:
+            extra_price = (
+                extra_adult * order.concert.adult_price
+                + extra_child * order.concert.child_price
+            )
+            TicketOrder.objects.create(
+                concert=order.concert,
+                customer_firstname="Abendkasse",
+                customer_lastname="",
+                customer_email="abendkasse@abendkasse.local",
+                adult_count=extra_adult,
+                child_count=extra_child,
+                status="bestaetigt",
+                paid=True,
+                collected=True,
+                abendkasse=True,
+            )
+
+    if extra_adult > 0 or extra_child > 0:
+        messages.success(
+            request,
+            f"Bestellung {confirmation_code} abgeholt — "
+            f"{collected_adult} Erw. / {collected_child} Kinder aus Reservierung, "
+            f"+ {extra_adult} Erw. / {extra_child} Kinder als Abendkasse-Zusatztickets.",
+        )
+    elif adjusted:
         messages.success(
             request,
             f"Bestellung {confirmation_code} abgeholt — Anzahl angepasst: "
@@ -855,8 +923,11 @@ def abendkasse_view(request, slug):
     box_adults = sum_field(box_orders, "adult_count")
     box_children = sum_field(box_orders, "child_count")
 
-    total_adults = online_adults + box_adults
-    total_children = online_children + box_children
+    # Use model properties so the capacity bar uses the same basis as the POST check.
+    # adults_sold substitutes collected_adult_count for scanned orders, so:
+    #   adults_sold + adults_remaining == max_adults always.
+    total_adults = concert.adults_sold
+    total_children = concert.children_sold
 
     # Collected counts use adjusted values when available.
     collected_orders = all_orders.filter(collected=True)
@@ -867,8 +938,24 @@ def abendkasse_view(request, slug):
         collected_adult_total += o.collected_adult_count if o.collected_adult_count is not None else o.adult_count
         collected_child_total += o.collected_child_count if o.collected_child_count is not None else o.child_count
 
-    adults_remaining = max(0, concert.max_adults - total_adults)
-    children_remaining = max(0, concert.max_children - total_children)
+    # Use the model property so the displayed number matches the POST capacity check.
+    # The model accounts for collected_adult_count (actual attendees vs. ordered).
+    adults_remaining = concert.adults_remaining
+    children_remaining = concert.children_remaining
+
+    # Seats reserved for late pickup (not yet collected, explicitly marked)
+    late_orders = all_orders.filter(late_collection=True, collected=False)
+    late_adults = sum_field(late_orders, "adult_count")
+    late_children = sum_field(late_orders, "child_count")
+
+    # Seats that will be freed once the pickup deadline passes:
+    # uncollected online orders NOT marked for late collection.
+    expiring_orders = online_orders.filter(late_collection=False, collected=False)
+    expiring_adults = sum_field(expiring_orders, "adult_count")
+    expiring_children = sum_field(expiring_orders, "child_count")
+
+    after_deadline_adults = adults_remaining + expiring_adults
+    after_deadline_children = children_remaining + expiring_children
 
     context = {
         "concert": concert,
@@ -888,6 +975,12 @@ def abendkasse_view(request, slug):
         "collected_children": collected_child_total,
         "children_remaining": children_remaining,
         "max_children": concert.max_children,
+        # Late collection & deadline stats
+        "late_adults": late_adults,
+        "late_children": late_children,
+        "after_deadline_adults": after_deadline_adults,
+        "after_deadline_children": after_deadline_children,
+        "has_collection_deadline": concert.collection_deadline is not None,
         # Prices as strings for JS
         "adult_price": str(concert.adult_price),
         "child_price": str(concert.child_price),

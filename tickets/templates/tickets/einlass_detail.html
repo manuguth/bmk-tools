@@ -264,9 +264,19 @@
                 <div class="count-control">
                     <button type="button" class="count-btn" data-target="id_collected_adult_count" data-delta="-1">−</button>
                     <input type="number" id="id_collected_adult_count" name="collected_adult_count"
-                           class="count-display" value="{{ order.adult_count }}" min="0">
+                           class="count-display" value="{{ order.adult_count }}" min="0"
+                           max="{{ order.adult_count|add:adults_can_add }}">
                     <button type="button" class="count-btn" data-target="id_collected_adult_count" data-delta="1">+</button>
                 </div>
+                {% if adults_can_add > 0 %}
+                <div class="mt-1" style="font-size:0.75rem; color:{% if adults_can_add <= 5 %}#d97706{% else %}var(--tickets-muted){% endif %};">
+                    <i class="bi bi-plus-circle me-1"></i>noch {{ adults_can_add }} Platz{{ adults_can_add|pluralize:",&#x200b;&#x200b;" }} frei (Abendkasse)
+                </div>
+                {% else %}
+                <div class="mt-1" style="font-size:0.75rem; color:#dc2626;">
+                    <i class="bi bi-x-circle me-1"></i>Keine freien Plätze – keine Zusatztickets möglich
+                </div>
+                {% endif %}
             </div>
 
             <div class="mb-3">
@@ -274,9 +284,19 @@
                 <div class="count-control">
                     <button type="button" class="count-btn" data-target="id_collected_child_count" data-delta="-1">−</button>
                     <input type="number" id="id_collected_child_count" name="collected_child_count"
-                           class="count-display" value="{{ order.child_count }}" min="0">
+                           class="count-display" value="{{ order.child_count }}" min="0"
+                           max="{{ order.child_count|add:children_can_add }}">
                     <button type="button" class="count-btn" data-target="id_collected_child_count" data-delta="1">+</button>
                 </div>
+                {% if children_can_add > 0 %}
+                <div class="mt-1" style="font-size:0.75rem; color:{% if children_can_add <= 5 %}#d97706{% else %}var(--tickets-muted){% endif %};">
+                    <i class="bi bi-plus-circle me-1"></i>noch {{ children_can_add }} Platz{{ children_can_add|pluralize:",&#x200b;" }} frei (Abendkasse)
+                </div>
+                {% else %}
+                <div class="mt-1" style="font-size:0.75rem; color:#dc2626;">
+                    <i class="bi bi-x-circle me-1"></i>Keine freien Plätze – keine Zusatztickets möglich
+                </div>
+                {% endif %}
             </div>
 
             <div class="d-flex align-items-center justify-content-between mb-3 px-1">
@@ -361,7 +381,16 @@
             var input = document.getElementById(btn.dataset.target);
             var val = parseInt(input.value, 10) || 0;
             var next = val + parseInt(btn.dataset.delta, 10);
-            input.value = Math.max(0, next);
+            var min = parseInt(input.min, 10) || 0;
+            var max = input.max !== '' ? parseInt(input.max, 10) : Infinity;
+            input.value = Math.min(max, Math.max(min, next));
+            // Disable + when at max, disable − when at min
+            var atMax = parseInt(input.value, 10) >= max;
+            var atMin = parseInt(input.value, 10) <= min;
+            document.querySelectorAll('.count-btn[data-target="' + btn.dataset.target + '"]').forEach(function (b) {
+                if (parseInt(b.dataset.delta, 10) > 0) b.disabled = atMax;
+                if (parseInt(b.dataset.delta, 10) < 0) b.disabled = atMin;
+            });
             updatePrice();
         });
     });

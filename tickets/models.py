@@ -3,6 +3,7 @@ import string
 
 from django.core.validators import RegexValidator
 from django.db import models
+from django.db.models.functions import Least
 from django.utils.text import slugify
 
 _hex_validator = RegexValidator(
@@ -89,6 +90,8 @@ class Concert(models.Model):
     @property
     def adults_sold(self):
         # Collected orders count only actual attendees; uncollected orders still hold their reservation.
+        # collected_adult_count is capped at adult_count so extras stored for display don't
+        # double-count with the separate Abendkasse order that is created for those extras.
         result = self.orders.filter(
             status__in=["ausstehend", "bestaetigt"]
         ).aggregate(
@@ -97,7 +100,7 @@ class Concert(models.Model):
                     models.When(
                         collected=True,
                         collected_adult_count__isnull=False,
-                        then=models.F("collected_adult_count"),
+                        then=Least(models.F("collected_adult_count"), models.F("adult_count")),
                     ),
                     default=models.F("adult_count"),
                     output_field=models.IntegerField(),
@@ -116,7 +119,7 @@ class Concert(models.Model):
                     models.When(
                         collected=True,
                         collected_child_count__isnull=False,
-                        then=models.F("collected_child_count"),
+                        then=Least(models.F("collected_child_count"), models.F("child_count")),
                     ),
                     default=models.F("child_count"),
                     output_field=models.IntegerField(),

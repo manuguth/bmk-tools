@@ -168,6 +168,28 @@
     text-decoration: none;
 }
 .ak-back a:hover { color: var(--tickets-navy); }
+
+/* ── Extra stats (late collection / after-deadline) ──────── */
+.stats-extra {
+    background: var(--tickets-surface);
+    border: 1px solid var(--tickets-border);
+    border-radius: 10px;
+    padding: 0.45rem 0.75rem;
+    margin-bottom: 0.6rem;
+    font-size: 0.82rem;
+}
+.stats-extra-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    min-height: 1.9rem;
+}
+.stats-extra-row + .stats-extra-row {
+    border-top: 1px solid var(--tickets-border);
+}
+.stats-extra-label { color: var(--tickets-muted); }
+.stats-extra-val   { font-weight: 700; color: var(--tickets-navy); white-space: nowrap; }
 {% endblock %}
 
 {% block page_content %}
@@ -228,6 +250,20 @@
                 <span style="margin-left:auto; color:#059669;">✓ {{ collected_children }}</span>
             </div>
         </div>
+    </div>
+
+    <!-- Extra stats: late collection + after-deadline free seats -->
+    <div class="stats-extra">
+        <div class="stats-extra-row">
+            <span class="stats-extra-label"><i class="bi bi-clock me-1"></i>Spät-Abholung reserviert</span>
+            <span class="stats-extra-val">{{ late_adults }} Erw&thinsp;/&thinsp;{{ late_children }} Ki</span>
+        </div>
+        {% if has_collection_deadline %}
+        <div class="stats-extra-row">
+            <span class="stats-extra-label"><i class="bi bi-door-open me-1"></i>Frei nach {{ concert.collection_deadline|time:"H:i" }} Uhr</span>
+            <span class="stats-extra-val">{{ after_deadline_adults }} Erw&thinsp;/&thinsp;{{ after_deadline_children }} Ki</span>
+        </div>
+        {% endif %}
     </div>
 
     <!-- Legend: one small line -->
