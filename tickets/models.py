@@ -3,6 +3,7 @@ import string
 
 from django.core.validators import RegexValidator
 from django.db import models
+from django.db.models.functions import Least
 from django.utils.text import slugify
 
 _hex_validator = RegexValidator(
@@ -70,6 +71,16 @@ class Concert(models.Model):
         default=True,
         verbose_name='Kategorien (Erwachsene/Kinder) getrennt anzeigen',
     )
+    abendkasse_extra_adults = models.PositiveIntegerField(
+        default=0,
+        verbose_name='Extra Abendkasse-Tickets Erwachsene',
+        help_text='Zusätzliche Plätze für den Direktverkauf an der Abendkasse (gilt nicht für den Online-Vorverkauf).',
+    )
+    abendkasse_extra_children = models.PositiveIntegerField(
+        default=0,
+        verbose_name='Extra Abendkasse-Tickets Kinder',
+        help_text='Zusätzliche Kinder-Plätze für den Direktverkauf an der Abendkasse (gilt nicht für den Online-Vorverkauf).',
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -89,6 +100,8 @@ class Concert(models.Model):
     @property
     def adults_sold(self):
         # Collected orders count only actual attendees; uncollected orders still hold their reservation.
+        # collected_adult_count is capped at adult_count so extras stored for display don't
+        # double-count with the separate Abendkasse order that is created for those extras.
         result = self.orders.filter(
             status__in=["ausstehend", "bestaetigt"]
         ).aggregate(
@@ -97,7 +110,7 @@ class Concert(models.Model):
                     models.When(
                         collected=True,
                         collected_adult_count__isnull=False,
-                        then=models.F("collected_adult_count"),
+                        then=Least(models.F("collected_adult_count"), models.F("adult_count")),
                     ),
                     default=models.F("adult_count"),
                     output_field=models.IntegerField(),
@@ -116,7 +129,7 @@ class Concert(models.Model):
                     models.When(
                         collected=True,
                         collected_child_count__isnull=False,
-                        then=models.F("collected_child_count"),
+                        then=Least(models.F("collected_child_count"), models.F("child_count")),
                     ),
                     default=models.F("child_count"),
                     output_field=models.IntegerField(),
@@ -136,6 +149,14 @@ class Concert(models.Model):
     @property
     def is_sold_out(self):
         return self.adults_remaining == 0 and self.children_remaining == 0
+
+    @property
+    def abendkasse_adults_remaining(self):
+        return max(0, self.max_adults + self.abendkasse_extra_adults - self.adults_sold)
+
+    @property
+    def abendkasse_children_remaining(self):
+        return max(0, self.max_children + self.abendkasse_extra_children - self.children_sold)
 
 
 class TicketOrder(models.Model):
@@ -197,10 +218,24 @@ class TicketOrder(models.Model):
         default=False,
         verbose_name="Bezahlt",
     )
+    abendkasse = models.BooleanField(
+        default=False,
+        verbose_name="Abendkasse",
+        help_text="Gibt an, ob das Ticket an der Abendkasse verkauft wurde.",
+    )
     late_collection = models.BooleanField(
         default=False,
         verbose_name="Späte Abholung (nach Deadline)",
         help_text="Markiert Bestellungen, bei denen der Kunde nach der Abholdeadline eintrifft. Diese Plätze werden nicht freigegeben.",
+    )
+    source_order = models.ForeignKey(
+        "self",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="extra_orders",
+        verbose_name="Ursprungsbestellung",
+        help_text="Nur bei automatisch erstellten Abendkasse-Zusatztickets gefüllt: Verweis auf die Vorbestellung, bei deren Einlass Extratickets hinzugefügt wurden.",
     )
     class Meta:
         ordering = ["-created_at"]
@@ -217,6 +252,12 @@ class TicketOrder(models.Model):
     @property
     def amount_adjusted(self):
         if not self.collected:
+            return False
+        # AK orders (direct sales or auto-created extras) have no meaningful
+        # "original reservation" to compare against; never flag them as adjusted.
+        if self.abendkasse:
+            return False
+        if self.collected_adult_count is None or self.collected_child_count is None:
             return False
         return (
             self.collected_adult_count != self.adult_count

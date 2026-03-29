@@ -1,0 +1,384 @@
+{% extends "tickets/base.html" %}
+
+{% block title %}Abendkasse – {{ concert.name }}{% endblock %}
+
+{% block extra_style %}
+#abendkasse-wrap {
+    max-width: 480px;
+    margin: 0 auto;
+    padding-bottom: 1rem;
+}
+
+/* ── Compact header ──────────────────────────────────────── */
+.ak-header {
+    font-size: 0.82rem;
+    color: var(--tickets-muted);
+    margin-bottom: 0.75rem;
+    line-height: 1.3;
+}
+.ak-header strong { color: var(--tickets-navy); }
+
+/* ── Flash banners ───────────────────────────────────────── */
+.ak-flash {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    padding: 0.55rem 0.85rem;
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+}
+.ak-flash-success { background: #d1fae5; border: 1.5px solid #059669; color: #065f46; }
+.ak-flash-error   { background: #fee2e2; border: 1.5px solid #dc2626; color: #991b1b; }
+
+/* ── Stats grid ──────────────────────────────────────────── */
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+.stats-col {
+    background: var(--tickets-surface);
+    border: 1px solid var(--tickets-border);
+    border-radius: 10px;
+    padding: 0.65rem 0.75rem 0.6rem;
+}
+.stats-cat {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--tickets-muted);
+    margin-bottom: 0.3rem;
+}
+.stats-free {
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 0.15rem;
+}
+.stats-free.ok     { color: #059669; }
+.stats-free.warn   { color: #d97706; }
+.stats-free.sold   { color: #dc2626; }
+.stats-free-label {
+    font-size: 0.72rem;
+    color: var(--tickets-muted);
+    margin-bottom: 0.45rem;
+}
+.stats-bar {
+    height: 5px;
+    background: #e9ecef;
+    border-radius: 99px;
+    overflow: hidden;
+    margin-bottom: 0.45rem;
+    display: flex;
+}
+.stats-bar-vvk { background: var(--tickets-navy); }
+.stats-bar-ak  { background: var(--tickets-gold); }
+.stats-breakdown {
+    display: flex;
+    gap: 0.6rem;
+    font-size: 0.76rem;
+    color: var(--tickets-muted);
+}
+.stats-breakdown span { display: flex; align-items: center; gap: 0.25rem; white-space: nowrap; }
+.dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.dot-vvk { background: var(--tickets-navy); }
+.dot-ak  { background: var(--tickets-gold); }
+
+/* ── Sell controls ───────────────────────────────────────── */
+.sell-wrap {
+    background: var(--tickets-surface);
+    border: 1px solid var(--tickets-border);
+    border-radius: 10px;
+    padding: 0.75rem;
+    margin-bottom: 0.6rem;
+}
+.sell-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.45rem 0;
+}
+.sell-row + .sell-row {
+    border-top: 1px solid var(--tickets-border);
+}
+.sell-label { font-weight: 600; font-size: 0.95rem; color: var(--tickets-navy); }
+.sell-price { font-size: 0.78rem; color: var(--tickets-muted); }
+.count-ctrl { display: flex; align-items: center; gap: 0.3rem; }
+.count-btn {
+    width: 2.6rem; height: 2.6rem;
+    border-radius: 7px;
+    border: 2px solid var(--tickets-navy);
+    background: #fff;
+    color: var(--tickets-navy);
+    font-size: 1.35rem; font-weight: 700; line-height: 1;
+    cursor: pointer; flex-shrink: 0;
+    touch-action: manipulation;
+}
+.count-btn:active { background: #e5e7eb; }
+.count-btn:disabled { border-color: #d1d5db; color: #9ca3af; cursor: default; }
+.count-num {
+    width: 2.4rem; text-align: center;
+    font-size: 1.2rem; font-weight: 700;
+    color: var(--tickets-navy);
+    user-select: none;
+}
+
+/* ── Price + sell button ─────────────────────────────────── */
+.price-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #166534;
+    background: #f0fdf4;
+    border: 1.5px solid #86efac;
+    border-radius: 9px;
+    padding: 0.55rem 1rem;
+    margin-bottom: 0.6rem;
+    letter-spacing: 0.01em;
+}
+.btn-sell {
+    display: block; width: 100%;
+    background: var(--tickets-navy);
+    color: #fff; border: none;
+    font-size: 1.1rem; font-weight: 700;
+    padding: 0.85rem 1rem;
+    border-radius: 9px; cursor: pointer;
+    touch-action: manipulation;
+    transition: background 0.15s;
+    min-height: 52px;
+}
+.btn-sell:disabled { background: #9ca3af; cursor: default; }
+.btn-sell.confirm { background: #059669; }
+.btn-sell.confirm:active { background: #047857; }
+.btn-sell:not(:disabled):active { background: var(--tickets-navy-mid); }
+
+.ak-back {
+    text-align: center;
+    margin-top: 0.5rem;
+}
+.ak-back a {
+    font-size: 0.82rem;
+    color: var(--tickets-muted);
+    text-decoration: none;
+}
+.ak-back a:hover { color: var(--tickets-navy); }
+
+/* ── Extra stats (late collection / after-deadline) ──────── */
+.stats-extra {
+    background: var(--tickets-surface);
+    border: 1px solid var(--tickets-border);
+    border-radius: 10px;
+    padding: 0.45rem 0.75rem;
+    margin-bottom: 0.6rem;
+    font-size: 0.82rem;
+}
+.stats-extra-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    min-height: 1.9rem;
+}
+.stats-extra-row + .stats-extra-row {
+    border-top: 1px solid var(--tickets-border);
+}
+.stats-extra-label { color: var(--tickets-muted); }
+.stats-extra-val   { font-weight: 700; color: var(--tickets-navy); white-space: nowrap; }
+{% endblock %}
+
+{% block page_content %}
+<div id="abendkasse-wrap">
+
+    <!-- Header -->
+    <p class="ak-header">
+        <i class="bi bi-cash-coin me-1" style="color:var(--tickets-gold);"></i>
+        <strong>{{ concert.name }}</strong>
+        {% if concert.date %}&nbsp;·&nbsp;{{ concert.date|date:"d.m.Y" }}{% endif %}
+    </p>
+
+    <!-- Banners -->
+    {% if success %}
+    <div class="ak-flash ak-flash-success">
+        <i class="bi bi-check-circle-fill"></i>Ticket erfolgreich verkauft.
+    </div>
+    {% endif %}
+    {% if error %}
+    <div class="ak-flash ak-flash-error">
+        <i class="bi bi-exclamation-triangle-fill"></i>{{ error }}
+    </div>
+    {% endif %}
+
+    <!-- Stats -->
+    <div class="stats-grid">
+        <!-- Adults -->
+        <div class="stats-col">
+            <div class="stats-cat"><i class="bi bi-person me-1"></i>Erwachsene</div>
+            <div class="stats-free {% if adults_remaining == 0 %}sold{% elif adults_remaining <= 5 %}warn{% else %}ok{% endif %}">{{ adults_remaining }}</div>
+            <div class="stats-free-label">frei von {{ max_adults }}{% if abendkasse_extra_adults %} <span style="font-size:0.65rem; color:var(--tickets-gold); font-weight:700;">+{{ abendkasse_extra_adults }} Extra</span>{% endif %}</div>
+            <div class="stats-bar">
+                {% if max_adults > 0 %}
+                <div class="stats-bar-vvk" style="width:{% widthratio online_adults max_adults 100 %}%"></div>
+                <div class="stats-bar-ak"  style="width:{% widthratio box_adults max_adults 100 %}%"></div>
+                {% endif %}
+            </div>
+            <div class="stats-breakdown">
+                <span><span class="dot dot-vvk"></span>{{ online_adults }}</span>
+                <span><span class="dot dot-ak"></span>{{ box_adults }}</span>
+                <span style="margin-left:auto; color:#059669;">✓ {{ collected_adults }}</span>
+            </div>
+        </div>
+        <!-- Children -->
+        <div class="stats-col">
+            <div class="stats-cat"><i class="bi bi-person-hearts me-1"></i>Kinder</div>
+            <div class="stats-free {% if children_remaining == 0 %}sold{% elif children_remaining <= 5 %}warn{% else %}ok{% endif %}">{{ children_remaining }}</div>
+            <div class="stats-free-label">frei von {{ max_children }}{% if abendkasse_extra_children %} <span style="font-size:0.65rem; color:var(--tickets-gold); font-weight:700;">+{{ abendkasse_extra_children }} Extra</span>{% endif %}</div>
+            <div class="stats-bar">
+                {% if max_children > 0 %}
+                <div class="stats-bar-vvk" style="width:{% widthratio online_children max_children 100 %}%"></div>
+                <div class="stats-bar-ak"  style="width:{% widthratio box_children max_children 100 %}%"></div>
+                {% endif %}
+            </div>
+            <div class="stats-breakdown">
+                <span><span class="dot dot-vvk"></span>{{ online_children }}</span>
+                <span><span class="dot dot-ak"></span>{{ box_children }}</span>
+                <span style="margin-left:auto; color:#059669;">✓ {{ collected_children }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Extra stats: late collection + after-deadline free seats -->
+    <div class="stats-extra">
+        <div class="stats-extra-row">
+            <span class="stats-extra-label"><i class="bi bi-clock me-1"></i>Spät-Abholung reserviert</span>
+            <span class="stats-extra-val">{{ late_adults }} Erw&thinsp;/&thinsp;{{ late_children }} Ki</span>
+        </div>
+        {% if has_collection_deadline %}
+        <div class="stats-extra-row">
+            <span class="stats-extra-label"><i class="bi bi-door-open me-1"></i>Frei nach {{ concert.collection_deadline|time:"H:i" }} Uhr</span>
+            <span class="stats-extra-val">{{ after_deadline_adults }} Erw&thinsp;/&thinsp;{{ after_deadline_children }} Ki</span>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Legend: one small line -->
+    <p style="font-size:0.72rem; color:var(--tickets-muted); margin-bottom:0.6rem; display:flex; gap:0.8rem; flex-wrap:wrap;">
+        <span><span class="dot dot-vvk" style="display:inline-block;"></span> Vorverkauf</span>
+        <span><span class="dot dot-ak" style="display:inline-block;"></span> Abendkasse</span>
+        <span style="color:#059669;">✓ Abgeholt</span>
+    </p>
+
+    <!-- Sell -->
+    <form method="post" id="sell-form" novalidate>
+        {% csrf_token %}
+        <div class="sell-wrap">
+            <div class="sell-row">
+                <div>
+                    <div class="sell-label">Erwachsene</div>
+                    <div class="sell-price">{{ adult_price|floatformat:2 }} €</div>
+                </div>
+                <div class="count-ctrl">
+                    <button type="button" class="count-btn" id="dec-adult" aria-label="Weniger">−</button>
+                    <span class="count-num" id="adult-display">0</span>
+                    <button type="button" class="count-btn" id="inc-adult" aria-label="Mehr">+</button>
+                    <input type="hidden" name="adult_count" id="adult-count" value="0">
+                </div>
+            </div>
+            <div class="sell-row">
+                <div>
+                    <div class="sell-label">Kinder</div>
+                    <div class="sell-price">{{ child_price|floatformat:2 }} €</div>
+                </div>
+                <div class="count-ctrl">
+                    <button type="button" class="count-btn" id="dec-child" aria-label="Weniger">−</button>
+                    <span class="count-num" id="child-display">0</span>
+                    <button type="button" class="count-btn" id="inc-child" aria-label="Mehr">+</button>
+                    <input type="hidden" name="child_count" id="child-count" value="0">
+                </div>
+            </div>
+        </div>
+
+        <div class="price-row" id="total-display" aria-live="polite">0,00 €</div>
+
+        <button type="button" id="sell-btn" class="btn-sell" disabled
+                data-adult-price="{{ adult_price }}"
+                data-child-price="{{ child_price }}"
+                data-adults-remaining="{{ adults_remaining }}"
+                data-children-remaining="{{ children_remaining }}">
+            Verkaufen
+        </button>
+    </form>
+
+    <div class="ak-back">
+        <a href="{% url 'tickets:einlass_scanner' %}">
+            <i class="bi bi-arrow-left me-1"></i>Scanner
+        </a>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function () {
+    'use strict';
+
+    var btn         = document.getElementById('sell-btn');
+    var adultPrice  = parseFloat(btn.dataset.adultPrice)  || 0;
+    var childPrice  = parseFloat(btn.dataset.childPrice)  || 0;
+    var maxAdults   = parseInt(btn.dataset.adultsRemaining,   10);
+    var maxChildren = parseInt(btn.dataset.childrenRemaining, 10);
+
+    var adultCount = 0, childCount = 0, confirmed = false;
+
+    function fmt(v) {
+        return v.toLocaleString('de-DE', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €';
+    }
+
+    function resetConfirm() {
+        confirmed = false;
+        btn.classList.remove('confirm');
+        btn.textContent = 'Verkaufen';
+    }
+
+    function update() {
+        document.getElementById('adult-display').textContent = adultCount;
+        document.getElementById('child-display').textContent = childCount;
+        document.getElementById('adult-count').value = adultCount;
+        document.getElementById('child-count').value = childCount;
+
+        document.getElementById('total-display').textContent = fmt(adultCount * adultPrice + childCount * childPrice);
+
+        btn.disabled = (adultCount === 0 && childCount === 0);
+
+        document.getElementById('inc-adult').disabled = (adultCount >= maxAdults);
+        document.getElementById('inc-child').disabled = (childCount >= maxChildren);
+        document.getElementById('dec-adult').disabled = (adultCount <= 0);
+        document.getElementById('dec-child').disabled = (childCount <= 0);
+
+        resetConfirm();
+    }
+
+    document.getElementById('inc-adult').addEventListener('click', function() { if (adultCount < maxAdults)   { adultCount++;  update(); } });
+    document.getElementById('dec-adult').addEventListener('click', function() { if (adultCount > 0)           { adultCount--;  update(); } });
+    document.getElementById('inc-child').addEventListener('click', function() { if (childCount < maxChildren) { childCount++;  update(); } });
+    document.getElementById('dec-child').addEventListener('click', function() { if (childCount > 0)           { childCount--;  update(); } });
+
+    btn.addEventListener('click', function() {
+        if (btn.disabled) return;
+        if (!confirmed) {
+            confirmed = true;
+            btn.classList.add('confirm');
+            btn.textContent = '✓ Sicher? ' + fmt(adultCount * adultPrice + childCount * childPrice) + ' – Bestätigen';
+        } else {
+            document.getElementById('sell-form').submit();
+        }
+    });
+}());
+</script>
+{% endblock %}

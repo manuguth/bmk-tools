@@ -392,3 +392,120 @@ class ScannerViewTests(TestCase):
         self.client.login(username="normal", password="testpass123")
         resp = self.client.get(reverse("tickets:einlass_scanner"))
         self.assertNotEqual(resp.status_code, 200)
+
+
+class AbendkasseExtraCapacityTests(TestCase):
+    """Tests for the extra Abendkasse capacity setting."""
+
+    def setUp(self):
+        scanner_group, _ = Group.objects.get_or_create(name="Ticket Scanner")
+        self.scanner = User.objects.create_user(username="scanner2", password="testpass123")
+        self.scanner.groups.add(scanner_group)
+        self.client = Client()
+        self.client.login(username="scanner2", password="testpass123")
+
+    # ── Model property tests ──────────────────────────────────────────────
+
+    def test_abendkasse_adults_remaining_no_extra(self):
+        c = _create_concert(max_adults=10, max_children=5)
+        _create_order(c, adult_count=4, child_count=0)
+        self.assertEqual(c.abendkasse_adults_remaining, 6)
+
+    def test_abendkasse_adults_remaining_with_extra(self):
+        c = _create_concert(max_adults=10, max_children=5, abendkasse_extra_adults=5)
+        _create_order(c, adult_count=10, child_count=0)
+        # Regular capacity exhausted; extra allows 5 more
+        self.assertEqual(c.adults_remaining, 0)
+        self.assertEqual(c.abendkasse_adults_remaining, 5)
+
+    def test_abendkasse_children_remaining_with_extra(self):
+        c = _create_concert(max_adults=10, max_children=5, abendkasse_extra_children=3)
+        _create_order(c, adult_count=0, child_count=5)
+        self.assertEqual(c.children_remaining, 0)
+        self.assertEqual(c.abendkasse_children_remaining, 3)
+
+    def test_abendkasse_remaining_cannot_go_negative(self):
+        # Even if somehow oversold, remaining should be 0 not negative
+        c = _create_concert(max_adults=2, max_children=0, abendkasse_extra_adults=1)
+        _create_order(c, adult_count=3, child_count=0)
+        self.assertEqual(c.abendkasse_adults_remaining, 0)
+
+    # ── Abendkasse view — direct sales ─────────────────────────────────
+
+    def test_abendkasse_sale_blocked_when_no_extra_and_full(self):
+        concert = _create_concert(max_adults=2, max_children=0)
+        _create_order(concert, adult_count=2, child_count=0, status="bestaetigt")
+        url = reverse("tickets:abendkasse", kwargs={"slug": concert.slug})
+        resp = self.client.post(url, {"adult_count": 1, "child_count": 0})
+        self.assertEqual(resp.status_code, 200)
+        self.assertFalse(TicketOrder.objects.filter(abendkasse=True).exists())
+
+    def test_abendkasse_sale_allowed_when_extra_set_and_full(self):
+        concert = _create_concert(max_adults=2, max_children=0, abendkasse_extra_adults=5)
+        _create_order(concert, adult_count=2, child_count=0, status="bestaetigt")
+        url = reverse("tickets:abendkasse", kwargs={"slug": concert.slug})
+        resp = self.client.post(url, {"adult_count": 3, "child_count": 0})
+        self.assertEqual(resp.status_code, 302)
+        self.assertTrue(TicketOrder.objects.filter(abendkasse=True).exists())
+
+    def test_abendkasse_sale_blocked_beyond_extra_limit(self):
+        concert = _create_concert(max_adults=2, max_children=0, abendkasse_extra_adults=2)
+        _create_order(concert, adult_count=2, child_count=0, status="bestaetigt")
+        url = reverse("tickets:abendkasse", kwargs={"slug": concert.slug})
+        # Request 3 but only 2 extra allowed
+        resp = self.client.post(url, {"adult_count": 3, "child_count": 0})
+        self.assertEqual(resp.status_code, 200)
+        self.assertFalse(TicketOrder.objects.filter(abendkasse=True).exists())
+
+    # ── VVK pre-sales still capped at max_adults / max_children ─────────
+
+    @patch("tickets.views._send_confirmation_email", return_value=True)
+    def test_vvk_sale_still_blocked_by_regular_capacity_even_with_extra(self, mock_email):
+        concert = _create_concert(max_adults=2, max_children=0, abendkasse_extra_adults=10)
+        _create_order(concert, adult_count=2, child_count=0, status="bestaetigt")
+        url = reverse("tickets:concert_detail", args=[concert.slug])
+        resp = self.client.post(url, {
+            "customer_firstname": "Test",
+            "customer_lastname": "User",
+            "customer_email": "test@example.com",
+            "adult_count": 1,
+            "child_count": 0,
+            "confirm_data": True,
+        })
+        # Form re-renders (capacity error) — no new non-abendkasse order created
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(TicketOrder.objects.filter(abendkasse=False).count(), 1)
+
+    # ── Einlass extras use abendkasse capacity ────────────────────────────
+
+    def test_einlass_extras_allowed_when_extra_capacity_set(self):
+        concert = _create_concert(max_adults=2, max_children=0, abendkasse_extra_adults=5)
+        order = _create_order(concert, adult_count=2, child_count=0, status="bestaetigt")
+        # All regular capacity is taken by this order; extras should still work
+        url = reverse("tickets:einlass_mark_collected", args=[order.confirmation_code])
+        resp = self.client.post(url, {
+            "collected_adult_count": 4,  # 2 from reservation + 2 extras
+            "collected_child_count": 0,
+        })
+        self.assertEqual(resp.status_code, 302)
+        order.refresh_from_db()
+        self.assertTrue(order.collected)
+        # An extra AK order should have been created
+        extra_orders = TicketOrder.objects.filter(source_order=order)
+        self.assertEqual(extra_orders.count(), 1)
+        self.assertEqual(extra_orders.first().adult_count, 2)
+
+    def test_einlass_extras_blocked_beyond_abendkasse_limit(self):
+        concert = _create_concert(max_adults=2, max_children=0, abendkasse_extra_adults=1)
+        order = _create_order(concert, adult_count=2, child_count=0, status="bestaetigt")
+        url = reverse("tickets:einlass_mark_collected", args=[order.confirmation_code])
+        # Request 3 extras, but only 1 allowed
+        resp = self.client.post(url, {
+            "collected_adult_count": 5,
+            "collected_child_count": 0,
+        })
+        self.assertEqual(resp.status_code, 302)
+        order.refresh_from_db()
+        # Order was not marked collected because of capacity error
+        self.assertFalse(order.collected)
+

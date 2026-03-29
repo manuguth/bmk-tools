@@ -85,11 +85,11 @@
                     <td class="text-center fw-semibold">{{ item.order_count }}</td>
                     <td class="text-center">
                         <span class="fw-bold">{{ item.adults_sold }}</span>
-                        <span class="text-muted small"> / {{ item.concert.max_adults }}</span>
+                        <span class="text-muted small"> / {{ item.concert.max_adults }}{% if item.concert.abendkasse_extra_adults %}+{{ item.concert.abendkasse_extra_adults }}{% endif %}</span>
                     </td>
                     <td class="text-center">
                         <span class="fw-bold">{{ item.children_sold }}</span>
-                        <span class="text-muted small"> / {{ item.concert.max_children }}</span>
+                        <span class="text-muted small"> / {{ item.concert.max_children }}{% if item.concert.abendkasse_extra_children %}+{{ item.concert.abendkasse_extra_children }}{% endif %}</span>
                     </td>
                     <td class="text-end fw-bold">{{ item.revenue|floatformat:2 }} €</td>
                     <td class="text-end text-nowrap">

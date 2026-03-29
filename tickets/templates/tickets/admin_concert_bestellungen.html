@@ -169,6 +169,8 @@
                     <td class="text-center">
                         {% if order.collected %}
                             <i class="bi bi-check-circle-fill" style="color: #059669;" title="Abgeholt"></i>
+                        {% elif order.late_collection %}
+                            <i class="bi bi-clock-history" style="color: #d97706;" title="Späte Abholung – noch nicht abgeholt"></i>
                         {% else %}
                             <span class="text-muted">–</span>
                         {% endif %}

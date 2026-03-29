@@ -63,7 +63,15 @@ class ConcertAdmin(admin.ModelAdmin):
         (
             "Preise & Kapazität",
             {
-                "fields": ("adult_price", "child_price", "max_adults", "max_children", "is_active"),
+                "fields": (
+                    "adult_price",
+                    "child_price",
+                    "max_adults",
+                    "max_children",
+                    "abendkasse_extra_adults",
+                    "abendkasse_extra_children",
+                    "is_active",
+                ),
             },
         ),
         (
