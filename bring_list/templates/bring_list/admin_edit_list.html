@@ -75,6 +75,15 @@
             {% for e in form.name.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
         </div>
         <div class="form-group">
+            <label class="form-label">{{ form.slug.label }}</label>
+            {{ form.slug }}
+            <div style="color:#6b7280;font-size:0.8rem;margin-top:0.35rem">
+                Nur Kleinbuchstaben, Ziffern und Bindestriche. Leer lassen = automatisch aus Name generiert.
+                {% if bring_list.slug %}&middot; Kurzlink: <code>/bring/{{ bring_list.slug }}/</code>{% endif %}
+            </div>
+            {% for e in form.slug.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+        </div>
+        <div class="form-group">
             <label class="form-label">{{ form.date.label }}</label>
             {{ form.date }}
             {% for e in form.date.errors %}<div class="form-error">{{ e }}</div>{% endfor %}

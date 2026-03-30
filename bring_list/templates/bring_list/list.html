@@ -83,7 +83,30 @@
 
     /* --- Mobile compact table: single line per row --- */
     @media (max-width: 575.98px) {
-        .items-table thead { display: none; }
+        .items-table thead tr {
+            display: flex;
+            flex-wrap: nowrap;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-bottom: 2px solid #e5e7eb;
+            gap: 0 0.3rem;
+            background: #f9fafb;
+        }
+
+        .items-table thead th {
+            padding: 0;
+            border: none;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #6b7280;
+            font-weight: 700;
+        }
+
+        .items-table thead .td-note,
+        .items-table thead .td-actions { display: none; }
+
+        .items-table thead .td-name::before { content: '' !important; }
 
         .items-table tbody tr {
             display: flex;
@@ -253,6 +276,22 @@
         box-shadow: 0 4px 12px rgba(139,92,246,0.4);
         transform: translateY(-2px);
     }
+
+    .fab-add {
+        display: none;
+        position: fixed; bottom: 1.5rem; right: 1.5rem;
+        width: 3.25rem; height: 3.25rem; border-radius: 50%;
+        background: linear-gradient(135deg, var(--festival-primary), var(--festival-secondary));
+        color: white; border: none; font-size: 1.4rem;
+        box-shadow: 0 4px 16px rgba(99,102,241,0.45);
+        cursor: pointer; z-index: 500;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        align-items: center; justify-content: center;
+    }
+
+    .fab-add:hover { transform: scale(1.08); box-shadow: 0 6px 20px rgba(99,102,241,0.55); }
+
+    @media (max-width: 575.98px) { .fab-add { display: flex; } }
 </style>
 {% endblock %}
 
@@ -288,11 +327,11 @@
     <table class="items-table">
         <thead>
             <tr>
-                <th>Was</th>
-                {% if bring_list.show_quantity %}<th>Menge</th>{% endif %}
-                <th>Name</th>
-                <th>Anmerkung</th>
-                {% if bring_list.edit_mode != "insert_only" %}<th></th>{% endif %}
+                <th class="td-label">Was</th>
+                {% if bring_list.show_quantity %}<th class="td-qty">Menge</th>{% endif %}
+                <th class="td-name">Name</th>
+                <th class="td-note">Notiz</th>
+                {% if bring_list.edit_mode != "insert_only" %}<th class="td-actions"></th>{% endif %}
             </tr>
         </thead>
         <tbody>
@@ -335,7 +374,7 @@
 </div>
 
 <!-- Add item form -->
-<div class="add-card">
+<div class="add-card" id="add-form">
     <h3><i class="bi bi-plus-circle me-2" style="color:var(--festival-primary)"></i>Eintrag hinzufügen</h3>
     <form method="post" action="{% url 'bring_list:add_item' public_token=bring_list.public_token %}">
         {% csrf_token %}
@@ -378,4 +417,10 @@
         </div>
     </form>
 </div>
+
+<button class="fab-add"
+        onclick="document.getElementById('add-form').scrollIntoView({behavior:'smooth'});setTimeout(()=>document.querySelector('#add-form input[type=text]').focus(),400);"
+        aria-label="Eintrag hinzufügen">
+    <i class="bi bi-plus-lg"></i>
+</button>
 {% endblock %}

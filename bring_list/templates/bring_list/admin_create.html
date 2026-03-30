@@ -93,6 +93,14 @@
             {% for e in form.name.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
         </div>
         <div class="form-group">
+            <label class="form-label">{{ form.slug.label }}</label>
+            {{ form.slug }}
+            <div style="color:#6b7280;font-size:0.8rem;margin-top:0.35rem">
+                Optional. Nur Kleinbuchstaben, Ziffern und Bindestriche. Leer lassen = automatisch aus Name generiert.
+            </div>
+            {% for e in form.slug.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+        </div>
+        <div class="form-group">
             <label class="form-label">{{ form.date.label }}</label>
             {{ form.date }}
             {% for e in form.date.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
