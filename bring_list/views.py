@@ -114,6 +114,11 @@ def edit_item_view(request, public_token, edit_token):
     )
 
 
+def list_by_slug_view(request, slug):
+    bring_list = get_object_or_404(BringList, slug=slug)
+    return redirect("bring_list:list", public_token=bring_list.public_token)
+
+
 # ---------------------------------------------------------------------------
 # Admin views
 # ---------------------------------------------------------------------------

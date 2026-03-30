@@ -3,6 +3,9 @@ uploads/html_files/*
 uploads/
 migrations/__pycache__/
 
+# local guide config (contains credentials – never commit)
+guides/config.yaml
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

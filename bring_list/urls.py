@@ -33,4 +33,5 @@ urlpatterns = [
         views.admin_toggle_quantity_view,
         name="admin_toggle_quantity",
     ),
+    path("<slug:slug>/", views.list_by_slug_view, name="list_by_slug"),
 ]

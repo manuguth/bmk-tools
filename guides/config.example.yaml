@@ -1,0 +1,16 @@
+# guides/config.example.yaml
+#
+# Vorlage für die lokale Konfiguration des Guide-Generators.
+# Kopiere diese Datei nach config.yaml und trage die echten Werte ein:
+#
+#   cp guides/config.example.yaml guides/config.yaml
+#
+# config.yaml ist in .gitignore eingetragen und wird NICHT committet.
+
+# Produktive URL der Einlass-Scanner-Seite.
+# Wird ins PDF eingebettet (Titelseite + Abschnitt 1) als Text und QR-Code.
+einlass_url: https://deine-domain.de/tickets/einlass/scanner/
+
+# Zugangsdaten des Scanner-Benutzers – werden für die automatischen Screenshots verwendet.
+scanner_username: scan
+scanner_password: dein-passwort

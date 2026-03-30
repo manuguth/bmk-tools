@@ -1,4 +1,6 @@
 from django import forms
+from django.core.exceptions import ValidationError
+from django.utils.text import slugify
 
 from .models import BringItem, BringList
 
@@ -50,9 +52,10 @@ class BringItemForm(forms.ModelForm):
 class BringListForm(forms.ModelForm):
     class Meta:
         model = BringList
-        fields = ["name", "description", "date", "edit_mode", "show_quantity"]
+        fields = ["name", "slug", "description", "date", "edit_mode", "show_quantity"]
         labels = {
             "name": "Name der Liste",
+            "slug": "Eigene URL (Slug)",
             "description": "Beschreibung",
             "date": "Datum (optional)",
             "edit_mode": "Bearbeitungsmodus",
@@ -60,6 +63,9 @@ class BringListForm(forms.ModelForm):
         widgets = {
             "name": forms.TextInput(
                 attrs={**_input_attrs, "placeholder": "z. B. Sommerfest 2026"}
+            ),
+            "slug": forms.TextInput(
+                attrs={**_input_attrs, "placeholder": "z. B. sommerfest-2026"}
             ),
             "description": forms.Textarea(
                 attrs={**_input_attrs, "rows": 3, "placeholder": "Kurze Beschreibung (optional)"}
@@ -77,3 +83,22 @@ class BringListForm(forms.ModelForm):
                 }
             ),
         }
+
+    def clean_slug(self):
+        slug = self.cleaned_data.get("slug", "").strip()
+        if not slug:
+            return slug
+        if slugify(slug) != slug:
+            raise ValidationError(
+                "Nur Kleinbuchstaben, Ziffern und Bindestriche erlaubt."
+            )
+        if slug == "admin":
+            raise ValidationError(
+                '"admin" ist reserviert und kann nicht als Slug verwendet werden.'
+            )
+        qs = BringList.objects.filter(slug=slug)
+        if self.instance and self.instance.pk:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise ValidationError("Dieser Slug wird bereits verwendet.")
+        return slug
