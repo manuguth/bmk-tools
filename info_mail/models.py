@@ -41,6 +41,11 @@ class NewsletterSettings(models.Model):
         verbose_name="MMV Newsletter Monat",
         help_text='Anzeigename des aktuellen MMV-Newsletter-Monats, z. B. "März" oder "April"',
     )
+    default_test_email = models.EmailField(
+        blank=True,
+        verbose_name="Standard Test-Versand E-Mail",
+        help_text="Wird im Compose-Bereich als Vorbelegung für den Test-Versand angezeigt.",
+    )
 
     class Meta:
         verbose_name = "Newsletter-Einstellung"

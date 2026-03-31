@@ -5,9 +5,14 @@
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
         <h1 class="h3 mb-0">Übersicht Info-Mails BMK</h1>
-        <a href="{% url 'compose_newsletter_current' %}" class="btn btn-primary btn-sm">
-            <i class="bi bi-plus-lg me-1"></i>Neue Ausgabe
-        </a>
+        <div class="d-flex gap-2">
+            <a href="{% url 'compose_newsletter_current' %}" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-lg me-1"></i>Neue Ausgabe
+            </a>
+            <a href="{% url 'newsletter_settings' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-gear me-1"></i>Einstellungen
+            </a>
+        </div>
     </div>
     <div class="card-body">
 

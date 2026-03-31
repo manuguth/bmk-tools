@@ -147,6 +147,21 @@ def display_media(request):
 
 
 @login_required
+def newsletter_settings(request):
+    ns = NewsletterSettings.get_settings()
+    if request.method == "POST":
+        ns.recipient = request.POST.get("recipient", "").strip()
+        ns.from_email = request.POST.get("from_email", "").strip()
+        ns.km_appointments_url = request.POST.get("km_appointments_url", "").strip()
+        ns.km_requests_url = request.POST.get("km_requests_url", "").strip()
+        ns.default_test_email = request.POST.get("default_test_email", "").strip()
+        ns.save()
+        messages.success(request, "Einstellungen gespeichert.")
+        return redirect("newsletter_settings")
+    return render(request, "info_mail/newsletter_settings.html", {"ns": ns})
+
+
+@login_required
 def redirect_to_current_week(request):
     today = date.today()
     year, week, _ = today.isocalendar()
@@ -267,5 +282,6 @@ def compose_newsletter(request, year, week):
         "week": week,
         "year": year,
         "ns": ns,
+        "default_test_email": ns.default_test_email,
     }
     return render(request, "info_mail/compose_newsletter.html", context)
