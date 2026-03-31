@@ -153,6 +153,24 @@ def redirect_to_current_week(request):
     return redirect("compose_newsletter", year=year, week=week)
 
 
+def _copy_from_previous(mail_obj, year, week):
+    """Copy intro/info_content/events/konzert from the most recent earlier newsletter."""
+    previous = (
+        WeeklyMails.objects
+        .filter(year__lte=year)
+        .exclude(week=week, year=year)
+        .order_by("-year", "-week")
+        .first()
+    )
+    if previous is None:
+        return
+    mail_obj.intro = previous.intro or ""
+    mail_obj.info_content = previous.info_content or ""
+    mail_obj.events = previous.events or ""
+    mail_obj.konzert = previous.konzert or ""
+    mail_obj.save(update_fields=["intro", "info_content", "events", "konzert"])
+
+
 def _prefill_sonstiges(mail_obj, ns, year, week):
     """Pre-populate the sonstiges field from the default template when a new mail is created."""
     from pathlib import Path
@@ -177,6 +195,7 @@ def compose_newsletter(request, year, week):
     )
 
     if created:
+        _copy_from_previous(mail_obj, year, week)
         _prefill_sonstiges(mail_obj, ns, year, week)
 
     if request.method == "POST":
