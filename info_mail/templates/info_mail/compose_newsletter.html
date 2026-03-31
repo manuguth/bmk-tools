@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}Newsletter verfassen — KW {{ week }}/{{ year }}{% endblock %}
+
+{% block extra_head %}
+    {{ form.media }}
+{% endblock extra_head %}
+
+{% block page_content %}
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h1 class="h3 mb-0">
+            <i class="bi bi-pencil-square me-2"></i>Newsletter KW {{ week }}/{{ year }}
+            {% if mail.status == "sent" %}
+                <span class="badge bg-success ms-2">Gesendet</span>
+            {% else %}
+                <span class="badge bg-secondary ms-2">Entwurf</span>
+            {% endif %}
+        </h1>
+        <a href="{% url 'info_mail_index' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>Übersicht
+        </a>
+    </div>
+    <div class="card-body">
+        <form method="post" id="compose-form">
+            {% csrf_token %}
+
+            <div class="accordion" id="sectionAccordion">
+                <!-- Intro -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button" type="button"
+                                data-bs-toggle="collapse" data-bs-target="#collapseIntro">
+                            Intro
+                        </button>
+                    </h2>
+                    <div id="collapseIntro" class="accordion-collapse collapse show"
+                         data-bs-parent="#sectionAccordion">
+                        <div class="accordion-body">
+                            {{ form.intro }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Infos -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button"
+                                data-bs-toggle="collapse" data-bs-target="#collapseInfo">
+                            Infos
+                        </button>
+                    </h2>
+                    <div id="collapseInfo" class="accordion-collapse collapse"
+                         data-bs-parent="#sectionAccordion">
+                        <div class="accordion-body">
+                            {{ form.info_content }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Veranstaltungen -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button"
+                                data-bs-toggle="collapse" data-bs-target="#collapseEvents">
+                            Veranstaltungen
+                        </button>
+                    </h2>
+                    <div id="collapseEvents" class="accordion-collapse collapse"
+                         data-bs-parent="#sectionAccordion">
+                        <div class="accordion-body">
+                            {{ form.events }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Konzert -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button"
+                                data-bs-toggle="collapse" data-bs-target="#collapseKonzert">
+                            Konzert
+                        </button>
+                    </h2>
+                    <div id="collapseKonzert" class="accordion-collapse collapse"
+                         data-bs-parent="#sectionAccordion">
+                        <div class="accordion-body">
+                            {{ form.konzert }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sonstiges -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button"
+                                data-bs-toggle="collapse" data-bs-target="#collapseSonstiges">
+                            Sonstiges
+                        </button>
+                    </h2>
+                    <div id="collapseSonstiges" class="accordion-collapse collapse"
+                         data-bs-parent="#sectionAccordion">
+                        <div class="accordion-body">
+                            {{ form.sonstiges }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MMV Settings -->
+            <div class="card border-secondary mt-4 mb-2">
+                <div class="card-header py-2 d-flex align-items-center gap-2">
+                    <i class="bi bi-link-45deg"></i>
+                    <strong class="small">MMV Newsletter-Link</strong>
+                    <span class="text-muted small ms-1">(wird im Sonstiges-Abschnitt neuer Ausgaben vorausgefüllt)</span>
+                </div>
+                <div class="card-body py-3">
+                    <div class="row g-2 align-items-end">
+                        <div class="col-md-6">
+                            <label class="form-label small mb-1" for="mmv_newsletter_url">URL</label>
+                            <input type="url" class="form-control form-control-sm" id="mmv_newsletter_url"
+                                   name="mmv_newsletter_url" value="{{ ns.mmv_newsletter_url }}"
+                                   placeholder="https://4xzqp.r.sp1-brevo.net/...">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small mb-1" for="mmv_newsletter_month">Monat</label>
+                            <input type="text" class="form-control form-control-sm" id="mmv_newsletter_month"
+                                   name="mmv_newsletter_month" value="{{ ns.mmv_newsletter_month }}"
+                                   placeholder="z. B. April">
+                        </div>
+                        <div class="col-md-3">
+                            <button type="submit" name="action" value="save_settings"
+                                    class="btn btn-outline-secondary btn-sm w-100">
+                                <i class="bi bi-save me-1"></i>Speichern
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Termine info -->
+            <div class="alert alert-info mt-3 mb-3">
+                <i class="bi bi-calendar-event me-1"></i>
+                Konzertmeister-Termine werden beim Vorschau/Senden live abgerufen.
+            </div>
+
+            <!-- Action buttons -->
+            <div class="d-flex flex-wrap gap-2 mt-3">
+                <button type="submit" name="action" value="save" class="btn btn-secondary">
+                    <i class="bi bi-save me-1"></i>Speichern
+                </button>
+                <button type="submit" name="action" value="preview" class="btn btn-info text-white">
+                    <i class="bi bi-eye me-1"></i>Vorschau
+                </button>
+                <button type="submit" name="action" value="send" class="btn btn-success"
+                        {% if mail.status == "sent" %}disabled{% endif %}
+                        onclick="return confirm('Newsletter wirklich an {{ ns.recipient }} senden?');">
+                    <i class="bi bi-send me-1"></i>Senden
+                </button>
+            </div>
+
+            <!-- Test-send row -->
+            <hr>
+            <div class="row g-2 align-items-end">
+                <div class="col-auto">
+                    <label for="test_email" class="form-label mb-0 small text-muted">Test-Versand</label>
+                </div>
+                <div class="col-sm-5">
+                    <input type="email" class="form-control form-control-sm" id="test_email"
+                           name="test_email" placeholder="test@example.com">
+                </div>
+                <div class="col-auto">
+                    <button type="submit" name="action" value="send_test"
+                            class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-envelope-arrow-up me-1"></i>Test-Mail senden
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if messages %}
+<script>
+    // Show Django messages as Bootstrap toasts (simplified: alerts at top)
+    document.addEventListener('DOMContentLoaded', function() {
+        {% for message in messages %}
+        console.log("{{ message }}");
+        {% endfor %}
+    });
+</script>
+{% endif %}
+{% endblock page_content %}

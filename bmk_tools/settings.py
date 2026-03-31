@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "storages",
     "rest_framework",
     "rest_framework.authtoken",
+    "django_summernote",
 ]
 
 REST_FRAMEWORK = {
@@ -172,3 +173,5 @@ if os.environ.get("EMAIL_HOST_USER"):
 else:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
     DEFAULT_FROM_EMAIL = "Tickets BMK <tickets@bmk-buggingen.de>"
+
+X_FRAME_OPTIONS = "SAMEORIGIN"

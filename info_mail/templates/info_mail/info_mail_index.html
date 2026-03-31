@@ -2,67 +2,65 @@
 
 {% block page_content %}
 
-<head>
-    <style>
-        body {
-            font-family: Calibri, sans-serif;
-        }
-
-        #customers {
-            font-family: Calibri, sans-serif;
-            border-collapse: collapse;
-            width: 100%;
-        }
-
-        #customers td,
-        #customers th {
-            border: 1px solid #ddd;
-            padding: 8px;
-        }
-
-        #customers tr:nth-child(even) {
-            background-color: #f2f2f2;
-        }
-
-        #customers tr:hover {
-            background-color: #ddd;
-        }
-
-        #customers th {
-            padding-top: 12px;
-            padding-bottom: 12px;
-            text-align: left;
-            background-color: #04AA6D;
-            color: white;
-        }
-    </style>
-</head>
-
-
 <div class="card">
-    <div class="card-header">
-        <h1 class="h3 mb-0">Overview Weekly Mails BMK</h1>
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h1 class="h3 mb-0">Übersicht Info-Mails BMK</h1>
+        <a href="{% url 'compose_newsletter_current' %}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-lg me-1"></i>Neue Ausgabe
+        </a>
     </div>
     <div class="card-body">
-        <table class="table table-striped table-hover">
-            <table id="customers">
-                <tr>
-                    <th>Year</th>
-                    <th>Week</th>
-                    <th>Reference and URL</th>
-                </tr>
 
-                {% for weekly_mail in weekly_mails %}
-                <tr>
-                    <td>{{weekly_mail.year}}</td>
-                    <td>{{weekly_mail.week}}</td>
-                    <td><a href="details/{{weekly_mail.reference}}">{{weekly_mail.reference}}</a> </td>
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
 
-                </tr>
-                {% endfor %}
-
+        <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Jahr</th>
+                        <th>KW</th>
+                        <th>Status</th>
+                        <th>Referenz</th>
+                        <th>Aktionen</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for weekly_mail in weekly_mails %}
+                    <tr>
+                        <td>{{ weekly_mail.year }}</td>
+                        <td>{{ weekly_mail.week }}</td>
+                        <td>
+                            {% if weekly_mail.status == "sent" %}
+                                <span class="badge bg-success">Gesendet</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Entwurf</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if weekly_mail.html_file %}
+                            <a href="{% url 'info_mail_detail' weekly_mail.reference %}">{{ weekly_mail.reference }}</a>
+                            {% else %}
+                            <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'compose_newsletter' weekly_mail.year weekly_mail.week %}"
+                               class="btn btn-outline-primary btn-sm" title="Bearbeiten">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
             </table>
-        </table>
+        </div>
     </div>
 </div>
 

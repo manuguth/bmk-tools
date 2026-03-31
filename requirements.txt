@@ -12,6 +12,10 @@ pyyaml
 setuptools
 sqlparse
 whitenoise
+django-summernote
+requests
+beautifulsoup4
+css_inline
 
 
 # coverage==6.3.1
