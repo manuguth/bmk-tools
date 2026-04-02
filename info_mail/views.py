@@ -7,7 +7,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
-from django.core.mail import EmailMessage
+from django.core.mail import EmailMessage, get_connection
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from rest_framework import status
@@ -18,6 +18,26 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from info_mail.models import NewsletterSettings, WeeklyMails
+
+
+def _get_newsletter_connection():
+    """Return a dedicated SMTP connection for the newsletter account.
+
+    Falls back to the default Django email connection when no separate
+    NEWSLETTER_EMAIL_HOST_USER is configured.
+    """
+    host_user = settings.NEWSLETTER_EMAIL_HOST_USER
+    if host_user:
+        return get_connection(
+            backend="django.core.mail.backends.smtp.EmailBackend",
+            host=settings.NEWSLETTER_EMAIL_HOST,
+            port=settings.NEWSLETTER_EMAIL_PORT,
+            username=host_user,
+            password=settings.NEWSLETTER_EMAIL_HOST_PASSWORD,
+            use_tls=True,
+            use_ssl=False,
+        )
+    return get_connection()
 
 from .forms import NewsletterComposeForm, UploadFileForm
 from .serializers import WeeklyMailsSerializer
@@ -252,6 +272,7 @@ def compose_newsletter(request, year, week):
                             body=html,
                             from_email=ns.from_email,
                             to=[test_email],
+                            connection=_get_newsletter_connection(),
                         )
                         msg.content_subtype = "html"
                         msg.send()
@@ -266,6 +287,7 @@ def compose_newsletter(request, year, week):
                         body=html,
                         from_email=ns.from_email,
                         to=[ns.recipient],
+                        connection=_get_newsletter_connection(),
                     )
                     msg.content_subtype = "html"
                     msg.send()
