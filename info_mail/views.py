@@ -251,6 +251,7 @@ def compose_newsletter(request, year, week):
                 ns.save(update_fields=["mmv_newsletter_url", "mmv_newsletter_month"])
                 mail_obj.save()
                 _prefill_sonstiges(mail_obj, ns, year, week)
+                mail_obj.save()
                 messages.success(request, "MMV-Einstellungen gespeichert. Sonstiges-Abschnitt wurde aktualisiert.")
                 return redirect("compose_newsletter", year=year, week=week)
 
