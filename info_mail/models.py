@@ -1,4 +1,5 @@
 import secrets
+import uuid
 
 from django.db import models
 
@@ -89,8 +90,13 @@ class WeeklyMails(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.reference:
-            # Generate hash value
-            self.reference = generate_hash_value()
+            for _ in range(10):
+                candidate = generate_hash_value()
+                if not WeeklyMails.objects.filter(reference=candidate).exists():
+                    self.reference = candidate
+                    break
+            else:
+                self.reference = str(uuid.uuid4())
         super().save(*args, **kwargs)
     upload_date = models.DateTimeField(auto_now=True)
     html_file = models.FileField(upload_to='html_files/', blank=True)

@@ -37,24 +37,21 @@
             <h5 class="mb-3 mt-2"><i class="bi bi-envelope me-1"></i>Versand</h5>
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
-                    <label class="form-label" for="recipient">Empfänger (Verteiler)</label>
-                    <input type="email" class="form-control" id="recipient" name="recipient"
-                           value="{{ ns.recipient }}"
-                           placeholder="hauptkapelle@bmk-buggingen.de">
+                    <label class="form-label" for="{{ form.recipient.id_for_label }}">Empfänger (Verteiler)</label>
+                    {{ form.recipient }}
                     <div class="form-text">E-Mail-Adresse oder Verteiler für den regulären Versand.</div>
+                    {% if form.recipient.errors %}<div class="invalid-feedback d-block">{{ form.recipient.errors }}</div>{% endif %}
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label" for="from_email">Absender</label>
-                    <input type="email" class="form-control" id="from_email" name="from_email"
-                           value="{{ ns.from_email }}"
-                           placeholder="news@bmk-buggingen.de">
+                    <label class="form-label" for="{{ form.from_email.id_for_label }}">Absender</label>
+                    {{ form.from_email }}
+                    {% if form.from_email.errors %}<div class="invalid-feedback d-block">{{ form.from_email.errors }}</div>{% endif %}
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label" for="default_test_email">Standard Test-Versand E-Mail</label>
-                    <input type="email" class="form-control" id="default_test_email" name="default_test_email"
-                           value="{{ ns.default_test_email }}"
-                           placeholder="deine@email.de">
+                    <label class="form-label" for="{{ form.default_test_email.id_for_label }}">Standard Test-Versand E-Mail</label>
+                    {{ form.default_test_email }}
                     <div class="form-text">Wird im Compose-Bereich als Vorbelegung beim Test-Versand angezeigt.</div>
+                    {% if form.default_test_email.errors %}<div class="invalid-feedback d-block">{{ form.default_test_email.errors }}</div>{% endif %}
                 </div>
             </div>
 
@@ -64,18 +61,16 @@
             <h5 class="mb-3"><i class="bi bi-calendar-event me-1"></i>Konzertmeister</h5>
             <div class="row g-3 mb-4">
                 <div class="col-12">
-                    <label class="form-label" for="km_appointments_url">Termine-URL</label>
-                    <input type="url" class="form-control" id="km_appointments_url" name="km_appointments_url"
-                           value="{{ ns.km_appointments_url }}"
-                           placeholder="https://app.konzertmeister.de/api/...">
+                    <label class="form-label" for="{{ form.km_appointments_url.id_for_label }}">Termine-URL</label>
+                    {{ form.km_appointments_url }}
                     <div class="form-text">API-URL zum Abrufen der Konzertmeister-Termine.</div>
+                    {% if form.km_appointments_url.errors %}<div class="invalid-feedback d-block">{{ form.km_appointments_url.errors }}</div>{% endif %}
                 </div>
                 <div class="col-12">
-                    <label class="form-label" for="km_requests_url">Anfragen-URL</label>
-                    <input type="url" class="form-control" id="km_requests_url" name="km_requests_url"
-                           value="{{ ns.km_requests_url }}"
-                           placeholder="https://app.konzertmeister.de/api/...">
+                    <label class="form-label" for="{{ form.km_requests_url.id_for_label }}">Anfragen-URL</label>
+                    {{ form.km_requests_url }}
                     <div class="form-text">API-URL zum Abrufen der Konzertmeister-Anfragen.</div>
+                    {% if form.km_requests_url.errors %}<div class="invalid-feedback d-block">{{ form.km_requests_url.errors }}</div>{% endif %}
                 </div>
             </div>
 

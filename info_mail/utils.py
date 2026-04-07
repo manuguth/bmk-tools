@@ -1,4 +1,5 @@
 import logging
+from datetime import date, timedelta
 from pathlib import Path
 
 import css_inline
@@ -67,10 +68,10 @@ def render_newsletter(mail_obj, settings) -> str:
     -------
     str : Final HTML with inlined CSS
     """
-    with open(ASSETS_DIR / "template_email.html", "r") as f:
+    with open(ASSETS_DIR / "template_email.html", "r", encoding="utf-8") as f:
         html_content = f.read()
 
-    with open(ASSETS_DIR / "styles_bmk_news.css", "r") as f:
+    with open(ASSETS_DIR / "styles_bmk_news.css", "r", encoding="utf-8") as f:
         css_content = f.read()
 
     html_content = f"<style>{css_content}</style>\n{html_content}"
@@ -93,8 +94,8 @@ def render_newsletter(mail_obj, settings) -> str:
         html_content = html_content.replace("{{" + key + "}}", value)
 
     # Last-week placeholder
-    last_week = mail_obj.week - 1 if mail_obj.week > 1 else 52
-    last_year = mail_obj.year if mail_obj.week > 1 else mail_obj.year - 1
+    previous_week_date = date.fromisocalendar(mail_obj.year, mail_obj.week, 1) - timedelta(weeks=1)
+    last_year, last_week, _ = previous_week_date.isocalendar()
     html_content = html_content.replace(
         "{{last_week}}", f"{last_week:02d}-{last_year}"
     )

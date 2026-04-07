@@ -14,6 +14,13 @@ class NewsletterSettingsForm(forms.ModelForm):
             "km_requests_url",
             "default_test_email",
         ]
+        widgets = {
+            "recipient": forms.EmailInput(attrs={"class": "form-control", "placeholder": "hauptkapelle@bmk-buggingen.de"}),
+            "from_email": forms.EmailInput(attrs={"class": "form-control", "placeholder": "news@bmk-buggingen.de"}),
+            "km_appointments_url": forms.URLInput(attrs={"class": "form-control", "placeholder": "https://app.konzertmeister.de/api/..."}),
+            "km_requests_url": forms.URLInput(attrs={"class": "form-control", "placeholder": "https://app.konzertmeister.de/api/..."}),
+            "default_test_email": forms.EmailInput(attrs={"class": "form-control", "placeholder": "deine@email.de"}),
+        }
 
 
 class UploadFileForm(forms.Form):

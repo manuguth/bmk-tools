@@ -21,6 +21,10 @@ from rest_framework.views import APIView
 
 from info_mail.models import NewsletterSettings, WeeklyMails
 
+from .forms import NewsletterComposeForm, NewsletterSettingsForm, UploadFileForm
+from .serializers import WeeklyMailsSerializer
+from .utils import render_newsletter
+
 
 def _get_newsletter_connection():
     """Return a dedicated SMTP connection for the newsletter account.
@@ -40,10 +44,6 @@ def _get_newsletter_connection():
             use_ssl=False,
         )
     return get_connection()
-
-from .forms import NewsletterComposeForm, NewsletterSettingsForm, UploadFileForm
-from .serializers import WeeklyMailsSerializer
-from .utils import render_newsletter
 
 
 @login_required
@@ -212,8 +212,8 @@ def _prefill_sonstiges(mail_obj, ns, year, week):
     if not template_path.exists():
         return
     content = template_path.read_text(encoding="utf-8")
-    last_week = week - 1 if week > 1 else 52
-    last_year = year if week > 1 else year - 1
+    previous_week_date = date.fromisocalendar(year, week, 1) - timedelta(weeks=1)
+    last_year, last_week, _ = previous_week_date.isocalendar()
     content = content.replace("{{mmv_url}}", ns.mmv_newsletter_url or "#")
     content = content.replace("{{mmv_month}}", ns.mmv_newsletter_month or "")
     content = content.replace("{{last_week}}", f"{last_week:02d}-{last_year}")
@@ -223,6 +223,11 @@ def _prefill_sonstiges(mail_obj, ns, year, week):
 
 @login_required
 def compose_newsletter(request, year, week):
+    try:
+        date.fromisocalendar(year, week, 1)
+    except ValueError:
+        raise Http404
+
     ns = NewsletterSettings.get_settings()
     mail_obj, created = WeeklyMails.objects.get_or_create(
         week=week, year=year,
@@ -244,6 +249,7 @@ def compose_newsletter(request, year, week):
                 ns.mmv_newsletter_url = request.POST.get("mmv_newsletter_url", "").strip()
                 ns.mmv_newsletter_month = request.POST.get("mmv_newsletter_month", "").strip()
                 ns.save(update_fields=["mmv_newsletter_url", "mmv_newsletter_month"])
+                mail_obj.save()
                 _prefill_sonstiges(mail_obj, ns, year, week)
                 messages.success(request, "MMV-Einstellungen gespeichert. Sonstiges-Abschnitt wurde aktualisiert.")
                 return redirect("compose_newsletter", year=year, week=week)
