@@ -72,8 +72,9 @@ AZURE_ACCOUNT_NAME = os.environ["AZURE_ACCOUNT_NAME"]
 AZURE_ACCOUNT_KEY = os.environ["AZURE_ACCOUNT_KEY"]
 AZURE_CONTAINER = os.environ["AZURE_CONTAINER"]
 DEFAULT_FILE_STORAGE = "storages.backends.azure_storage.AzureStorage"
-STATICFILES_STORAGE = "storages.backends.azure_storage.AzureStorage"
-AZURE_STATIC_CONTAINER = "static-files"
+# Static files are served by WhiteNoise (same domain) to avoid browser CORS
+# blocks on the Summernote icon fonts loaded via @font-face in the editor CSS.
+# (STATICFILES_STORAGE is already set to WhiteNoiseMiddleware storage above.)
 
 # Email Configuration (production SMTP)
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
