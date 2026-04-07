@@ -37,7 +37,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for weekly_mail in weekly_mails %}
+                    {% for weekly_mail in page_obj %}
                     <tr>
                         <td>{{ weekly_mail.year }}</td>
                         <td>{{ weekly_mail.week }}</td>
@@ -60,12 +60,48 @@
                                class="btn btn-outline-primary btn-sm" title="Bearbeiten">
                                 <i class="bi bi-pencil"></i>
                             </a>
+                            {% if weekly_mail.status == "draft" %}
+                            <form method="post" action="{% url 'delete_newsletter' weekly_mail.pk %}"
+                                  style="display:inline;"
+                                  onsubmit="return confirm('Entwurf KW {{ weekly_mail.week }}/{{ weekly_mail.year }} wirklich löschen?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-outline-danger btn-sm" title="Löschen">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                            {% endif %}
                         </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+
+        {% if page_obj.has_other_pages %}
+        <nav aria-label="Seitennavigation">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">&#8249; Zurück</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled"><span class="page-link">&#8249;</span></li>
+                {% endif %}
+
+                <li class="page-item disabled">
+                    <span class="page-link">Seite {{ page_obj.number }} von {{ page_obj.paginator.num_pages }}</span>
+                </li>
+
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Weiter &#8250;</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled"><span class="page-link">&#8250;</span></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
     </div>
 </div>
 

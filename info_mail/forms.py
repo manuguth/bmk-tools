@@ -1,7 +1,19 @@
 from django import forms
 from django_summernote.widgets import SummernoteWidget
 
-from .models import WeeklyMails
+from .models import NewsletterSettings, WeeklyMails
+
+
+class NewsletterSettingsForm(forms.ModelForm):
+    class Meta:
+        model = NewsletterSettings
+        fields = [
+            "recipient",
+            "from_email",
+            "km_appointments_url",
+            "km_requests_url",
+            "default_test_email",
+        ]
 
 
 class UploadFileForm(forms.Form):

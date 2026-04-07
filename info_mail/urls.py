@@ -6,7 +6,15 @@ from django.urls import path
 
 from info_mail import views
 
-from .views import FileUploadView, media_upload, display_media, compose_newsletter, redirect_to_current_week, newsletter_settings
+from .views import (
+    FileUploadView,
+    compose_newsletter,
+    delete_newsletter,
+    display_media,
+    media_upload,
+    newsletter_settings,
+    redirect_to_current_week,
+)
 
 urlpatterns = [
     path("overview", views.info_mail_index, name="info_mail_index"),
@@ -18,6 +26,7 @@ urlpatterns = [
     path("aktuelle-themen", views.latest_info_mail, name="latest_info_mail"),
     path("compose/", redirect_to_current_week, name="compose_newsletter_current"),
     path("compose/<int:year>/<int:week>/", compose_newsletter, name="compose_newsletter"),
+    path("delete/<int:pk>/", delete_newsletter, name="delete_newsletter"),
 ] + static(
     settings.MEDIA_URL + "mail_media/",
     document_root=os.path.join(settings.MEDIA_ROOT, "mail_media"),

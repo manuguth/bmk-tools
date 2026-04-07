@@ -23,6 +23,13 @@
         {% endfor %}
         {% endif %}
 
+        {% if form.errors %}
+        <div class="alert alert-danger">
+            <strong>Bitte korrigieren Sie die folgenden Fehler:</strong>
+            {{ form.errors }}
+        </div>
+        {% endif %}
+
         <form method="post">
             {% csrf_token %}
 

@@ -7,8 +7,9 @@ from info_mail.models import NewsletterSettings, WeeklyMails
 
 class NewsletterSettingsAdmin(admin.ModelAdmin):
     fieldsets = [
-        ("Versand", {"fields": ("recipient", "from_email")}),
+        ("Versand", {"fields": ("recipient", "from_email", "default_test_email")}),
         ("Konzertmeister", {"fields": ("km_appointments_url", "km_requests_url")}),
+        ("MMV Newsletter", {"fields": ("mmv_newsletter_url", "mmv_newsletter_month")}),
     ]
 
     def has_add_permission(self, request):

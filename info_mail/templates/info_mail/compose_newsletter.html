@@ -17,11 +17,28 @@
                 <span class="badge bg-secondary ms-2">Entwurf</span>
             {% endif %}
         </h1>
-        <a href="{% url 'info_mail_index' %}" class="btn btn-outline-secondary btn-sm">
-            <i class="bi bi-arrow-left me-1"></i>Übersicht
-        </a>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{% url 'compose_newsletter' prev_year prev_week %}" class="btn btn-outline-secondary btn-sm" title="Vorherige Woche">
+                <i class="bi bi-chevron-left"></i> KW {{ prev_week }}/{{ prev_year }}
+            </a>
+            <a href="{% url 'compose_newsletter' next_year next_week %}" class="btn btn-outline-secondary btn-sm" title="Nächste Woche">
+                KW {{ next_week }}/{{ next_year }} <i class="bi bi-chevron-right"></i>
+            </a>
+            <a href="{% url 'info_mail_index' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i>Übersicht
+            </a>
+        </div>
     </div>
     <div class="card-body">
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
         <form method="post" id="compose-form">
             {% csrf_token %}
 
@@ -34,8 +51,7 @@
                             Intro
                         </button>
                     </h2>
-                    <div id="collapseIntro" class="accordion-collapse collapse show"
-                         data-bs-parent="#sectionAccordion">
+                    <div id="collapseIntro" class="accordion-collapse collapse show">
                         <div class="accordion-body">
                             <button type="button" class="btn btn-outline-secondary btn-sm mb-2 insert-template-btn"
                                     data-field="intro" data-bs-toggle="modal" data-bs-target="#vorlagenModal">
@@ -54,8 +70,7 @@
                             Infos
                         </button>
                     </h2>
-                    <div id="collapseInfo" class="accordion-collapse collapse"
-                         data-bs-parent="#sectionAccordion">
+                    <div id="collapseInfo" class="accordion-collapse collapse">
                         <div class="accordion-body">
                             <button type="button" class="btn btn-outline-secondary btn-sm mb-2 insert-template-btn"
                                     data-field="info_content" data-bs-toggle="modal" data-bs-target="#vorlagenModal">
@@ -74,8 +89,7 @@
                             Veranstaltungen
                         </button>
                     </h2>
-                    <div id="collapseEvents" class="accordion-collapse collapse"
-                         data-bs-parent="#sectionAccordion">
+                    <div id="collapseEvents" class="accordion-collapse collapse">
                         <div class="accordion-body">
                             <button type="button" class="btn btn-outline-secondary btn-sm mb-2 insert-template-btn"
                                     data-field="events" data-bs-toggle="modal" data-bs-target="#vorlagenModal">
@@ -94,8 +108,7 @@
                             Konzert
                         </button>
                     </h2>
-                    <div id="collapseKonzert" class="accordion-collapse collapse"
-                         data-bs-parent="#sectionAccordion">
+                    <div id="collapseKonzert" class="accordion-collapse collapse">
                         <div class="accordion-body">
                             <button type="button" class="btn btn-outline-secondary btn-sm mb-2 insert-template-btn"
                                     data-field="konzert" data-bs-toggle="modal" data-bs-target="#vorlagenModal">
@@ -114,8 +127,7 @@
                             Sonstiges
                         </button>
                     </h2>
-                    <div id="collapseSonstiges" class="accordion-collapse collapse"
-                         data-bs-parent="#sectionAccordion">
+                    <div id="collapseSonstiges" class="accordion-collapse collapse">
                         <div class="accordion-body">
                             <button type="button" class="btn btn-outline-secondary btn-sm mb-2 insert-template-btn"
                                     data-field="sonstiges" data-bs-toggle="modal" data-bs-target="#vorlagenModal">
@@ -392,19 +404,67 @@
             // Close modal
             const modalEl = document.getElementById('vorlagenModal');
             bootstrap.Modal.getInstance(modalEl)?.hide();
+
+            // Phase 3.4: Visual feedback on the originating "Vorlage einfügen" button
+            if (activeField) {
+                const originBtn = document.querySelector(`.insert-template-btn[data-field="${activeField}"]`);
+                if (originBtn) {
+                    const original = originBtn.innerHTML;
+                    originBtn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Eingefügt';
+                    originBtn.classList.replace('btn-outline-secondary', 'btn-success');
+                    setTimeout(() => {
+                        originBtn.innerHTML = original;
+                        originBtn.classList.replace('btn-success', 'btn-outline-secondary');
+                    }, 1500);
+                }
+            }
         });
+    });
+
+    // ------------------------------------------------------------------ //
+    //  Phase 3.2: Unsaved-changes warning
+    // ------------------------------------------------------------------ //
+    let formDirty = false;
+    let formSubmitting = false;
+
+    document.getElementById('compose-form').addEventListener('submit', function () {
+        formSubmitting = true;
+    });
+
+    // Watch native inputs / textareas (hidden Summernote textareas included)
+    document.getElementById('compose-form').addEventListener('change', function () {
+        formDirty = true;
+    });
+
+    // Watch Summernote editors via their iframe postMessage / summernote.change event
+    // Summernote fires 'summernote.change' on the hidden textarea's parent document.
+    document.addEventListener('summernote.change', function () {
+        formDirty = true;
+    });
+
+    window.addEventListener('beforeunload', function (e) {
+        if (formDirty && !formSubmitting) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
+
+    // ------------------------------------------------------------------ //
+    //  Phase 3.3: Preview opens in a new tab
+    // ------------------------------------------------------------------ //
+    document.addEventListener('DOMContentLoaded', function () {
+        const previewBtn = document.querySelector('button[value="preview"]');
+        if (previewBtn) {
+            previewBtn.addEventListener('click', function () {
+                const form = document.getElementById('compose-form');
+                const originalTarget = form.target;
+                form.target = '_blank';
+                // Restore after the submit event so other actions still work
+                setTimeout(() => { form.target = originalTarget; }, 100);
+            });
+        }
     });
 })();
 </script>
 
-{% if messages %}
-<script>
-    // Show Django messages as Bootstrap toasts (simplified: alerts at top)
-    document.addEventListener('DOMContentLoaded', function() {
-        {% for message in messages %}
-        console.log("{{ message }}");
-        {% endfor %}
-    });
-</script>
-{% endif %}
 {% endblock page_content %}

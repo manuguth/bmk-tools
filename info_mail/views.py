@@ -1,5 +1,5 @@
 import os
-from datetime import date
+from datetime import date, timedelta
 
 from azure.storage.blob import BlobServiceClient
 from django.conf import settings
@@ -8,8 +8,10 @@ from django.contrib.auth.decorators import login_required
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.core.mail import EmailMessage, get_connection
-from django.http import HttpRequest, HttpResponse
-from django.shortcuts import redirect, render
+from django.core.paginator import Paginator
+from django.db.models import Q
+from django.http import Http404, HttpRequest, HttpResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.parsers import FormParser, MultiPartParser
@@ -39,22 +41,28 @@ def _get_newsletter_connection():
         )
     return get_connection()
 
-from .forms import NewsletterComposeForm, UploadFileForm
+from .forms import NewsletterComposeForm, NewsletterSettingsForm, UploadFileForm
 from .serializers import WeeklyMailsSerializer
 from .utils import render_newsletter
 
 
 @login_required
 def info_mail_index(request: HttpRequest) -> HttpResponse:
-    weekly_mails = WeeklyMails.objects.order_by("-year", "-week")
-    context = {"weekly_mails": weekly_mails}
+    all_mails = WeeklyMails.objects.order_by("-year", "-week")
+    paginator = Paginator(all_mails, 20)
+    page_obj = paginator.get_page(request.GET.get("page"))
+    context = {"page_obj": page_obj}
     return render(request, "info_mail/info_mail_index.html", context)
 
 
 def info_mail_details(request: HttpRequest, reference: str) -> HttpResponse:
-    weekly_mails = WeeklyMails.objects.get(reference=reference)
-    html_file = weekly_mails.html_file
-    return HttpResponse(html_file.read(), content_type="text/html")
+    try:
+        weekly_mail = WeeklyMails.objects.get(reference=reference)
+    except WeeklyMails.DoesNotExist:
+        raise Http404
+    if not weekly_mail.html_file:
+        raise Http404
+    return HttpResponse(weekly_mail.html_file.read(), content_type="text/html")
 
 def latest_info_mail(request: HttpRequest) -> HttpResponse:
     today = date.today()
@@ -75,11 +83,9 @@ def latest_info_mail(request: HttpRequest) -> HttpResponse:
         return HttpResponse("No info mail available.", status=404)
 
     weekly_mail = WeeklyMails.objects.get(year=closest[0], week=closest[1])
-
-    # weekly_mail = WeeklyMails.objects.latest("upload_date")
-
-    html_file = weekly_mail.html_file
-    return HttpResponse(html_file.read(), content_type="text/html")
+    if not weekly_mail.html_file:
+        raise Http404
+    return HttpResponse(weekly_mail.html_file.read(), content_type="text/html")
 
 
 class FileUploadView(APIView):
@@ -144,8 +150,7 @@ def display_media(request):
     - A rendered HTTP response containing the media URLs.
 
     """
-    if ("DJANGO_ENV" in os.environ and os.environ["DJANGO_ENV"] == "production"):
-
+    if not settings.DEBUG:
         connection_string = f"DefaultEndpointsProtocol=https;AccountName={os.environ['AZURE_ACCOUNT_NAME']};AccountKey={os.environ['AZURE_ACCOUNT_KEY']};EndpointSuffix=core.windows.net"
         container_name = os.environ['AZURE_CONTAINER']
         blob_service_client = BlobServiceClient.from_connection_string(connection_string)
@@ -158,11 +163,6 @@ def display_media(request):
     else:
         _, filenames = default_storage.listdir("mail_media")
         media_urls = [default_storage.url("mail_media/" + name) for name in filenames]
-        print(media_urls)
-
-    # _, filenames = default_storage.listdir("mail_media")
-    # media_urls = [default_storage.url("mail_media/" + name) for name in filenames]
-    # print(media_urls)
     return render(request, "info_mail/display_media.html", {"media_urls": media_urls})
 
 
@@ -170,15 +170,14 @@ def display_media(request):
 def newsletter_settings(request):
     ns = NewsletterSettings.get_settings()
     if request.method == "POST":
-        ns.recipient = request.POST.get("recipient", "").strip()
-        ns.from_email = request.POST.get("from_email", "").strip()
-        ns.km_appointments_url = request.POST.get("km_appointments_url", "").strip()
-        ns.km_requests_url = request.POST.get("km_requests_url", "").strip()
-        ns.default_test_email = request.POST.get("default_test_email", "").strip()
-        ns.save()
-        messages.success(request, "Einstellungen gespeichert.")
-        return redirect("newsletter_settings")
-    return render(request, "info_mail/newsletter_settings.html", {"ns": ns})
+        form = NewsletterSettingsForm(request.POST, instance=ns)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Einstellungen gespeichert.")
+            return redirect("newsletter_settings")
+    else:
+        form = NewsletterSettingsForm(instance=ns)
+    return render(request, "info_mail/newsletter_settings.html", {"ns": ns, "form": form})
 
 
 @login_required
@@ -192,18 +191,18 @@ def _copy_from_previous(mail_obj, year, week):
     """Copy intro/info_content/events/konzert from the most recent earlier newsletter."""
     previous = (
         WeeklyMails.objects
-        .filter(year__lte=year)
-        .exclude(week=week, year=year)
+        .filter(Q(year__lt=year) | Q(year=year, week__lt=week))
         .order_by("-year", "-week")
         .first()
     )
     if previous is None:
-        return
+        return None
     mail_obj.intro = previous.intro or ""
     mail_obj.info_content = previous.info_content or ""
     mail_obj.events = previous.events or ""
     mail_obj.konzert = previous.konzert or ""
     mail_obj.save(update_fields=["intro", "info_content", "events", "konzert"])
+    return previous
 
 
 def _prefill_sonstiges(mail_obj, ns, year, week):
@@ -230,8 +229,10 @@ def compose_newsletter(request, year, week):
     )
 
     if created:
-        _copy_from_previous(mail_obj, year, week)
+        previous = _copy_from_previous(mail_obj, year, week)
         _prefill_sonstiges(mail_obj, ns, year, week)
+        if previous is not None:
+            messages.info(request, f"Inhalte aus KW {previous.week}/{previous.year} übernommen.")
 
     if request.method == "POST":
         form = NewsletterComposeForm(request.POST, instance=mail_obj)
@@ -298,6 +299,10 @@ def compose_newsletter(request, year, week):
     else:
         form = NewsletterComposeForm(instance=mail_obj)
 
+    ref_date = date.fromisocalendar(year, week, 1)
+    prev_year, prev_week, _ = (ref_date - timedelta(weeks=1)).isocalendar()
+    next_year, next_week, _ = (ref_date + timedelta(weeks=1)).isocalendar()
+
     context = {
         "form": form,
         "mail": mail_obj,
@@ -305,5 +310,23 @@ def compose_newsletter(request, year, week):
         "year": year,
         "ns": ns,
         "default_test_email": ns.default_test_email,
+        "prev_week": prev_week,
+        "prev_year": prev_year,
+        "next_week": next_week,
+        "next_year": next_year,
     }
     return render(request, "info_mail/compose_newsletter.html", context)
+
+
+@login_required
+def delete_newsletter(request, pk):
+    mail = get_object_or_404(WeeklyMails, pk=pk)
+    if request.method != "POST":
+        return redirect("info_mail_index")
+    if mail.status == "sent":
+        messages.error(request, "Gesendete Newsletter können nicht gelöscht werden.")
+        return redirect("info_mail_index")
+    week, year = mail.week, mail.year
+    mail.delete()
+    messages.success(request, f"Entwurf KW {week}/{year} gelöscht.")
+    return redirect("info_mail_index")

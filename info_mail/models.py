@@ -1,11 +1,10 @@
+import secrets
+
 from django.db import models
-import random
-import string
+
 
 def generate_hash_value():
-    letters = string.ascii_letters
-    random_letters = ''.join(random.choice(letters) for _ in range(8))
-    return random_letters.lower()
+    return secrets.token_hex(4)
 
 
 class NewsletterSettings(models.Model):
@@ -75,7 +74,7 @@ class WeeklyMails(models.Model):
 
     class Meta:
         unique_together = ('week', 'year')
-    reference = models.CharField(max_length=255, blank=True)
+    reference = models.CharField(max_length=255, blank=True, unique=True)
     status = models.CharField(
         max_length=10, choices=STATUS_CHOICES, default="draft",
         verbose_name="Status",

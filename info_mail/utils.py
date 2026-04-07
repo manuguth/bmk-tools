@@ -80,19 +80,17 @@ def render_newsletter(mail_obj, settings) -> str:
         "{{placeholder_title}}", f"{mail_obj.week}/{mail_obj.year}"
     )
 
-    # Section placeholders
-    sections = {
-        "intro": mail_obj.intro,
-        "info": mail_obj.info_content,
-        "events": mail_obj.events,
-        "konzert": mail_obj.konzert,
-        "sonstiges": mail_obj.sonstiges,
+    # Section placeholders — all replacements in one place so missing/renamed keys are visible.
+    placeholders = {
+        "intro": mail_obj.intro or "",
+        "info": mail_obj.info_content or "",
+        "events": mail_obj.events or "",
+        "konzert": mail_obj.konzert or "",
+        "sonstiges": mail_obj.sonstiges or "",
+        "footer": "",  # not editable in compose
     }
-    for placeholder, content in sections.items():
-        html_content = html_content.replace("{{" + placeholder + "}}", content or "")
-
-    # Footer placeholder — cleared (not editable in compose)
-    html_content = html_content.replace("{{footer}}", "")
+    for key, value in placeholders.items():
+        html_content = html_content.replace("{{" + key + "}}", value)
 
     # Last-week placeholder
     last_week = mail_obj.week - 1 if mail_obj.week > 1 else 52
