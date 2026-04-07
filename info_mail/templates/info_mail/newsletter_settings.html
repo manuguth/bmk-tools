@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Newsletter-Einstellungen{% endblock %}
+
+{% block page_content %}
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h1 class="h3 mb-0">
+            <i class="bi bi-gear me-2"></i>Newsletter-Einstellungen
+        </h1>
+        <a href="{% url 'info_mail_index' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>Übersicht
+        </a>
+    </div>
+    <div class="card-body">
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        {% if form.errors %}
+        <div class="alert alert-danger">
+            <strong>Bitte korrigieren Sie die folgenden Fehler:</strong>
+            {{ form.errors }}
+        </div>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+
+            <!-- Versand -->
+            <h5 class="mb-3 mt-2"><i class="bi bi-envelope me-1"></i>Versand</h5>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label" for="{{ form.recipient.id_for_label }}">Empfänger (Verteiler)</label>
+                    {{ form.recipient }}
+                    <div class="form-text">E-Mail-Adresse oder Verteiler für den regulären Versand.</div>
+                    {% if form.recipient.errors %}<div class="invalid-feedback d-block">{{ form.recipient.errors }}</div>{% endif %}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="{{ form.from_email.id_for_label }}">Absender</label>
+                    {{ form.from_email }}
+                    {% if form.from_email.errors %}<div class="invalid-feedback d-block">{{ form.from_email.errors }}</div>{% endif %}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="{{ form.default_test_email.id_for_label }}">Standard Test-Versand E-Mail</label>
+                    {{ form.default_test_email }}
+                    <div class="form-text">Wird im Compose-Bereich als Vorbelegung beim Test-Versand angezeigt.</div>
+                    {% if form.default_test_email.errors %}<div class="invalid-feedback d-block">{{ form.default_test_email.errors }}</div>{% endif %}
+                </div>
+            </div>
+
+            <hr>
+
+            <!-- Konzertmeister -->
+            <h5 class="mb-3"><i class="bi bi-calendar-event me-1"></i>Konzertmeister</h5>
+            <div class="row g-3 mb-4">
+                <div class="col-12">
+                    <label class="form-label" for="{{ form.km_appointments_url.id_for_label }}">Termine-URL</label>
+                    {{ form.km_appointments_url }}
+                    <div class="form-text">API-URL zum Abrufen der Konzertmeister-Termine.</div>
+                    {% if form.km_appointments_url.errors %}<div class="invalid-feedback d-block">{{ form.km_appointments_url.errors }}</div>{% endif %}
+                </div>
+                <div class="col-12">
+                    <label class="form-label" for="{{ form.km_requests_url.id_for_label }}">Anfragen-URL</label>
+                    {{ form.km_requests_url }}
+                    <div class="form-text">API-URL zum Abrufen der Konzertmeister-Anfragen.</div>
+                    {% if form.km_requests_url.errors %}<div class="invalid-feedback d-block">{{ form.km_requests_url.errors }}</div>{% endif %}
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save me-1"></i>Speichern
+                </button>
+                <a href="{% url 'info_mail_index' %}" class="btn btn-outline-secondary">Abbrechen</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock page_content %}

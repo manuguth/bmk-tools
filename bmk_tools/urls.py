@@ -24,6 +24,7 @@ from info_mail import views as info_mail_views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("summernote/", include("django_summernote.urls")),
     path("festival/", include(("festival.urls", "festival"), namespace="festival")),
     path("event/", include(("festival.urls", "festival"), namespace="event")),
     path("", views.home, name="home"),

@@ -1,0 +1,470 @@
+{% extends "base.html" %}
+
+{% block title %}Newsletter verfassen — KW {{ week }}/{{ year }}{% endblock %}
+
+{% block extra_head %}
+    {{ form.media }}
+{% endblock extra_head %}
+
+{% block page_content %}
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h1 class="h3 mb-0">
+            <i class="bi bi-pencil-square me-2"></i>Newsletter KW {{ week }}/{{ year }}
+            {% if mail.status == "sent" %}
+                <span class="badge bg-success ms-2">Gesendet</span>
+            {% else %}
+                <span class="badge bg-secondary ms-2">Entwurf</span>
+            {% endif %}
+        </h1>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{% url 'compose_newsletter' prev_year prev_week %}" class="btn btn-outline-secondary btn-sm" title="Vorherige Woche">
+                <i class="bi bi-chevron-left"></i> KW {{ prev_week }}/{{ prev_year }}
+            </a>
+            <a href="{% url 'compose_newsletter' next_year next_week %}" class="btn btn-outline-secondary btn-sm" title="Nächste Woche">
+                KW {{ next_week }}/{{ next_year }} <i class="bi bi-chevron-right"></i>
+            </a>
+            <a href="{% url 'info_mail_index' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i>Übersicht
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+        <form method="post" id="compose-form">
+            {% csrf_token %}
+
+            <div class="accordion" id="sectionAccordion">
+                <!-- Intro -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button" type="button"
+                                data-bs-toggle="collapse" data-bs-target="#collapseIntro">
+                            Intro
+                        </button>
+                    </h2>
+                    <div id="collapseIntro" class="accordion-collapse collapse show">
+                        <div class="accordion-body">
+                            <button type="button" class="btn btn-outline-secondary btn-sm mb-2 insert-template-btn"
+                                    data-field="intro" data-bs-toggle="modal" data-bs-target="#vorlagenModal">
+                                <i class="bi bi-layout-text-window-reverse me-1"></i>Vorlage einfügen
+                            </button>
+                            {{ form.intro }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Infos -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button"
+                                data-bs-toggle="collapse" data-bs-target="#collapseInfo">
+                            Infos
+                        </button>
+                    </h2>
+                    <div id="collapseInfo" class="accordion-collapse collapse">
+                        <div class="accordion-body">
+                            <button type="button" class="btn btn-outline-secondary btn-sm mb-2 insert-template-btn"
+                                    data-field="info_content" data-bs-toggle="modal" data-bs-target="#vorlagenModal">
+                                <i class="bi bi-layout-text-window-reverse me-1"></i>Vorlage einfügen
+                            </button>
+                            {{ form.info_content }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Veranstaltungen -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button"
+                                data-bs-toggle="collapse" data-bs-target="#collapseEvents">
+                            Veranstaltungen
+                        </button>
+                    </h2>
+                    <div id="collapseEvents" class="accordion-collapse collapse">
+                        <div class="accordion-body">
+                            <button type="button" class="btn btn-outline-secondary btn-sm mb-2 insert-template-btn"
+                                    data-field="events" data-bs-toggle="modal" data-bs-target="#vorlagenModal">
+                                <i class="bi bi-layout-text-window-reverse me-1"></i>Vorlage einfügen
+                            </button>
+                            {{ form.events }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Konzert -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button"
+                                data-bs-toggle="collapse" data-bs-target="#collapseKonzert">
+                            Konzert
+                        </button>
+                    </h2>
+                    <div id="collapseKonzert" class="accordion-collapse collapse">
+                        <div class="accordion-body">
+                            <button type="button" class="btn btn-outline-secondary btn-sm mb-2 insert-template-btn"
+                                    data-field="konzert" data-bs-toggle="modal" data-bs-target="#vorlagenModal">
+                                <i class="bi bi-layout-text-window-reverse me-1"></i>Vorlage einfügen
+                            </button>
+                            {{ form.konzert }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sonstiges -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button"
+                                data-bs-toggle="collapse" data-bs-target="#collapseSonstiges">
+                            Sonstiges
+                        </button>
+                    </h2>
+                    <div id="collapseSonstiges" class="accordion-collapse collapse">
+                        <div class="accordion-body">
+                            <button type="button" class="btn btn-outline-secondary btn-sm mb-2 insert-template-btn"
+                                    data-field="sonstiges" data-bs-toggle="modal" data-bs-target="#vorlagenModal">
+                                <i class="bi bi-layout-text-window-reverse me-1"></i>Vorlage einfügen
+                            </button>
+                            {{ form.sonstiges }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MMV Settings -->
+            <div class="card border-secondary mt-4 mb-2">
+                <div class="card-header py-2 d-flex align-items-center gap-2">
+                    <i class="bi bi-link-45deg"></i>
+                    <strong class="small">MMV Newsletter-Link</strong>
+                    <span class="text-muted small ms-1">(wird im Sonstiges-Abschnitt neuer Ausgaben vorausgefüllt)</span>
+                </div>
+                <div class="card-body py-3">
+                    <div class="row g-2 align-items-end">
+                        <div class="col-md-6">
+                            <label class="form-label small mb-1" for="mmv_newsletter_url">URL</label>
+                            <input type="url" class="form-control form-control-sm" id="mmv_newsletter_url"
+                                   name="mmv_newsletter_url" value="{{ ns.mmv_newsletter_url }}"
+                                   placeholder="https://4xzqp.r.sp1-brevo.net/...">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small mb-1" for="mmv_newsletter_month">Monat</label>
+                            <input type="text" class="form-control form-control-sm" id="mmv_newsletter_month"
+                                   name="mmv_newsletter_month" value="{{ ns.mmv_newsletter_month }}"
+                                   placeholder="z. B. April">
+                        </div>
+                        <div class="col-md-3">
+                            <button type="submit" name="action" value="save_settings"
+                                    class="btn btn-outline-secondary btn-sm w-100">
+                                <i class="bi bi-save me-1"></i>Speichern
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Termine info -->
+            <div class="alert alert-info mt-3 mb-3">
+                <i class="bi bi-calendar-event me-1"></i>
+                Konzertmeister-Termine werden beim Vorschau/Senden live abgerufen.
+            </div>
+
+            <!-- Action buttons -->
+            <div class="d-flex flex-wrap gap-2 mt-3">
+                <button type="submit" name="action" value="save" class="btn btn-secondary">
+                    <i class="bi bi-save me-1"></i>Speichern
+                </button>
+                <button type="submit" name="action" value="preview" class="btn btn-info text-white">
+                    <i class="bi bi-eye me-1"></i>Vorschau
+                </button>
+                <button type="submit" name="action" value="send" class="btn btn-success"
+                        {% if mail.status == "sent" %}disabled{% endif %}
+                        onclick="return confirm('Newsletter wirklich an {{ ns.recipient }} senden?');">
+                    <i class="bi bi-send me-1"></i>Senden
+                </button>
+            </div>
+
+            <!-- Test-send row -->
+            <hr>
+            <div class="row g-2 align-items-end">
+                <div class="col-auto">
+                    <label for="test_email" class="form-label mb-0 small text-muted">Test-Versand</label>
+                </div>
+                <div class="col-sm-5">
+                    <input type="email" class="form-control form-control-sm" id="test_email"
+                           name="test_email" value="{{ default_test_email }}" placeholder="test@example.com">
+                </div>
+                <div class="col-auto">
+                    <button type="submit" name="action" value="send_test"
+                            class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-envelope-arrow-up me-1"></i>Test-Mail senden
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Template picker modal -->
+<div class="modal fade" id="vorlagenModal" tabindex="-1" aria-labelledby="vorlagenModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="vorlagenModalLabel">
+                    <i class="bi bi-layout-text-window-reverse me-2"></i>Vorlage einf&uuml;gen
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3" id="vorlagen-list"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    // ------------------------------------------------------------------ //
+    //  Snippet definitions
+    // ------------------------------------------------------------------ //
+    const CARD_OUTER = 'background-color:#ffffff;border:1px solid #e1e8ed;border-left:6px solid #0056b3;padding:20px;border-radius:12px;font-family:\'Segoe UI\',Roboto,Helvetica,Arial,sans-serif;margin-bottom:25px;box-shadow:0 2px 8px rgba(0,0,0,0.05);';
+    const ICON_BOX   = 'background:#f0f7ff;width:52px;height:52px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-right:18px;flex-shrink:0;';
+    const META_ROW   = 'color:#4a5568;font-size:14px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;';
+
+    function eventCard({ emoji, title, desc, meta, rightBox, kmUrl }) {
+        const leftDiv = `<div style="display:flex;align-items:flex-start;min-width:300px;flex:2;">
+          <div style="${ICON_BOX}"><span style="font-size:26px;">${emoji}</span></div>
+          <div>
+            <h3 style="margin:0 0 4px 0;color:#1a202c;font-size:20px;font-weight:800;line-height:1.2;">${title}</h3>
+            <p style="margin:0 0 8px 0;color:#4a5568;font-size:14px;line-height:1.4;">${desc}</p>
+            <div style="${META_ROW}">${meta}</div>
+          </div></div>`;
+
+        let rightDiv = '';
+        if (rightBox) {
+            rightDiv = `<div style="display:flex;align-items:center;gap:15px;flex-wrap:wrap;justify-content:flex-end;flex:1;">
+              <div style="font-size:13px;color:#1a202c;background:#fff8f0;padding:10px 15px;border-radius:8px;border:1px solid #f6d4a0;">
+                <strong style="color:#b36b00;display:block;margin-bottom:2px;">⚠️ Probenausfall:</strong>
+                TT.MM. und TT.MM.</div></div>`;
+        }
+        if (kmUrl) {
+            rightDiv = `<div style="flex:1;text-align:right;min-width:150px;">
+              <a href="${kmUrl}" target="_blank" style="background-color:#0056b3;color:#ffffff!important;text-decoration:none;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:bold;white-space:nowrap;box-shadow:0 3px 0 #003d7a;display:inline-block;">Abstimmen →</a></div>`;
+        }
+
+        return `<div style="${CARD_OUTER}">
+  <div style="display:flex;flex-wrap:wrap;align-items:flex-start;gap:20px;">
+    ${leftDiv}${rightDiv}
+  </div>
+</div>`;
+    }
+
+    const metaDateLoc = (date, loc) =>
+        `<span>🗓️ <strong>${date}</strong></span><span style="color:#cbd5e0;">|</span><span>📍 ${loc}</span>`;
+
+    const VORLAGEN = [
+        {
+            id: 'termin-einfach',
+            title: 'Termin ankündigen',
+            icon: '🗓️',
+            desc: 'Blaue Karte mit Icon, Titel, Beschreibung und Datum/Ort.',
+            html: eventCard({
+                emoji: '🎵',
+                title: 'Titel der Veranstaltung',
+                desc: 'Kurze Beschreibung der Veranstaltung.',
+                meta: metaDateLoc('TT. Monat | HH:MM Uhr', 'Ort'),
+            }),
+        },
+        {
+            id: 'termin-km',
+            title: 'Termin mit Abstimmung (KM)',
+            icon: '📅',
+            desc: 'Karte mit Konzertmeister-Button rechts zum Abstimmen.',
+            html: eventCard({
+                emoji: '🎵',
+                title: 'Titel der Veranstaltung',
+                desc: 'Bitte tragt euch im Konzertmeister ein.',
+                meta: metaDateLoc('TT. Monat | HH:MM Uhr', 'Ort'),
+                kmUrl: 'https://web.konzertmeister.app/appointment/XXXXXX',
+            }),
+        },
+        {
+            id: 'termin-warnung',
+            title: 'Termin mit Probenausfall',
+            icon: '⚠️',
+            desc: 'Karte mit Warungsbox für ausgefallene Proben.',
+            html: eventCard({
+                emoji: '🎵',
+                title: 'Titel der Veranstaltung',
+                desc: 'Kurze Beschreibung der Veranstaltung.',
+                meta: metaDateLoc('TT. Monat', 'Ort'),
+                rightBox: true,
+            }),
+        },
+        {
+            id: 'auftritt-angenommen',
+            title: 'Auftrittsanfrage angenommen',
+            icon: '✅',
+            desc: 'Karte mit grünem Badge und Statuszeilen für angenommene Auftritte.',
+            html: `<div style="${CARD_OUTER}">
+  <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
+    <div style="${ICON_BOX}"><span style="font-size:26px;">🎺</span></div>
+    <div>
+      <h3 style="margin:0 0 4px 0;color:#1a202c;font-size:20px;font-weight:800;line-height:1.2;">Auftrittsanfrage</h3>
+      <span style="display:inline-block;background:#d1fae5;color:#065f46;font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px;border:1px solid #6ee7b7;">✅ Angenommen</span>
+    </div>
+  </div>
+  <p style="margin:0 0 12px 0;color:#4a5568;font-size:14px;line-height:1.4;">Den Auftritt <strong>Titel des Auftritts</strong> haben wir angenommen.</p>
+  <div style="display:flex;flex-direction:column;gap:6px;font-size:13px;color:#4a5568;">
+    <div>🗓️ <strong>TT. Monat JJJJ</strong> &nbsp;|&nbsp; <strong>HH:MM Uhr</strong></div>
+    <div>📍 <strong>Ort</strong></div>
+    <div>👔 <strong>Uniform:</strong> Uniform-Details</div>
+  </div>
+</div>`,
+        },
+        {
+            id: 'hinweis',
+            title: 'Wichtiger Hinweis',
+            icon: '⚠️',
+            desc: 'Gelbe Warnbox für wichtige Mitteilungen.',
+            html: `<div style="background-color:#fff3cd;border:2px solid #ffcc00;border-radius:8px;padding:1em;margin:1em 0;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <h3 style="color:#b36b00;margin-top:0;font-size:16px;">⚠️ Wichtiger Hinweis</h3>
+  <p style="font-size:14px;color:#333;margin:0;">Text des Hinweises.</p>
+</div>`,
+        },
+    ];
+
+
+    // ------------------------------------------------------------------ //
+    //  Build modal cards
+    // ------------------------------------------------------------------ //
+    function buildModal() {
+        const list = document.getElementById('vorlagen-list');
+        if (!list) return;
+        list.innerHTML = VORLAGEN.map(v => `
+            <div class="col-md-6">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span style="font-size:22px;">${v.icon}</span>
+                            <strong>${v.title}</strong>
+                        </div>
+                        <p class="text-muted small mb-3">${v.desc}</p>
+                        <button type="button" class="btn btn-primary btn-sm mt-auto use-vorlage-btn"
+                                data-vorlage-id="${v.id}">
+                            <i class="bi bi-plus-lg me-1"></i>Einf&uuml;gen
+                        </button>
+                    </div>
+                </div>
+            </div>`).join('');
+    }
+
+    // ------------------------------------------------------------------ //
+    //  Event wiring
+    // ------------------------------------------------------------------ //
+    let activeField = null;
+
+    document.addEventListener('DOMContentLoaded', function () {
+        buildModal();
+
+        // Track which field opened the modal
+        document.querySelectorAll('.insert-template-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                activeField = this.dataset.field;
+            });
+        });
+
+        // Insert snippet into the Summernote editor
+        document.getElementById('vorlagen-list').addEventListener('click', function (e) {
+            const btn = e.target.closest('.use-vorlage-btn');
+            if (!btn || !activeField) return;
+            const vorlage = VORLAGEN.find(v => v.id === btn.dataset.vorlageId);
+            if (!vorlage) return;
+
+            // SummernoteWidget renders an iframe; jQuery/Summernote live inside it.
+            // iframe id = field_id + '_iframe', Summernote is on #summernote inside.
+            const iframe = document.getElementById('id_' + activeField + '_iframe');
+            if (iframe && iframe.contentWindow && iframe.contentWindow.jQuery) {
+                const iframeJQ = iframe.contentWindow.jQuery;
+                const $sn = iframeJQ('#summernote');
+                const existing = $sn.summernote('code') || '';
+                $sn.summernote('code', existing + vorlage.html);
+                // Sync to the hidden textarea so Django picks it up on submit
+                const textarea = document.getElementById('id_' + activeField);
+                if (textarea) textarea.value = existing + vorlage.html;
+            }
+
+            // Close modal
+            const modalEl = document.getElementById('vorlagenModal');
+            bootstrap.Modal.getInstance(modalEl)?.hide();
+
+            // Phase 3.4: Visual feedback on the originating "Vorlage einfügen" button
+            if (activeField) {
+                const originBtn = document.querySelector(`.insert-template-btn[data-field="${activeField}"]`);
+                if (originBtn) {
+                    const original = originBtn.innerHTML;
+                    originBtn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Eingefügt';
+                    originBtn.classList.replace('btn-outline-secondary', 'btn-success');
+                    setTimeout(() => {
+                        originBtn.innerHTML = original;
+                        originBtn.classList.replace('btn-success', 'btn-outline-secondary');
+                    }, 1500);
+                }
+            }
+        });
+    });
+
+    // ------------------------------------------------------------------ //
+    //  Phase 3.2: Unsaved-changes warning
+    // ------------------------------------------------------------------ //
+    let formDirty = false;
+    let formSubmitting = false;
+
+    document.getElementById('compose-form').addEventListener('submit', function () {
+        formSubmitting = true;
+    });
+
+    // Watch native inputs / textareas (hidden Summernote textareas included)
+    document.getElementById('compose-form').addEventListener('change', function () {
+        formDirty = true;
+    });
+
+    // Watch Summernote editors via their iframe postMessage / summernote.change event
+    // Summernote fires 'summernote.change' on the hidden textarea's parent document.
+    document.addEventListener('summernote.change', function () {
+        formDirty = true;
+    });
+
+    window.addEventListener('beforeunload', function (e) {
+        if (formDirty && !formSubmitting) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
+
+    // ------------------------------------------------------------------ //
+    //  Phase 3.3: Preview opens in a new tab
+    // ------------------------------------------------------------------ //
+    document.addEventListener('DOMContentLoaded', function () {
+        const previewBtn = document.querySelector('button[value="preview"]');
+        if (previewBtn) {
+            previewBtn.addEventListener('click', function () {
+                const form = document.getElementById('compose-form');
+                const originalTarget = form.target;
+                form.target = '_blank';
+                // Restore after the submit event so other actions still work
+                setTimeout(() => { form.target = originalTarget; }, 100);
+            });
+        }
+    });
+})();
+</script>
+
+{% endblock page_content %}

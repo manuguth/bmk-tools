@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "storages",
     "rest_framework",
     "rest_framework.authtoken",
+    "django_summernote",
 ]
 
 REST_FRAMEWORK = {
@@ -172,3 +173,11 @@ if os.environ.get("EMAIL_HOST_USER"):
 else:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
     DEFAULT_FROM_EMAIL = "Tickets BMK <tickets@bmk-buggingen.de>"
+
+# Newsletter-specific SMTP credentials (may differ from tickets SMTP account)
+NEWSLETTER_EMAIL_HOST_USER = os.environ.get("NEWSLETTER_EMAIL_HOST_USER")
+NEWSLETTER_EMAIL_HOST_PASSWORD = os.environ.get("NEWSLETTER_EMAIL_HOST_PASSWORD", "")
+NEWSLETTER_EMAIL_HOST = os.environ.get("NEWSLETTER_EMAIL_HOST", os.environ.get("EMAIL_HOST", "smtp.office365.com"))
+NEWSLETTER_EMAIL_PORT = int(os.environ.get("NEWSLETTER_EMAIL_PORT", os.environ.get("EMAIL_PORT", 587)))
+
+X_FRAME_OPTIONS = "SAMEORIGIN"

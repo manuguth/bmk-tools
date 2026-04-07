@@ -1,0 +1,373 @@
+.container {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #ffffff;
+    border: 1px solid #dddddd;
+    border-radius: 4px;
+}
+
+h1 {
+    color: #333333;
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+h2 {
+    color: #333333;
+    font-size: 22px;
+    margin-bottom: 20px;
+}
+
+p {
+    color: #666666;
+    font-size: 16px;
+    line-height: 1.5;
+    margin-bottom: 10px;
+}
+li {
+    color: #666666;
+    font-size: 16px;
+    line-height: 1.0;
+    margin-bottom: 10px;
+}
+
+a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.button {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #ffffff;
+    font-size: 16px;
+    text-decoration: none;
+    border-radius: 4px;
+}
+
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Calibri, Helvetica, Verdana, sans-serif;
+    background: #f5f5f5;
+    color: #293C4E;
+}
+
+a.list-item-link:hover,
+a.list-item-link:visited,
+a.list-item-link:link,
+a.list-item-link:active {
+    text-decoration: none;
+    display: block;
+}
+
+a:hover,
+a:visited,
+a:link,
+a:active {
+    color: #293C4E;
+    text-decoration: underline;
+}
+
+.list-footer {
+    text-align: center;
+    padding: 10px 0;
+    font-size: 13px;
+    color: #888;
+    text-decoration: none;
+    display: block;
+}
+
+.list-footer:hover,
+.list-footer:visited,
+.list-footer:active,
+.list-footer:link {
+    color: #293C4E;
+    text-decoration: none;
+}
+
+.link {
+    text-decoration: underline;
+}
+
+.logo {
+    margin-top: 5px;
+}
+
+.logo img {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+}
+
+.km-app-date {
+    flex: 0 0 80px;
+}
+
+.km-app-date .km-week-day-date {
+    margin-bottom: 4px;
+    font-weight: bold;
+    display: flex;
+}
+
+.km-app-date .km-week-day-date .km-week-day {
+    text-align: center;
+    color: white;
+    font-weight: bold;
+    line-height: 40px;
+    width: 40px;
+    height: 40px;
+    background-color: #2BA9E0;
+    font-size: 18px;
+}
+
+.km-app-date .km-week-day-date .km-week-day.km-special-date {
+    background-color: #f44336;
+}
+
+.km-app-date .km-week-day-date .km-week-day.km-different-year {
+    line-height: 22px;
+}
+
+.km-app-date .km-week-day-date .km-week-day .km-year {
+    margin-top: 4px;
+    margin-bottom: 1px;
+    line-height: 10px;
+    font-size: 10px;
+}
+
+.km-app-date .km-week-day-date .km-date-month {
+    margin-left: 4px;
+    text-align: right;
+    flex-grow: 1;
+    line-height: 1.3em;
+}
+
+.km-app-date .km-week-day-date .km-date-month .km-date {
+    font-size: 24px;
+    line-height: 24px;
+}
+
+.km-app-date .km-week-day-date .km-date-month .km-month {
+    font-size: 13px;
+    line-height: 16px;
+    margin-right: 2px;
+    color: #666;
+}
+
+.km-app-date .km-time {
+    text-align: center;
+    font-size: 13px;
+    font-weight: bold;
+    white-space: normal;
+    color: #666;
+}
+
+.km-app-date.cancelled .km-week-day-date {
+    opacity: 0.75;
+}
+
+.km-app-date.cancelled .km-time {
+    opacity: 0.75;
+    text-decoration: line-through;
+    color: #f44336;
+}
+
+@media (max-width: 374px) {
+    .km-app-date {
+        flex: 0 0 75px;
+    }
+
+    .km-app-date .km-week-day-date .km-week-day {
+        line-height: 38px;
+        width: 38px;
+        height: 38px;
+        font-size: 18px;
+    }
+
+    .km-app-date .km-week-day-date .km-date-month {
+        text-align: right;
+        flex-grow: 1;
+        line-height: 1.3em;
+    }
+
+    .km-app-date .km-week-day-date .km-date-month .km-date {
+        font-size: 22px;
+        line-height: 24px;
+    }
+
+    .km-app-date .km-week-day-date .km-date-month .km-month {
+        font-size: 12px;
+        line-height: 14px;
+    }
+
+    .km-app-date .km-time {
+        font-size: 12px;
+    }
+}
+
+.km-appointment-list {
+    padding: 0 10px;
+}
+
+@media (max-width: 479px) {
+    .km-appointment-list {
+        padding: 0 8px;
+    }
+}
+
+@media (max-width: 374px) {
+    .km-appointment-list {
+        padding: 0 6px;
+    }
+}
+
+.km-appointment-list .empty-text {
+    text-align: center;
+    padding: 20px 10px;
+    border-bottom: dotted 1px #bdc1c5;
+}
+
+.km-appointment-list .km-list-item {
+    display: flex;
+    height: auto;
+    padding: 10px 0;
+    border-bottom: dotted 1px #bdc1c5;
+}
+
+@media (max-width: 479px) {
+    .km-appointment-list .km-list-item {
+        padding: 8px 0;
+    }
+}
+
+.km-appointment-list .km-list-item .km-app-main {
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.km-appointment-list .km-list-item .km-app-main>div {
+    margin-bottom: 5px;
+}
+
+.km-appointment-list .km-list-item .km-app-main>div:last-child {
+    margin-bottom: 0;
+}
+
+.km-appointment-list .km-list-item .km-appointment-header {
+    display: flex;
+}
+
+.km-appointment-list .km-list-item .km-appointment-header .km-appointment-name {
+    color: #0d5777;
+    white-space: normal;
+    overflow: hidden;
+    flex-grow: 1;
+    font-weight: bold;
+    text-overflow: ellipsis;
+}
+
+@media (min-width: 375px) {
+    .km-appointment-list .km-list-item .km-appointment-header .km-appointment-name {
+        font-size: 18px;
+    }
+}
+
+@media (min-width: 400px) {
+    .km-appointment-list .km-list-item .km-appointment-header .km-appointment-name {
+        font-size: 19px;
+    }
+}
+
+@media (min-width: 640px) {
+    .km-appointment-list .km-list-item .km-appointment-header .km-appointment-name {
+        font-size: 20px;
+    }
+}
+
+.km-appointment-list .km-list-item .km-appointment-header .km-appointment-type {
+    margin-left: 10px;
+    font-size: 13px;
+    color: #91979e;
+}
+
+@media (max-width: 479px) {
+    .km-appointment-list .km-list-item .km-appointment-header {
+        flex-direction: column-reverse;
+    }
+
+    .km-appointment-list .km-list-item .km-appointment-header .km-appointment-type {
+        margin-left: 0;
+        margin-bottom: 2px;
+    }
+}
+
+.km-appointment-list .km-list-item .km-location {
+    font-size: 14px;
+    font-style: italic;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+@media (max-width: 479px) {
+    .km-appointment-list .km-list-item .km-location {
+        font-size: 13px;
+    }
+}
+
+.km-appointment-list .km-list-item .km-description {
+    color: #91979e;
+    font-style: italic;
+    font-size: 13px;
+}
+
+.km-appointment-list .km-list-item .km-external-link {
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.km-appointment-list .km-list-item .button-group-label {
+    text-align: center;
+}
+
+.km-appointment-list .km-attendance-indicator {
+    border-left: solid 5px #ddd;
+    padding: 0 5px 0 10px;
+    margin-left: 10px;
+    transition: border-color 0.5s;
+}
+
+@media (max-width: 479px) {
+    .km-appointment-list .km-attendance-indicator {
+        padding: 0 0 0 8px;
+        margin-left: 8px;
+    }
+}
+
+@media (max-width: 320px) {
+    .km-appointment-list .km-attendance-indicator {
+        padding: 0 0 0 6px;
+        margin-left: 6px;
+    }
+}
+
+footer {
+    width: 100%;
+    position: relative;
+}
+
+.social-media-icons {
+    display: flex;
+    justify-content: center;
+    padding: 20px 0;
+}
+
+.social-media-icons img {
+    height: 40px;
+    width: 40px;
+    margin: 0 10px;
+}

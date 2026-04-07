@@ -30,7 +30,7 @@ class BringItemForm(forms.ModelForm):
         }
         widgets = {
             "label": forms.TextInput(
-                attrs={**_input_attrs, "placeholder": "z. B. Schwarzwälder Kirschtorte"}
+                attrs={**_input_attrs, "placeholder": "z. B. Hefezopf"}
             ),
             "quantity": forms.NumberInput(
                 attrs={**_input_attrs, "min": 1, "placeholder": "1"}

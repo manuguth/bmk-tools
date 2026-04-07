@@ -60,7 +60,7 @@ class WeeklyMailsModelTests(TestCase):
         with override_settings(MEDIA_ROOT=self.tmp):
             mail = _make_weekly_mail(week=2, year=2025)
         self.assertEqual(len(mail.reference), 8)
-        self.assertTrue(mail.reference.isalpha())
+        self.assertTrue(all(c in '0123456789abcdef' for c in mail.reference))
         self.assertEqual(mail.reference, mail.reference.lower())
 
     def test_reference_not_overwritten_on_resave(self):
@@ -110,8 +110,8 @@ class InfoMailIndexViewTests(TestCase):
             mail = _make_weekly_mail(week=10, year=2025)
         self.client.login(username="testuser", password="testpass123")
         resp = self.client.get(reverse("info_mail_index"))
-        self.assertIn("weekly_mails", resp.context)
-        self.assertIn(mail, resp.context["weekly_mails"])
+        self.assertIn("page_obj", resp.context)
+        self.assertIn(mail, resp.context["page_obj"].object_list)
 
 
 # ---------------------------------------------------------------------------
@@ -176,11 +176,10 @@ class InfoMailDetailsViewTests(TestCase):
         self.assertEqual(resp["Content-Type"], "text/html")
         self.assertIn(b"Themen der Woche", resp.content)
 
-    def test_unknown_reference_raises_does_not_exist(self):
-        """The view does not guard against missing references; unknown key raises DoesNotExist."""
-        from info_mail.models import WeeklyMails as WM
-        with self.assertRaises(WM.DoesNotExist):
-            self.client.get(reverse("info_mail_detail", args=["nonexistent"]))
+    def test_unknown_reference_returns_404(self):
+        """Unknown reference now returns a proper 404 response."""
+        resp = self.client.get(reverse("info_mail_detail", args=["nonexistent"]))
+        self.assertEqual(resp.status_code, 404)
 
 
 # ---------------------------------------------------------------------------
