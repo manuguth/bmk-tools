@@ -69,6 +69,7 @@ def latest_info_mail(request: HttpRequest) -> HttpResponse:
     current_year, current_week, _ = today.isocalendar()
     weekly_mails = (
         WeeklyMails.objects
+        .filter(status="sent")
         .order_by('-year', '-week')
         .values_list('year', 'week')
     )
