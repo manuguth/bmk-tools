@@ -31,10 +31,10 @@ def _upload_file():
     return SimpleUploadedFile("newsletter.html", _HTML_CONTENT, content_type="text/html")
 
 
-def _make_weekly_mail(week, year, content=_HTML_CONTENT):
+def _make_weekly_mail(week, year, content=_HTML_CONTENT, status="sent"):
     """Create a WeeklyMails object with a real in-memory file."""
     upload_date = datetime.datetime(year, 1, 1, tzinfo=datetime.timezone.utc)
-    mail = WeeklyMails(week=week, year=year, upload_date=upload_date)
+    mail = WeeklyMails(week=week, year=year, status=status, upload_date=upload_date)
     mail.html_file.save(f"{year}_{week}-test.html", SimpleUploadedFile("test.html", content), save=True)
     return mail
 
