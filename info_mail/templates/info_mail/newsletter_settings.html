@@ -72,6 +72,12 @@
                     <div class="form-text">API-URL zum Abrufen der Konzertmeister-Anfragen.</div>
                     {% if form.km_requests_url.errors %}<div class="invalid-feedback d-block">{{ form.km_requests_url.errors }}</div>{% endif %}
                 </div>
+                <div class="col-12">
+                    <label class="form-label" for="{{ form.excluded_appointment_names.id_for_label }}">Ausgeschlossene Terminbezeichnungen</label>
+                    {{ form.excluded_appointment_names }}
+                    <div class="form-text">Termine mit diesen Bezeichnungen werden aus dem Newsletter ausgeblendet. Eine Bezeichnung pro Zeile.</div>
+                    {% if form.excluded_appointment_names.errors %}<div class="invalid-feedback d-block">{{ form.excluded_appointment_names.errors }}</div>{% endif %}
+                </div>
             </div>
 
             <div class="d-flex gap-2">

@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 ASSETS_DIR = Path(__file__).parent / "email_assets"
 
 
-def get_appointments(url: str) -> str:
+def get_appointments(url: str, excluded_names: tuple = ()) -> str:
     """Fetch upcoming appointments from Konzertmeister and return filtered HTML."""
     if not url:
         return ""
@@ -38,12 +38,6 @@ def get_appointments(url: str) -> str:
     for footer in appointment_list.find_all(class_="list-footer"):
         footer.extract()
 
-    excluded_names = (
-        "Vorstandssitzung",
-        "Vorstände Exklusiv",
-        "Besprechung Jugend",
-        "Hauptversammlung MMV",
-    )
     for item in appointment_list.find_all(class_="km-list-item"):
         name_el = item.find(class_="km-appointment-name")
         if not name_el:
@@ -101,8 +95,11 @@ def render_newsletter(mail_obj, settings) -> str:
     )
 
     # Live appointments from Konzertmeister
-    html_appointments = get_appointments(settings.km_appointments_url)
-    html_requests = get_appointments(settings.km_requests_url)
+    excluded_names = tuple(
+        name for name in (line.strip() for line in settings.excluded_appointment_names.splitlines()) if name
+    )
+    html_appointments = get_appointments(settings.km_appointments_url, excluded_names)
+    html_requests = get_appointments(settings.km_requests_url, excluded_names)
 
     content_appointments = ""
     if html_appointments:

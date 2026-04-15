@@ -46,6 +46,12 @@ class NewsletterSettings(models.Model):
         verbose_name="Standard Test-Versand E-Mail",
         help_text="Wird im Compose-Bereich als Vorbelegung für den Test-Versand angezeigt.",
     )
+    excluded_appointment_names = models.TextField(
+        blank=True,
+        default="",
+        verbose_name="Ausgeschlossene Terminbezeichnungen",
+        help_text="Termine mit diesen Bezeichnungen werden aus dem Newsletter ausgeblendet. Eine Bezeichnung pro Zeile.",
+    )
 
     class Meta:
         verbose_name = "Newsletter-Einstellung"
