@@ -60,7 +60,7 @@
                                     {% if concert.adults_remaining == 0 %}
                                         <span style="color: var(--tickets-danger);">ausverkauft</span>
                                     {% else %}
-                                        {{ concert.adults_remaining }} / {{ concert.max_adults }} verfügbar
+                                        {{ concert.adults_remaining }} verfügbar
                                     {% endif %}
                                 </span>
                                 {% endif %}
@@ -80,7 +80,7 @@
                                     {% if concert.children_remaining == 0 %}
                                         <span style="color: var(--tickets-danger);">ausverkauft</span>
                                     {% else %}
-                                        {{ concert.children_remaining }} / {{ concert.max_children }} verfügbar
+                                        {{ concert.children_remaining }} verfügbar
                                     {% endif %}
                                 </span>
                                 {% endif %}
@@ -103,7 +103,7 @@
                                     {% if total_remaining == 0 %}
                                         <span style="color: var(--tickets-danger);">ausverkauft</span>
                                     {% else %}
-                                        {{ total_remaining }} / {{ total_max }} verfügbar
+                                        {{ total_remaining }} verfügbar
                                     {% endif %}
                                 </span>
                                 {% endif %}
