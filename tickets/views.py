@@ -172,11 +172,19 @@ def concert_detail(request, slug):
                     confirmation_code=order.confirmation_code,
                 )
     else:
-        form = TicketOrderForm(initial={"adult_count": 1, "child_count": 0})
+        form = TicketOrderForm(initial={
+            "adult_count": min(1, concert.adults_remaining),
+            "child_count": 0,
+        })
+
+    adult_max_select = max(0, min(20, concert.adults_remaining))
+    child_max_select = max(0, min(20, concert.children_remaining))
 
     context = {
         "concert": concert,
         "form": form,
+        "adult_max_select": adult_max_select,
+        "child_max_select": child_max_select,
     }
     return render(request, "tickets/concert_detail.html", context)
 
