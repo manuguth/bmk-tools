@@ -140,7 +140,7 @@
                                 {% if concert.adults_remaining == 0 %}
                                     <span style="color: var(--tickets-danger);">ausverkauft</span>
                                 {% else %}
-                                    {{ concert.adults_remaining }} / {{ concert.max_adults }} verfügbar
+                                    {{ concert.adults_remaining }} verfügbar
                                 {% endif %}
                             </span>
                             {% endif %}
@@ -161,7 +161,7 @@
                                 {% if concert.children_remaining == 0 %}
                                     <span style="color: var(--tickets-danger);">ausverkauft</span>
                                 {% else %}
-                                    {{ concert.children_remaining }} / {{ concert.max_children }} verfügbar
+                                    {{ concert.children_remaining }} verfügbar
                                 {% endif %}
                             </span>
                             {% endif %}
@@ -185,7 +185,7 @@
                                 {% if total_remaining == 0 %}
                                     <span style="color: var(--tickets-danger);">ausverkauft</span>
                                 {% else %}
-                                    {{ total_remaining }} / {{ total_max }} verfügbar
+                                    {{ total_remaining }} verfügbar
                                 {% endif %}
                             </span>
                             {% endif %}
@@ -250,15 +250,19 @@
                         <div class="d-flex align-items-center justify-content-between gap-3">
                             <div>
                                 <div class="fw-semibold" style="color: var(--tickets-navy);">Erwachsene</div>
-                                <small class="text-muted">({{ concert.adult_price|floatformat:2 }} € / Stk.)</small>
+                                {% if concert.adults_remaining == 0 %}
+                                    <small style="color: var(--tickets-danger);"><i class="bi bi-x-circle me-1"></i>ausverkauft</small>
+                                {% else %}
+                                    <small class="text-muted">({{ concert.adult_price|floatformat:2 }} € / Stk.)</small>
+                                {% endif %}
                             </div>
-                            <div class="stepper-group" data-input-id="id_adult_count" data-min="0" data-max="20">
+                            <div class="stepper-group" data-input-id="id_adult_count" data-min="0" data-max="{{ adult_max_select }}">
                                 <button type="button" class="stepper-btn stepper-minus" aria-label="Weniger">−</button>
-                                <span class="stepper-value">1</span>
+                                <span class="stepper-value">{{ form.adult_count.value|default:0 }}</span>
                                 <button type="button" class="stepper-btn stepper-plus" aria-label="Mehr">+</button>
                             </div>
                         </div>
-                        <input type="hidden" name="adult_count" id="id_adult_count" value="{{ form.adult_count.value|default:1 }}">
+                        <input type="hidden" name="adult_count" id="id_adult_count" value="{{ form.adult_count.value|default:0 }}">
                         {% if form.adult_count.errors %}
                             <div class="text-danger small mt-1">{{ form.adult_count.errors.0 }}</div>
                         {% endif %}
@@ -268,9 +272,13 @@
                         <div class="d-flex align-items-center justify-content-between gap-3">
                             <div>
                                 <div class="fw-semibold" style="color: var(--tickets-navy);">Kinder</div>
-                                <small class="text-muted">({{ concert.child_price|floatformat:2 }} € / Stk.)</small>
+                                {% if concert.children_remaining == 0 %}
+                                    <small style="color: var(--tickets-danger);"><i class="bi bi-x-circle me-1"></i>ausverkauft</small>
+                                {% else %}
+                                    <small class="text-muted">({{ concert.child_price|floatformat:2 }} € / Stk.)</small>
+                                {% endif %}
                             </div>
-                            <div class="stepper-group" data-input-id="id_child_count" data-min="0" data-max="20">
+                            <div class="stepper-group" data-input-id="id_child_count" data-min="0" data-max="{{ child_max_select }}">
                                 <button type="button" class="stepper-btn stepper-minus" aria-label="Weniger">−</button>
                                 <span class="stepper-value">0</span>
                                 <button type="button" class="stepper-btn stepper-plus" aria-label="Mehr">+</button>
